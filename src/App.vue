@@ -1,18 +1,16 @@
 <template>
-  <div id="app" class="app">
-    12312
-  </div>
+
+  <SectionModeling />
+
 </template>
 
 <script setup>
+import {useTranslate as _} from "@composables";
+import SectionModeling from "@components/sections/Modeling/SectionModeling.vue";
+import './assets/styles/index.scss'
 
 </script>
 
 <style scoped>
-.app {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-}
+
 </style>

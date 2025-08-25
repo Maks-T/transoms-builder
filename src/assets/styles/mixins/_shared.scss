@@ -1,0 +1,7 @@
+@use 'functions' as *;
+@use '../variables' as *;
+
+@mixin base-border {
+  border-radius: rem(4);
+  border: 1px solid $base-border-color;
+}
