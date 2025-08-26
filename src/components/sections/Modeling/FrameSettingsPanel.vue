@@ -1,47 +1,97 @@
 <template>
   <div class="frame-settings">
 
-    <!-- Селект профилей - меняет профиль активной фрамуги -->
-    <select v-model="modelingStore.selectedProfileId"
-            @change="modelingStore.setProfileType($event.target.value)">
-      <option v-for="profile in modelingStore.profileTypesArray"
-              :key="profile.id"
-              :value="profile.id">
+    <!-- Поля для размеров фрамуги -->
+    <div class="dimension-inputs" v-if="activeTransom">
+      <div class="input-group">
+        <label for="frame-width">Ширина:</label>
+        <input
+            id="frame-width"
+            type="number"
+            :value="activeTransom.width"
+            @input="onInputTransomWidthDebounced"
+            :min="activeTransom.minWidth || 100"
+            :max="activeTransom.maxWidth || 3000"
+        >
+
+      </div>
+
+      <div class="input-group">
+        <label for="frame-height">Высота:</label>
+        <input
+            id="frame-height"
+            type="number"
+            :value="activeTransom.height"
+            @input="onInputTransomHeightDebounced"
+            :min="activeTransom.minHeight || 100"
+            :max="activeTransom.maxHeight || 3000"
+        >
+      </div>
+    </div>
+
+    <!-- Селект профилей -->
+    <select v-model="selectedProfileId">
+      <option
+          v-for="profile in modelingStore.profileTypesArray"
+          :key="profile.id"
+          :value="profile.id"
+      >
         {{ profile.name }}
       </option>
     </select>
 
-    <!-- Селект шаблонов - автоматически создает/изменяет фрамуги -->
-    <select v-model="modelingStore.selectedTemplateId"
-            @change="modelingStore.setTransomTemplate($event.target.value)">
-      <option v-for="template in modelingStore.transomTemplatesArray"
-              :key="template.id"
-              :value="template.id">
+    <!-- Селект шаблонов -->
+    <select v-model="selectedTemplateId">
+      <option
+          v-for="template in modelingStore.transomTemplatesArray"
+          :key="template.id"
+          :value="template.id"
+      >
         {{ template.name }}
       </option>
     </select>
-
 
   </div>
 </template>
 
 <script setup>
-import {useModelingStore} from "@stores";
-import { watch } from 'vue'
+import { useModelingStore } from "@stores"
+import {watch, computed, ref, onMounted} from "vue"
+import { storeToRefs } from "pinia"
+import {useDebounce} from "@src/composables";
 
 
-const modelingStore = useModelingStore();
+const modelingStore = useModelingStore()
+const { activeTransom } = storeToRefs(modelingStore);
 
-watch(
-    () => modelingStore.$state,
-    (newState, oldState) => {
-      console.log('🔄 Изменение всего состояния store:')
-      console.log('Новое состояние:', newState)
-      console.log('Предыдущее состояние:', oldState)
-    },
-    { deep: true }
-)
+const transomWidth = ref(0);
 
+const onInputTransomWidthDebounced = useDebounce(($event) => {
+  modelingStore.setTransomWidth(Number($event.target.value))
+  $event.target.value = activeTransom.value.width
+},700)
+
+const onInputTransomHeightDebounced = useDebounce(($event) => {
+  modelingStore.setTransomHeight(Number($event.target.value))
+  $event.target.value = activeTransom.value.height
+},700)
+
+const selectedProfileId = computed({
+  get: () => modelingStore.selectedProfileId,
+  set: (value) => modelingStore.setProfileType(value)
+})
+
+const selectedTemplateId = computed({
+  get: () => modelingStore.selectedTemplateId,
+  set: (value) => modelingStore.setTransomTemplate(value)
+})
+
+
+onMounted(() => {
+  if (modelingStore.configsStore.defaultProfileId) {
+    modelingStore.setProfileType(modelingStore.configsStore.defaultProfileId)
+  }
+})
 </script>
 
 <style lang="scss" scoped>

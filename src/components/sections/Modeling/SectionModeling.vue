@@ -3,7 +3,11 @@
     <div class="section-modeling">
       <FrameSettingsPanel/>
       <FrameToolbar/>
-      <FrameBuilder/>
+      <FrameBuilder
+          :canvas-width="1100"
+          :canvas-height="600"
+          :padding="40"
+      />
     </div>
   </Step>
 </template>

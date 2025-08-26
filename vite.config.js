@@ -14,6 +14,7 @@ export default defineConfig({
       '@stores': resolve(__dirname, 'src/stores'),
       '@services': resolve(__dirname, 'src/services'),
       '@utils': resolve(__dirname, 'src/utils'),
+      '@constants': resolve(__dirname, 'src/constants'),
     }
   },
   css: {

@@ -1,3 +1,4 @@
 import {useTranslate} from "@composables/useTranslate.js";
+import {useDebounce} from "@composables/useDebounce.js";
 
-export {useTranslate}
+export {useTranslate, useDebounce}
