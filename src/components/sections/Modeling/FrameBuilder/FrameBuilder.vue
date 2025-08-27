@@ -5,13 +5,36 @@
         ref="stage"
         v-if="activeTransom"
     >
-      <v-layer>
+      <v-layer >
+        <!-- Фоновый прямоугольник для всего канваса -->
+        <v-rect
+            :config="{
+              x: 0,
+              y: 0,
+              width: canvasWidth,
+              height: canvasHeight,
+              fill: '#f5f5f5',
+              listening: false
+            }"
+        />
         <!-- Группа для рамки фрамуги -->
         <v-group>
           <v-rect
               :config="rectFrameConfig"
           />
         </v-group>
+
+        <!-- Группа для элементов -->
+        <v-group>
+          <template v-for="(cell, index) in activeTransom.cells" :key="'cell-'+index">
+            <LeafElement
+                v-if="cell.type !== 'profile'"
+                v-bind="leafElementProps(cell, index)"
+                @click="selectCell(index)"
+            />
+          </template>
+        </v-group>
+
       </v-layer>
     </v-stage>
     <div v-else class="no-transom">
@@ -22,33 +45,22 @@
 
 <script setup>
 import {ref, computed, onMounted, onUnmounted, watch} from 'vue'
-import {useModelingStore} from "@src/stores/index.js";
+import {useModelingStore} from "@src/stores";
 import {storeToRefs} from 'pinia'
+import LeafElement from "@components/sections/Modeling/FrameBuilder/LeafElement.vue";
 
 const modelingStore = useModelingStore()
 
 const {activeTransom} = storeToRefs(modelingStore)
+
+console.log('activeTransom', activeTransom.value)
 
 const props = defineProps({
   canvasWidth: {type: Number, default: 1100},
   canvasHeight: {type: Number, default: 600},
   padding: {type: Number, default: 40}
 })
-
-// Конфигурация прямоугольника рамы
-const rectFrameConfig = computed(() => {
-  if (!activeTransom.value) return {}
-
-  return {
-    x: props.padding,
-    y: props.padding,
-    width: activeTransom.value.width * scaleFactor.value,
-    height: activeTransom.value.height * scaleFactor.value,
-    stroke: '#333',
-    strokeWidth: 3,
-    fill: 'transparent'
-  }
-})
+const selectedCellIndex = ref(null)
 
 // Масштабный коэффициент
 const scaleFactor = computed(() => {
@@ -62,6 +74,42 @@ const scaleFactor = computed(() => {
       availableHeight / activeTransom.value.height
   )
 })
+// Конфигурация прямоугольника рамы
+const rectFrameConfig = computed(() => {
+  if (!activeTransom.value) return {}
+
+  return {
+    x: props.padding,
+    y: props.padding,
+    width: activeTransom.value.width * scaleFactor.value,
+    height: activeTransom.value.height * scaleFactor.value,
+    stroke: '#333',
+    strokeWidth: 3,
+    fill: '#ffffff',
+  }
+})
+
+const leafElementProps = computed(() => (cell, index) => {
+
+    console.log('CELL', cell)
+
+    return {
+      x: cell.x * scaleFactor.value + props.padding,
+      y: cell.y * scaleFactor.value + props.padding,
+      width: cell.width * scaleFactor.value,
+      height: cell.height * scaleFactor.value,
+      type: cell.type,
+      // isSelected: selectedCellIndex.value === index,
+      //showDimensions: showDimensions.value,
+      scaleFactor: scaleFactor.value,
+      offsets: cell.offsets
+    }
+
+})
+
+const selectCell = (index) => {
+  selectedCellIndex.value = index
+}
 
 // Отслеживание изменений активной фрамуги
 watch(activeTransom, (newTransom) => {

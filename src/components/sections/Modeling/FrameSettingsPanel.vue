@@ -64,8 +64,6 @@ import {useDebounce} from "@src/composables";
 const modelingStore = useModelingStore()
 const { activeTransom } = storeToRefs(modelingStore);
 
-const transomWidth = ref(0);
-
 const onInputTransomWidthDebounced = useDebounce(($event) => {
   modelingStore.setTransomWidth(Number($event.target.value))
   $event.target.value = activeTransom.value.width
@@ -90,6 +88,10 @@ const selectedTemplateId = computed({
 onMounted(() => {
   if (modelingStore.configsStore.defaultProfileId) {
     modelingStore.setProfileType(modelingStore.configsStore.defaultProfileId)
+  }
+
+  if (modelingStore.configsStore.defaultTemplateId) { //ToDo remove
+    modelingStore.setTransomTemplate(modelingStore.configsStore.defaultTemplateId)
   }
 })
 </script>

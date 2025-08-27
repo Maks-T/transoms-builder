@@ -2,7 +2,7 @@
 import {defineStore} from 'pinia'
 import {cloneObjectDeep} from '@utils'
 import {useConfigsStore} from '@stores'
-import { LEAF_TYPES, PROFILE_TYPE } from '@constants';
+import {LEAF_TYPES, PROFILE_TYPE} from '@constants';
 
 export const useModelingStore = defineStore('modeling', {
     state: () => ({
@@ -47,6 +47,7 @@ export const useModelingStore = defineStore('modeling', {
                 sum += w
                 arr.push(sum)
             }
+
             return arr
         },
 
@@ -63,21 +64,24 @@ export const useModelingStore = defineStore('modeling', {
             return arr
         },
 
-       /* verticalHandles() {
-            return this.colBoundaries.slice(1, -1)
-        },
+        /* verticalHandles() {
+             return this.colBoundaries.slice(1, -1)
+         },
 
-        horizontalHandles() {
-            return this.rowBoundaries.slice(1, -1)
-        },*/
+         horizontalHandles() {
+             return this.rowBoundaries.slice(1, -1)
+         },*/
 
+        calculatedCells() {
+            const transom = this.activeTransom;
 
-        computedCells() {
-            const transom = this.activeTransom
-            if (!transom || !transom.cells) return []
+            if (!transom || !transom.cells) return
 
             const rowCount = transom.rowHeights?.length || 0
             const colCount = transom.colWidths?.length || 0
+
+            //ToDo если rowHeights и colWidths не заданы, то посчитать их от схемы
+            //ToDo подумать над автоматическим добавлением ячеек с профилем
 
             return transom.cells.map(cell => {
                 const rowSpan = cell.rowSpan || 1
@@ -124,25 +128,23 @@ export const useModelingStore = defineStore('modeling', {
         },
 
         hasActiveLeaf() {
-            const transom = this.activeTransom
-            if (!transom || !transom.cells) return false
+            if (!this.activeTransom || !this.activeTransom.cells) return false
 
-            return transom.cells.some(cell =>
+            return this.activeTransom.cells.some(cell =>
                 cell.type === LEAF_TYPES.ACTIVE_LEAF ||
                 cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
             )
         }
-
     },
 
     actions: {
         // Создание новой фрамуги
-        createTransom() { //or rename AddTransom
+        createTransom() {
             const template = this.configsStore.getTransomTemplateById(this.selectedTemplateId)
             const profile = this.configsStore.getProfileById(this.selectedProfileId)
 
             if (!template || !profile) {
-                console.warn('Не выбран template или profile')
+                console.warn('Не выбран template или profile') //ToDo
                 return null
             }
 
@@ -150,7 +152,7 @@ export const useModelingStore = defineStore('modeling', {
             const newTransom = {
                 ...cloneObjectDeep(template),
                 id: transomId,
-                name: `${template.name} #${this.transoms.length + 1}`,
+                name: `${'Фрамуга '} #${this.transoms.length + 1}`,
                 profileId: this.selectedProfileId,
                 profile: cloneObjectDeep(profile),
                 templateId: this.selectedTemplateId,
@@ -159,7 +161,7 @@ export const useModelingStore = defineStore('modeling', {
             this.transoms.push(newTransom)
             this.activeTransomId = transomId
 
-            this.logActiveTransom()
+            this.updateCellSizes();
             return transomId
         },
 
@@ -167,7 +169,6 @@ export const useModelingStore = defineStore('modeling', {
         setActiveTransom(transomId) {
             if (this.transoms.some(transom => transom.id === transomId)) {
                 this.activeTransomId = transomId
-                this.logActiveTransom()
             }
         },
 
@@ -178,10 +179,9 @@ export const useModelingStore = defineStore('modeling', {
 
                 // Если есть активная фрамуга - обновляем ее профиль
                 if (this.activeTransom) {
-                    this.updateActiveTransomProfile(profileId)
+                    this.updateActiveTransomProfile(profileId);
                 }
 
-                this.logActiveTransom()
             }
         },
 
@@ -197,53 +197,58 @@ export const useModelingStore = defineStore('modeling', {
                     // Если есть активная — обновляем её шаблон
                     this.updateActiveTransomTemplate(templateId)
                 }
-
-                this.logActiveTransom()
             }
         },
 
         // Обновление профиля активной фрамуги
         updateActiveTransomProfile(profileId) {
-            const transomIndex = this.transoms.findIndex(t => t.id === this.activeTransomId)
+            const transom = this.activeTransom
+            if (!transom) return;
 
-            if (transomIndex !== -1) {
-                const profile = this.configsStore.getProfileById(profileId)
-                if (profile) {
-                    this.transoms[transomIndex].profileId = profileId
-                    this.transoms[transomIndex].profile = cloneObjectDeep(profile)
-                }
+            const profile = this.configsStore.getProfileById(profileId)
+            if (profile) {
+                transom.profileId = profileId
+                transom.profile = cloneObjectDeep(profile)
+
+                this.updateCellSizes();
             }
+
         },
 
         // Обновление шаблона активной фрамуги
         updateActiveTransomTemplate(templateId) {
             const transomIndex = this.transoms.findIndex(t => t.id === this.activeTransomId)
 
-            if (transomIndex !== -1) {
-                const template = this.configsStore.getTransomTemplateById(templateId)
-                const profile = this.configsStore.getProfileById(this.selectedProfileId)
-
-                if (template && profile) {
-                    // Сохраняем ID и имя оригинальной фрамуги
-                    const originalId = this.transoms[transomIndex].id
-                    const originalName = this.transoms[transomIndex].name
-
-                    // Пересоздаём объект с новым шаблоном
-                    this.transoms[transomIndex] = {
-                        ...cloneObjectDeep(template),
-                        id: originalId,
-                        name: originalName,
-                        profileId: this.selectedProfileId,
-                        profile: cloneObjectDeep(profile),
-                        templateId: this.selectedTemplateId,
-                    }
-                }
+            if (transomIndex === -1) {
+                return
             }
+
+            const template = this.configsStore.getTransomTemplateById(templateId)
+            const profile = this.configsStore.getProfileById(this.selectedProfileId)
+
+            if (template && profile) {
+                // Сохраняем ID и имя оригинальной фрамуги
+                const originalId = this.transoms[transomIndex].id
+                const originalName = this.transoms[transomIndex].name
+
+                // Пересоздаём объект с новым шаблоном
+                this.transoms[transomIndex] = {
+                    ...cloneObjectDeep(template),
+                    id: originalId,
+                    name: originalName,
+                    profileId: this.selectedProfileId,
+                    profile: cloneObjectDeep(profile),
+                    templateId: this.selectedTemplateId,
+                }
+
+                this.updateCellSizes();
+            }
+
         },
 
         // Расчет отступов для ячейки
         calculateOffsets(cell, rowCount, colCount) {
-            const offsets = { top: 0, bottom: 0, left: 0, right: 0 }
+            const offsets = {top: 0, bottom: 0, left: 0, right: 0}
             const isActive = cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
             const isProfile = cell.type === PROFILE_TYPE
             const colStart = cell.col
@@ -286,11 +291,16 @@ export const useModelingStore = defineStore('modeling', {
 
         // Обновление размеров ячеек
         updateCellSizes() {
-            const transomIndex = this.transoms.findIndex(t => t.id === this.activeTransomId)
-            if (transomIndex === -1) return
 
-            const computedCells = this.computedCells
-            this.transoms[transomIndex].cells = computedCells.map(cell => ({
+            const transom = this.activeTransom
+            if (!transom || !transom.cells) return false
+
+            this.updateHeights()
+            this.updateWidths()
+
+            const calculatedCells = this.calculatedCells
+
+            transom.cells = calculatedCells.map(cell => ({
                 ...cell,
                 width: cell.width,
                 height: cell.height,
@@ -301,7 +311,7 @@ export const useModelingStore = defineStore('modeling', {
         },
 
         // Обновление ширины колонки
-        updateColWidth(index, newValue) {
+        updateColWidth(index, newValue) { //draft version
             if (this.isColumnLocked(index)) return
 
             const transomIndex = this.transoms.findIndex(t => t.id === this.activeTransomId)
@@ -336,7 +346,7 @@ export const useModelingStore = defineStore('modeling', {
         },
 
         // Обновление высоты строки
-        updateRowHeight(index, newValue) {
+        updateRowHeight(index, newValue) { //draft version
             if (this.isRowLocked(index)) return
 
             const transomIndex = this.transoms.findIndex(t => t.id === this.activeTransomId)
@@ -419,62 +429,219 @@ export const useModelingStore = defineStore('modeling', {
 
         // Изменение типа ячейки
         changeCellType(cellIndex, newType) {
-            const transomIndex = this.transoms.findIndex(t => t.id === this.activeTransomId)
-            if (transomIndex === -1) return
+            const transom = this.activeTransom
+            if (!transom) return;
 
-            const cell = this.computedCells[cellIndex]
+            const cell = this.calculatedCells[cellIndex]
             if (!cell || cell.type === PROFILE_TYPE) return
 
-            const actualCellIndex = this.transoms[transomIndex].cells.findIndex(
+            const actualCellIndex = transom.cells.findIndex(
                 c => c.row === cell.row && c.col === cell.col
             )
 
             if (actualCellIndex !== -1) {
-                this.transoms[transomIndex].cells[actualCellIndex].type = newType
+                transom.cells[actualCellIndex].type = newType
                 this.updateCellSizes()
             }
         },
 
-        // Обновление ширины фрамуги
         setTransomWidth(newWidth) {
-            const transomIndex = this.transoms.findIndex(t => t.id === this.activeTransomId)
-            if (transomIndex === -1) return false
+            const transom = this.activeTransom
+            if (!transom) return;
 
-            // Валидация
-            const transom = this.transoms[transomIndex]
-            const validatedWidth = Math.max(
-                transom.minWidth || 100,
-                Math.min(transom.maxWidth || 3000, newWidth)
-            )
+            transom.width = Math.max(
+                transom.minWidth,
+                Math.min(transom.maxWidth, newWidth)
+            );
 
-            this.transoms[transomIndex].width = Math.round(validatedWidth)
-            this.updateCellSizes() // Пересчитываем размеры ячеек
-
-            return true
+            this.updateCellSizes();
+            return true;
         },
 
-        // Обновление высоты фрамуги
+
         setTransomHeight(newHeight) {
-            const transomIndex = this.transoms.findIndex(t => t.id === this.activeTransomId)
-            if (transomIndex === -1) return false
+            const transom = this.activeTransom
 
-            // Валидация
-            const transom = this.transoms[transomIndex]
-            const validatedHeight = Math.max(
-                transom.minHeight || 100,
-                Math.min(transom.maxHeight || 3000, newHeight)
-            )
+            if (!transom) return;
 
-            this.transoms[transomIndex].height = Math.round(validatedHeight)
-            this.updateCellSizes() // Пересчитываем размеры ячеек
+            transom.height = Math.max(
+                transom.minHeight,
+                Math.min(transom.maxHeight, newHeight)
+            );
 
-            return true
+            this.updateCellSizes();
+
+            return true; //ToDo
         },
 
+        /*calculateColumnWidthIsHasProfile(columnIndex) {
+            const transom = this.activeTransom;
+            if (!transom || !transom.profile || !transom.cells) return 0;
+
+            const profile = transom.profile;
+            const rowCount = transom.rowHeights?.length || 0;
+            const colCount = transom.colWidths?.length || 0;
+
+            // Находим все ячейки профиля для указанной колонки
+            const profileCells = transom.cells.filter(cell =>
+                cell.type === PROFILE_TYPE &&
+                cell.col === columnIndex + 1 &&
+                (cell.colSpan === 1 || cell.colSpan === undefined) &&
+                (cell.rowSpan !== 1 && cell.rowSpan !== undefined)
+            );
+
+            console.log('profileCells', profileCells, 'columnIndex', columnIndex)
+
+            if (profileCells.length === 0) return 0;
+
+            // Вычисляем максимальную ширину
+            const maxWidth = profileCells.reduce((max, cell) => {
+                const offsets = this.calculateOffsets(cell, rowCount, colCount);
+                const width = profile.width + Math.max(offsets.left, offsets.right);
+                return Math.max(max, width);
+            }, 0);
+
+            return Math.round(maxWidth);
+        },*/
+
+
+        calculateProfileColumnWidths() {
+            const transom = this.activeTransom;
+            if (!transom || !transom.profile || !transom.cells) return {};
+
+            const profile = transom.profile;
+            const rowCount = transom.rowHeights?.length || 0;
+            const colCount = transom.colWidths?.length || 0;
+
+            const columnWidths = {}
+
+            this.calculatedCells.forEach(cell => {
+                     console.log('cellcellcell', cell)
+                if (
+                    cell.type === PROFILE_TYPE &&
+                    cell.height > cell.width //проверяем на вертикальность
+                   /* (cell.colSpan === 1 || cell.colSpan === undefined) &&
+                    (cell.rowSpan !== 1 && cell.rowSpan !== undefined)*/
+                ) {
+                    const colIndex = cell.col - 1;
+                    if (colIndex >= 0 && colIndex < colCount) {
+                        const offsets = this.calculateOffsets(cell, rowCount, colCount);
+                        const width = profile.width + Math.max(offsets.left, offsets.right);
+                        // Сохраняем максимальную ширину для колонки
+                        columnWidths[colIndex] = Math.max(columnWidths[colIndex] || 0, width);
+                    }
+                }
+            });
+
+            return columnWidths;
+        },
+
+        calculateProfileRowHeights() {
+            const transom = this.activeTransom;
+            if (!transom || !transom.profile || !transom.cells) return {};
+
+            const profile = transom.profile;
+            const rowCount = transom.rowHeights?.length || 0;
+            const colCount = transom.colWidths?.length || 0;
+
+            const rowHeights = {};
+
+            this.calculatedCells.forEach(cell => {
+                if (
+                    cell.type === PROFILE_TYPE &&
+                    cell.height < cell.width //проверяем на горизонтальность
+                    /*(cell.rowSpan === 1 || cell.rowSpan === undefined) &&
+                    (cell.colSpan !== 1 && cell.colSpan !== undefined)*/
+                ) {
+                    const rowIndex = cell.row - 1;
+                    if (rowIndex >= 0 && rowIndex < rowCount) {
+                        const offsets = this.calculateOffsets(cell, rowCount, colCount);
+                        const height = profile.width + Math.max(offsets.top, offsets.bottom);
+                        rowHeights[rowIndex] = Math.max(rowHeights[rowIndex] || 0, height);
+                    }
+                }
+            });
+
+            return rowHeights;
+        },
+
+        updateWidths() {
+            const transom = this.activeTransom
+            // Пересчет colWidths пропорционально
+            const currentWidth = transom.colWidths.reduce((sum, w) => sum + w, 0);
+
+            if (currentWidth > 0) {
+                const ratio = transom.width / currentWidth;
+                // получаем ширины колонок с вертикальным профилем
+                const columnProfileWidths = this.calculateProfileColumnWidths()
+
+                const newColWidths = transom.colWidths.map((width, index) => {
+                    // Если колонка содержит профиль
+                    if (index in columnProfileWidths) {
+                        return Math.round(columnProfileWidths[index]);
+                    }
+                   // if (this.isColumnLocked(index)) return width; // Не изменяем заблокированные колонки
+
+                    const newWidth = Math.round(width * ratio);
+                    return Math.max(100, newWidth); // Минимальная ширина 100
+                });
+
+                // Корректировка для точного соответствия validatedWidth
+                const newTotalWidth = newColWidths.reduce((sum, w) => sum + w, 0);
+                const diff = transom.width - newTotalWidth;
+
+                //ToDo min
+                if (diff !== 0 && newColWidths.length > 0) {
+                    const lastUnlockedIndex = newColWidths.findLastIndex((_, idx) => !columnProfileWidths[idx]);
+                    if (lastUnlockedIndex !== -1) {
+                        newColWidths[lastUnlockedIndex] = Math.max(42, newColWidths[lastUnlockedIndex] + diff);
+                    }
+                }
+
+                transom.colWidths = newColWidths;
+            }
+        },
+
+        updateHeights() {
+            const transom = this.activeTransom
+            // Пересчет rowHeights пропорционально
+            const currentHeight = transom.rowHeights.reduce((sum, h) => sum + h, 0);
+
+            if (currentHeight > 0) {
+                const ratio = transom.height / currentHeight;
+
+                const columnProfileHeights = this.calculateProfileRowHeights()
+
+                console.log('columnProfileHeights', columnProfileHeights)
+                //ToDo min
+                const newRowHeights = transom.rowHeights.map((height, index) => {
+                    // Если строка содержит профиль
+                    if (index in columnProfileHeights) {
+                        return Math.round(columnProfileHeights[index]);
+                    }
+
+                   // if (this.isRowLocked(index)) return height; // Не изменяем заблокированные строки
+                    const newHeight = Math.round(height * ratio);
+                    return Math.max(42, newHeight); // Минимальная высота 100
+                });
+
+                // Корректировка для точного соответствия validatedHeight
+                const newTotalHeight = newRowHeights.reduce((sum, h) => sum + h, 0);
+                const diff = transom.height - newTotalHeight;
+                if (diff !== 0 && newRowHeights.length > 0) {
+                    const lastUnlockedIndex = newRowHeights.findLastIndex((_, idx) => !columnProfileHeights[idx]);
+                    if (lastUnlockedIndex !== -1) {
+                        newRowHeights[lastUnlockedIndex] = Math.max(100, newRowHeights[lastUnlockedIndex] + diff);
+                    }
+                }
+
+                transom.rowHeights = newRowHeights;
+            }
+        },
         // Получение минимальных/максимальных размеров
         getTransomSizeLimits() {
             const transom = this.activeTransom
-            if (!transom) return { minWidth: 100, maxWidth: 3000, minHeight: 100, maxHeight: 3000 }
+            if (!transom) return {minWidth: 100, maxWidth: 3000, minHeight: 100, maxHeight: 3000}
 
             return {
                 minWidth: transom.minWidth || 100,

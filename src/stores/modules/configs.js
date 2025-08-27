@@ -15,7 +15,7 @@ const PROFILES_TYPES = {
     'spaziosg': {
         id: 'spaziosg',
         name: 'Spazio',
-        width: 39,
+        width: 70,
         height: 41,
         imgSrc: '',
         gradeName: 'Профиль S41X39'
@@ -23,7 +23,7 @@ const PROFILES_TYPES = {
     'spazioltsl': {
         id: 'spazioltsl',
         name: 'Spazio Light',
-        width: 39,
+        width: 20,
         height: 41,
         imgSrc: '',
         gradeName: 'Профиль S41X39'
@@ -37,10 +37,10 @@ const TRANSOM_TEMPLATES = {
         name: 'Фрамуга 9',
         width: 1667,
         height: 3000,
-        minWidth: 1000,
-        minHeight: 1000,
-        maxWidth: 1667,
-        maxHeight: 3000,
+        minWidth: 800,
+        minHeight: 800,
+        maxWidth: 5000,
+        maxHeight: 5000,
         profileId: 'modulasg',
         unit: 'mm',
         schema: '3x3',
@@ -95,17 +95,17 @@ const TRANSOM_TEMPLATES = {
     'transoms-type-8': {
         id: 'transoms-type-8',
         name: 'Фрамуга 8',
-        width: 1400,
+        width: 894,
         height: 3000,
-        minWidth: 1000,
-        minHeight: 1000,
-        maxWidth: 1667,
-        maxHeight: 3200,
+        minWidth: 800,
+        minHeight: 800,
+        maxWidth: 5000,
+        maxHeight: 5000,
         profileId: 'modulasg',
         unit: 'mm',
         schema: '3x3',
-        colWidths: [42, 810, 815],
-        rowHeights: [42, 948, 2010],
+        colWidths: [42, 810, 42],
+        rowHeights: [42, 948, 2000],
         imgSrc: '',
         cells: [
             {
@@ -120,23 +120,8 @@ const TRANSOM_TEMPLATES = {
             {
                 row: 1,
                 col: 2,
+                colSpan: 3,
                 type: 'profile',
-                offsets: {top: 3, bottom: 0, left: 0, right: 0},
-                innerWidth: 0,
-                innerHeight: 0
-            },
-            {
-                row: 2,
-                col: 2,
-                type: 'inactive-leaf-small',
-                offsets: {top: 5, bottom: 5, left: 5, right: 5},
-                innerWidth: 0,
-                innerHeight: 0
-            },
-            {
-                row: 3,
-                col: 2,
-                type: 'active-leaf',
                 offsets: {top: 3, bottom: 0, left: 0, right: 3},
                 innerWidth: 0,
                 innerHeight: 0
@@ -145,11 +130,28 @@ const TRANSOM_TEMPLATES = {
                 row: 1,
                 col: 3,
                 rowSpan: 3,
-                type: 'inactive-leaf',
-                offsets: {top: 5, bottom: 5, left: 5, right: 5},
+                type: 'profile',
+                offsets: {top: 3, bottom: 0, left: 0, right: 3},
                 innerWidth: 0,
                 innerHeight: 0
             },
+            {
+                row: 2,
+                col: 2,
+                type: 'inactive-leaf-small',
+                offsets: {top: 5, bottom: 0, left: 5, right: 5},
+                innerWidth: 0,
+                innerHeight: 0
+            },
+            {
+                row: 3,
+                col: 2,
+                type: 'active-leaf',
+                offsets: {top: 5, bottom: 10, left: 5, right: 5},
+                innerWidth: 0,
+                innerHeight: 0
+            },
+
         ]
     }
 };
