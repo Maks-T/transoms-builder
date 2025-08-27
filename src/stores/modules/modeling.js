@@ -74,8 +74,9 @@ export const useModelingStore = defineStore('modeling', {
 
         calculatedCells() {
             const transom = this.activeTransom;
+            const profile = transom.profile;
 
-            if (!transom || !transom.cells) return
+            if (!transom || !transom.cells || !profile) return
 
             const rowCount = transom.rowHeights?.length || 0
             const colCount = transom.colWidths?.length || 0
@@ -109,6 +110,20 @@ export const useModelingStore = defineStore('modeling', {
                 }
 
                 const offsets = this.calculateOffsets(cell, rowCount, colCount)
+
+                // Корректировка для ячеек PROFILE_TYPE
+                if (cell.type === PROFILE_TYPE) {
+                    if (width > height) {
+                        // Горизонтальная ячейка
+                        height = profile.width + offsets.left + offsets.right;
+                        cell.isHorizontal = true;
+                    } else if (width < height) {
+                        // Вертикальная ячейка
+                        width = profile.width + offsets.top + offsets.bottom;
+                        cell.isVertical = true;
+                    }
+                }
+
                 const innerWidth = Math.max(0, width - offsets.left - offsets.right)
                 const innerHeight = Math.max(0, height - offsets.top - offsets.bottom)
 
@@ -125,6 +140,27 @@ export const useModelingStore = defineStore('modeling', {
                     innerHeight
                 }
             })
+        },
+
+        getLockedMaps() {
+            return (cells) => {
+                const lockedColumnWidths = {};
+                const lockedRowHeights = {};
+
+                cells.forEach(cell => {
+                    const colIndex = cell.col - 1;
+                    const rowIndex = cell.row - 1;
+
+                    if (cell.isVertical) {
+                        lockedColumnWidths[colIndex] = Math.max(lockedColumnWidths[colIndex] || 0, cell.width);
+                    }
+                    if (cell.isHorizontal) {
+                        lockedRowHeights[rowIndex] = Math.max(lockedRowHeights[rowIndex] || 0, cell.height);
+                    }
+                });
+
+                return { lockedColumnWidths, lockedRowHeights };
+            }
         },
 
         hasActiveLeaf() {
@@ -162,6 +198,8 @@ export const useModelingStore = defineStore('modeling', {
             this.activeTransomId = transomId
 
             this.updateCellSizes();
+
+
             return transomId
         },
 
@@ -295,10 +333,12 @@ export const useModelingStore = defineStore('modeling', {
             const transom = this.activeTransom
             if (!transom || !transom.cells) return false
 
-            this.updateHeights()
-            this.updateWidths()
+
 
             const calculatedCells = this.calculatedCells
+
+                const lockedMaps = this.getLockedMaps(calculatedCells);
+                console.log('lockedMaps', lockedMaps)
 
             transom.cells = calculatedCells.map(cell => ({
                 ...cell,
@@ -308,6 +348,12 @@ export const useModelingStore = defineStore('modeling', {
                 innerWidth: cell.innerWidth,
                 innerHeight: cell.innerHeight
             }))
+
+            transom.lockedRowHeights = lockedMaps.lockedRowHeights
+            transom.lockedColumnWidths = lockedMaps.lockedColumnWidths
+
+            this.updateHeights()
+            this.updateWidths()
         },
 
         // Обновление ширины колонки
@@ -573,12 +619,11 @@ export const useModelingStore = defineStore('modeling', {
             if (currentWidth > 0) {
                 const ratio = transom.width / currentWidth;
                 // получаем ширины колонок с вертикальным профилем
-                const columnProfileWidths = this.calculateProfileColumnWidths()
 
                 const newColWidths = transom.colWidths.map((width, index) => {
                     // Если колонка содержит профиль
-                    if (index in columnProfileWidths) {
-                        return Math.round(columnProfileWidths[index]);
+                    if (index in transom.lockedColumnWidths) {
+                        return Math.round(transom.lockedColumnWidths[index]);
                     }
                    // if (this.isColumnLocked(index)) return width; // Не изменяем заблокированные колонки
 
@@ -592,7 +637,7 @@ export const useModelingStore = defineStore('modeling', {
 
                 //ToDo min
                 if (diff !== 0 && newColWidths.length > 0) {
-                    const lastUnlockedIndex = newColWidths.findLastIndex((_, idx) => !columnProfileWidths[idx]);
+                    const lastUnlockedIndex = newColWidths.findLastIndex((_, idx) => !transom.lockedColumnWidths[idx]);
                     if (lastUnlockedIndex !== -1) {
                         newColWidths[lastUnlockedIndex] = Math.max(42, newColWidths[lastUnlockedIndex] + diff);
                     }
