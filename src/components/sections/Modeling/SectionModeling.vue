@@ -4,7 +4,7 @@
       <FrameSettingsPanel/>
       <FrameToolbar/>
       <FrameBuilder
-          :canvas-width="1100"
+          :canvas-width="900"
           :canvas-height="600"
           :padding="40"
       />

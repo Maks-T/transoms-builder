@@ -2,9 +2,9 @@
   <div class="frame-toolbar">
     <button
         class="frame-toolbar__btn"
-        :class="{ 'frame-toolbar__btn--active': showDimensions }"
-        @click="toggleDimensions"
-        :title="_('Показать размеры')"
+        :class="{ 'frame-toolbar__btn--active': modelingStore.showDimensions }"
+        @click="modelingStore.showDimensions = !modelingStore.showDimensions"
+        :title="_('Показать размеры полотен')"
     >
       <Icon icon="mdi:ruler" />
     </button>
@@ -23,9 +23,12 @@
 import { ref } from 'vue';
 import { useTranslate as _ } from '@src/composables/index.js';
 import { Icon } from '@iconify/vue';
+import {useModelingStore} from "@src/stores";
 
 const showDimensions = ref(false);
 const showCellBorders = ref(false);
+
+const modelingStore = useModelingStore()
 
 function toggleDimensions() {
   showDimensions.value = !showDimensions.value;
@@ -49,7 +52,6 @@ function toggleCellBorders() {
   flex-direction: column;
   gap: rem(10);
   padding: rem(4);
-  background-color: #f9f9f9;
 
   &__btn {
     background: #fff;

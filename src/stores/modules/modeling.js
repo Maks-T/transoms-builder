@@ -10,6 +10,7 @@ export const useModelingStore = defineStore('modeling', {
         activeTransomId: null,
         selectedProfileId: null,
         selectedTemplateId: null,
+        showDimensions: true,
     }),
 
     getters: {
@@ -64,19 +65,18 @@ export const useModelingStore = defineStore('modeling', {
             return arr
         },
 
-        /* verticalHandles() {
-             return this.colBoundaries.slice(1, -1)
-         },
+        verticalDividers() {
+            return this.colBoundaries.slice(1, -1)
+        },
 
-         horizontalHandles() {
-             return this.rowBoundaries.slice(1, -1)
-         },*/
+        horizontalDividers() {
+            return this.rowBoundaries.slice(1, -1)
+        },
 
         calculatedCells() {
             const transom = this.activeTransom;
-            const profile = transom.profile;
 
-            if (!transom || !transom.cells || !profile) return
+            if (!transom || !transom.cells) return
 
             const rowCount = transom.rowHeights?.length || 0
             const colCount = transom.colWidths?.length || 0
@@ -110,20 +110,6 @@ export const useModelingStore = defineStore('modeling', {
                 }
 
                 const offsets = this.calculateOffsets(cell, rowCount, colCount)
-
-                // Корректировка для ячеек PROFILE_TYPE
-                if (cell.type === PROFILE_TYPE) {
-                    if (width > height) {
-                        // Горизонтальная ячейка
-                        height = profile.width + offsets.left + offsets.right;
-                        cell.isHorizontal = true;
-                    } else if (width < height) {
-                        // Вертикальная ячейка
-                        width = profile.width + offsets.top + offsets.bottom;
-                        cell.isVertical = true;
-                    }
-                }
-
                 const innerWidth = Math.max(0, width - offsets.left - offsets.right)
                 const innerHeight = Math.max(0, height - offsets.top - offsets.bottom)
 
@@ -142,27 +128,6 @@ export const useModelingStore = defineStore('modeling', {
             })
         },
 
-        getLockedMaps() {
-            return (cells) => {
-                const lockedColumnWidths = {};
-                const lockedRowHeights = {};
-
-                cells.forEach(cell => {
-                    const colIndex = cell.col - 1;
-                    const rowIndex = cell.row - 1;
-
-                    if (cell.isVertical) {
-                        lockedColumnWidths[colIndex] = Math.max(lockedColumnWidths[colIndex] || 0, cell.width);
-                    }
-                    if (cell.isHorizontal) {
-                        lockedRowHeights[rowIndex] = Math.max(lockedRowHeights[rowIndex] || 0, cell.height);
-                    }
-                });
-
-                return { lockedColumnWidths, lockedRowHeights };
-            }
-        },
-
         hasActiveLeaf() {
             if (!this.activeTransom || !this.activeTransom.cells) return false
 
@@ -174,18 +139,19 @@ export const useModelingStore = defineStore('modeling', {
     },
 
     actions: {
-        // Создание новой фрамуги
-        createTransom() {
+        // Создание объекта новой фрамуги
+        createTransomObject() {
             const template = this.configsStore.getTransomTemplateById(this.selectedTemplateId)
             const profile = this.configsStore.getProfileById(this.selectedProfileId)
 
             if (!template || !profile) {
-                console.warn('Не выбран template или profile') //ToDo
+                console.warn('Не выбран template или profile')
                 return null
             }
 
             const transomId = `transom-${Date.now()}`
-            const newTransom = {
+
+            return {
                 ...cloneObjectDeep(template),
                 id: transomId,
                 name: `${'Фрамуга '} #${this.transoms.length + 1}`,
@@ -193,14 +159,19 @@ export const useModelingStore = defineStore('modeling', {
                 profile: cloneObjectDeep(profile),
                 templateId: this.selectedTemplateId,
             }
+        },
+        //Создание и добавление новой фрамуги
+        addTransom() {
+            const newTransom = this.createTransomObject();
+
+            if (!newTransom) {
+                return;
+            }
 
             this.transoms.push(newTransom)
-            this.activeTransomId = transomId
+            this.activeTransomId = newTransom.id;
 
             this.updateCellSizes();
-
-
-            return transomId
         },
 
         // Установка активной фрамуги
@@ -230,7 +201,7 @@ export const useModelingStore = defineStore('modeling', {
 
                 if (this.transoms.length === 0) {
                     // Если фрамуг нет — создаём новую
-                    this.createTransom()
+                    this.addTransom()
                 } else if (this.activeTransom) {
                     // Если есть активная — обновляем её шаблон
                     this.updateActiveTransomTemplate(templateId)
@@ -261,27 +232,20 @@ export const useModelingStore = defineStore('modeling', {
                 return
             }
 
-            const template = this.configsStore.getTransomTemplateById(templateId)
-            const profile = this.configsStore.getProfileById(this.selectedProfileId)
+            const originalId = this.transoms[transomIndex].id
+            const originalName = this.transoms[transomIndex].name
 
-            if (template && profile) {
-                // Сохраняем ID и имя оригинальной фрамуги
-                const originalId = this.transoms[transomIndex].id
-                const originalName = this.transoms[transomIndex].name
+            const newTransom = this.createTransomObject()
 
-                // Пересоздаём объект с новым шаблоном
-                this.transoms[transomIndex] = {
-                    ...cloneObjectDeep(template),
-                    id: originalId,
-                    name: originalName,
-                    profileId: this.selectedProfileId,
-                    profile: cloneObjectDeep(profile),
-                    templateId: this.selectedTemplateId,
-                }
+            if (newTransom) {
+                // Сохраняем оригинальные ID и имя
+                newTransom.id = originalId
+                newTransom.name = originalName
 
-                this.updateCellSizes();
+                // Заменяем фрамугу в массиве
+                this.transoms[transomIndex] = newTransom
+                this.updateCellSizes()
             }
-
         },
 
         // Расчет отступов для ячейки
@@ -333,12 +297,10 @@ export const useModelingStore = defineStore('modeling', {
             const transom = this.activeTransom
             if (!transom || !transom.cells) return false
 
-
+            this.updateHeights()
+            this.updateWidths()
 
             const calculatedCells = this.calculatedCells
-
-                const lockedMaps = this.getLockedMaps(calculatedCells);
-                console.log('lockedMaps', lockedMaps)
 
             transom.cells = calculatedCells.map(cell => ({
                 ...cell,
@@ -348,12 +310,6 @@ export const useModelingStore = defineStore('modeling', {
                 innerWidth: cell.innerWidth,
                 innerHeight: cell.innerHeight
             }))
-
-            transom.lockedRowHeights = lockedMaps.lockedRowHeights
-            transom.lockedColumnWidths = lockedMaps.lockedColumnWidths
-
-            this.updateHeights()
-            this.updateWidths()
         },
 
         // Обновление ширины колонки
@@ -562,12 +518,11 @@ export const useModelingStore = defineStore('modeling', {
             const columnWidths = {}
 
             this.calculatedCells.forEach(cell => {
-                     console.log('cellcellcell', cell)
                 if (
                     cell.type === PROFILE_TYPE &&
                     cell.height > cell.width //проверяем на вертикальность
-                   /* (cell.colSpan === 1 || cell.colSpan === undefined) &&
-                    (cell.rowSpan !== 1 && cell.rowSpan !== undefined)*/
+                    /* (cell.colSpan === 1 || cell.colSpan === undefined) &&
+                     (cell.rowSpan !== 1 && cell.rowSpan !== undefined)*/
                 ) {
                     const colIndex = cell.col - 1;
                     if (colIndex >= 0 && colIndex < colCount) {
@@ -615,31 +570,31 @@ export const useModelingStore = defineStore('modeling', {
             const transom = this.activeTransom
             // Пересчет colWidths пропорционально
             const currentWidth = transom.colWidths.reduce((sum, w) => sum + w, 0);
+            const minWidth = transom.profile.width * 3; //ToDo min
 
             if (currentWidth > 0) {
                 const ratio = transom.width / currentWidth;
                 // получаем ширины колонок с вертикальным профилем
+                const columnProfileWidths = this.calculateProfileColumnWidths()
 
                 const newColWidths = transom.colWidths.map((width, index) => {
                     // Если колонка содержит профиль
-                    if (index in transom.lockedColumnWidths) {
-                        return Math.round(transom.lockedColumnWidths[index]);
+                    if (index in columnProfileWidths) {
+                        return Math.round(columnProfileWidths[index]);
                     }
-                   // if (this.isColumnLocked(index)) return width; // Не изменяем заблокированные колонки
 
                     const newWidth = Math.round(width * ratio);
-                    return Math.max(100, newWidth); // Минимальная ширина 100
+                    return Math.max(minWidth, newWidth);
                 });
 
                 // Корректировка для точного соответствия validatedWidth
                 const newTotalWidth = newColWidths.reduce((sum, w) => sum + w, 0);
                 const diff = transom.width - newTotalWidth;
 
-                //ToDo min
                 if (diff !== 0 && newColWidths.length > 0) {
-                    const lastUnlockedIndex = newColWidths.findLastIndex((_, idx) => !transom.lockedColumnWidths[idx]);
+                    const lastUnlockedIndex = newColWidths.findLastIndex((_, idx) => !columnProfileWidths[idx]);
                     if (lastUnlockedIndex !== -1) {
-                        newColWidths[lastUnlockedIndex] = Math.max(42, newColWidths[lastUnlockedIndex] + diff);
+                        newColWidths[lastUnlockedIndex] = Math.max(minWidth, newColWidths[lastUnlockedIndex] + diff);
                     }
                 }
 
@@ -651,6 +606,7 @@ export const useModelingStore = defineStore('modeling', {
             const transom = this.activeTransom
             // Пересчет rowHeights пропорционально
             const currentHeight = transom.rowHeights.reduce((sum, h) => sum + h, 0);
+            const minHeight = transom.profile.width * 3; //ToDo min
 
             if (currentHeight > 0) {
                 const ratio = transom.height / currentHeight;
@@ -665,9 +621,9 @@ export const useModelingStore = defineStore('modeling', {
                         return Math.round(columnProfileHeights[index]);
                     }
 
-                   // if (this.isRowLocked(index)) return height; // Не изменяем заблокированные строки
+                    // if (this.isRowLocked(index)) return height; // Не изменяем заблокированные строки
                     const newHeight = Math.round(height * ratio);
-                    return Math.max(42, newHeight); // Минимальная высота 100
+                    return Math.max(minHeight, newHeight); // Минимальная высота 100
                 });
 
                 // Корректировка для точного соответствия validatedHeight
@@ -676,7 +632,7 @@ export const useModelingStore = defineStore('modeling', {
                 if (diff !== 0 && newRowHeights.length > 0) {
                     const lastUnlockedIndex = newRowHeights.findLastIndex((_, idx) => !columnProfileHeights[idx]);
                     if (lastUnlockedIndex !== -1) {
-                        newRowHeights[lastUnlockedIndex] = Math.max(100, newRowHeights[lastUnlockedIndex] + diff);
+                        newRowHeights[lastUnlockedIndex] = Math.max(minHeight, newRowHeights[lastUnlockedIndex] + diff);
                     }
                 }
 

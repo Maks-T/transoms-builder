@@ -5,6 +5,7 @@ import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: './', // необходимо для относительных путей
   plugins: [vue()],
   resolve: {
     alias: {
@@ -26,5 +27,6 @@ export default defineConfig({
       `
       }
     }
-  }
+  },
+
 })
