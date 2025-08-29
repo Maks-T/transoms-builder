@@ -2,7 +2,7 @@
 import {defineStore} from 'pinia'
 import {cloneObjectDeep} from '@utils'
 import {useConfigsStore} from '@stores'
-import {LEAF_TYPES, PROFILE_TYPE} from '@constants';
+import {LEAF_HINGE_SIDE, LEAF_TYPES, PROFILE_TYPE} from '@constants';
 
 export const useModelingStore = defineStore('modeling', {
     state: () => ({
@@ -11,6 +11,7 @@ export const useModelingStore = defineStore('modeling', {
         selectedProfileId: null,
         selectedTemplateId: null,
         showDimensions: true,
+        showDividers: false
     }),
 
     getters: {
@@ -112,9 +113,13 @@ export const useModelingStore = defineStore('modeling', {
                 const offsets = this.calculateOffsets(cell, rowCount, colCount)
                 const innerWidth = Math.max(0, width - offsets.left - offsets.right)
                 const innerHeight = Math.max(0, height - offsets.top - offsets.bottom)
+                const isActive = cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
+                const hingeSide = cell.hingeSide || LEAF_HINGE_SIDE.LEFT
 
                 return {
                     ...cell,
+                    isActive,
+                    hingeSide,
                     x,
                     y,
                     width,
@@ -123,7 +128,8 @@ export const useModelingStore = defineStore('modeling', {
                     rowSpan,
                     offsets,
                     innerWidth,
-                    innerHeight
+                    innerHeight,
+
                 }
             })
         },
@@ -300,16 +306,14 @@ export const useModelingStore = defineStore('modeling', {
             this.updateHeights()
             this.updateWidths()
 
-            const calculatedCells = this.calculatedCells
-
-            transom.cells = calculatedCells.map(cell => ({
+            transom.cells = cloneObjectDeep(this.calculatedCells)/*.map(cell => ({
                 ...cell,
                 width: cell.width,
                 height: cell.height,
                 offsets: cell.offsets,
                 innerWidth: cell.innerWidth,
                 innerHeight: cell.innerHeight
-            }))
+            }))*/
         },
 
         // Обновление ширины колонки

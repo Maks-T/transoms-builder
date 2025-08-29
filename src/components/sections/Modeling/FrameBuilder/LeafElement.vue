@@ -8,33 +8,19 @@
       @mouseup="handleMouseUp"
    >
     <!-- Основной прямоугольник окна -->
-    <v-rect
-        :config="mainRectConfig"
-
-    />
+    <v-rect :config="mainRectConfig" />
 
     <!-- Внутренний прямоугольник для окна -->
-    <v-rect
-        :config="innerRectConfig"
-    />
+    <v-rect  :config="innerRectConfig" />
 
     <!-- Название типа полотна -->
-    <v-text
-        :config="textNameRectConfig"
-    />
+    <v-text :config="textNameRectConfig" />
+
+    <!-- Треугольник для отображения типа открывания (для активных полотен) -->
+    <v-line v-if="isActive" :config="openingTriangleConfig" />
 
     <!-- Выделение окна -->
-    <v-rect
-        v-if="isSelected"
-        :config="{
-        width,
-        height,
-        stroke: '#4bbfff',
-        strokeWidth: 4,
-        fill: 'transparent',
-        dash: [8, 4]
-      }"
-    />
+    <v-rect v-if="isSelected"  :config="selectRectConfig"/>
 
     <!-- Размеры окна (если включены) -->
     <template v-if="showDimensions">
@@ -49,7 +35,7 @@
 </template>
 <script setup>
 import {computed} from "vue";
-import  {LEAF_TYPES, LEAF_NAMES} from "@constants";
+import {LEAF_TYPES, LEAF_NAMES, LEAF_HINGE_SIDE} from "@constants";
 
 const props = defineProps({
   x: Number,
@@ -61,6 +47,7 @@ const props = defineProps({
   type: String,
   scaleFactor: Number,
   offsets: Object,
+  hingeSide: String,
   index: Number,
   isSelected: Boolean,
   showDimensions: Boolean
@@ -72,14 +59,19 @@ const fillColor = computed(() => {
   switch (props.type) {
     case LEAF_TYPES.ACTIVE_LEAF: return 'rgba(179, 255, 179, 0.2)'
     case LEAF_TYPES.INACTIVE_LEAF: return 'rgba(204, 204, 204, 0.2)'
-    case LEAF_TYPES.ACTIVE_LEAF_SMALL: return 'rgba(153, 153, 153, 0.2)'
-    case LEAF_TYPES.INACTIVE_LEAF_SMALL: return 'rgba(102, 204, 255, 0.2)'
+    case LEAF_TYPES.ACTIVE_LEAF_SMALL: return 'rgba(102, 204, 255, 0.2)'
+    case LEAF_TYPES.INACTIVE_LEAF_SMALL: return 'rgba(153, 153, 153, 0.2)'
     default: return 'rgba(238, 238, 238, 0.2)'
   }
 })
 
 const strokeColor = computed(() => {
   return '#303030'//  isActive.value ? '#2E7D32' : '#333333'
+})
+
+// Определяем, является ли полотно активным
+const isActive = computed(() => {//ToDo добавить в константу активные типы открывания
+  return props.type === LEAF_TYPES.ACTIVE_LEAF || props.type === LEAF_TYPES.ACTIVE_LEAF_SMALL;
 })
 
 const strokeWidth = 2;
@@ -105,6 +97,11 @@ const innerRectConfig = computed(() => {
     strokeWidth: strokeWidth/2,
     fill: 'transparent'
   }
+})
+
+
+const typeLabel = computed(() => {
+  return LEAF_NAMES[props.type] || props.type
 })
 
 const textNameRectConfig = computed(() => {
@@ -144,10 +141,52 @@ const textHeightRectConfig = computed(() => {
   }
 })
 
-
-const typeLabel = computed(() => {
-  return LEAF_NAMES[props.type] || props.type
+const selectRectConfig = computed(() => {
+  return {
+    width: props.width,
+    height: props.height,
+    stroke: '#4bbfff',
+    strokeWidth: 4,
+    fill: 'transparent',
+    dash: [8, 4]
+  }
 })
+
+
+// Конфигурация для треугольника открывания
+const openingTriangleConfig = computed(() => {
+  const defaultConfig = {
+    stroke: 'rgba(81,81,81,0.6)',
+    strokeWidth: 1,
+    fill: 'transparent',
+    closed: true
+  }
+
+  if (props.hingeSide === LEAF_HINGE_SIDE.LEFT) {
+    // Для левого открывания
+    return {
+      points: [
+        props.width, 0,
+        0, props.height / 2,
+        props.width, props.height
+      ],
+      ...defaultConfig
+    }
+  } else if (props.hingeSide === LEAF_HINGE_SIDE.RIGHT) {
+    // Для правого открывания
+    return {
+      points: [
+        0, 0,
+        props.width, props.height / 2,
+        0, props.height
+      ],
+      ...defaultConfig
+    }
+  }
+
+  return null;
+})
+
 
 const handleMouseUp = (event) => {
   console.log('click leaf ' + props.index);

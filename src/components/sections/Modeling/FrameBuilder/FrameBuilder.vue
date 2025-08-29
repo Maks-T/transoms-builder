@@ -7,7 +7,6 @@
         <v-stage
             :config="{ width: canvasWidth, height: canvasHeight }"
             ref="stage"
-
         >
           <v-layer>
             <!-- Фоновый прямоугольник для всего канваса -->
@@ -41,15 +40,21 @@
 
             <!-- Группа для разделителей -->
             <v-group>
-              <!-- Вертикальные разделители -->
-              <v-rect
-                  :config="rectFrameConfig"
-              />
 
-              <!-- Горизонтальные разделители -->
-              <v-rect
-                  :config="rectFrameConfig"
-              />
+              <template v-if="modelingStore.showDividers">
+                <!-- Горизонтальные разделители -->
+                <v-line
+                    v-for="(divider, index) in modelingStore.horizontalDividers"
+                    :key="'horizontal-divider-' + index"
+                    :config="dividersHorizontalLineConfig(divider)"
+                />
+                <!-- Вертикальные разделители -->
+                <v-line
+                    v-for="(divider, index) in  modelingStore.verticalDividers"
+                    :key="'vertical-divider-' + index"
+                    :config="dividersVerticalLineConfig(divider)"
+                />
+              </template>
             </v-group>
 
           </v-layer>
@@ -131,10 +136,38 @@ const leafElementProps = computed(() => (cell, index) => {
     showDimensions: modelingStore.showDimensions,
     scaleFactor: scaleFactor.value,
     offsets: cell.offsets,
+    hingeSide: cell.hingeSide, //ToDo init in store in cell
     index
   }
 
 })
+
+const dividersVerticalLineConfig = computed(() => (divider) => {
+  return {
+    points: [
+      divider * scaleFactor.value + props.padding, props.padding,
+      divider * scaleFactor.value + props.padding, activeTransom.value.height * scaleFactor.value + props.padding
+    ],
+    stroke: '#999999',
+    strokeWidth: 1,
+    dash: [5, 5],
+    listening: false
+  }
+})
+
+const dividersHorizontalLineConfig = computed(() => (divider) => {
+  return {
+    points: [
+      props.padding, divider * scaleFactor.value + props.padding,
+      activeTransom.value.width * scaleFactor.value + props.padding, divider * scaleFactor.value + props.padding
+    ],
+    stroke: '#999999',
+    strokeWidth: 1,
+    dash: [5, 5],
+    listening: false
+  }
+})
+
 
 // Функция для обновления ячейки
 const updateCell = (updatedCell, index) => {

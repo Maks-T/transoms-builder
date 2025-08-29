@@ -10,8 +10,8 @@
     </button>
     <button
         class="frame-toolbar__btn"
-        :class="{ 'frame-toolbar__btn--active': showCellBorders }"
-        @click="toggleCellBorders"
+        :class="{ 'frame-toolbar__btn--active': modelingStore.showDividers }"
+        @click="modelingStore.showDividers = !modelingStore.showDividers"
         :title="_('Показать границы ячеек')"
     >
       <Icon icon="gis:grid" />
@@ -30,15 +30,6 @@ const showCellBorders = ref(false);
 
 const modelingStore = useModelingStore()
 
-function toggleDimensions() {
-  showDimensions.value = !showDimensions.value;
-  console.log('Показать размеры:', showDimensions.value);
-}
-
-function toggleCellBorders() {
-  showCellBorders.value = !showCellBorders.value;
-  console.log('Показать границы ячеек:', showCellBorders.value);
-}
 </script>
 
 <style lang="scss" scoped>
