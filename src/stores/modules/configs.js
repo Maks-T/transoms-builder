@@ -45,7 +45,7 @@ const TRANSOM_TEMPLATES = {
         unit: 'mm',
         schema: '3x3',
         colWidths: [42, 810, 815],
-        rowHeights: [42, 948, 2010],
+        rowHeights: [42, 943, 2015],
         imgSrc: '',
         cells: [
             {
@@ -77,7 +77,7 @@ const TRANSOM_TEMPLATES = {
                 row: 3,
                 col: 2,
                 type: 'active-leaf',
-                offsets: {top: 3, bottom: 0, left: 0, right: 3},
+                offsets: {top: 5, bottom: 10, left: 0, right: 5},
                 innerWidth: 0,
                 innerHeight: 0
             },
@@ -86,7 +86,7 @@ const TRANSOM_TEMPLATES = {
                 col: 3,
                 rowSpan: 3,
                 type: 'inactive-leaf',
-                offsets: {top: 5, bottom: 5, left: 5, right: 5},
+                offsets: {top: 3, bottom: 0, left: 0, right: 3},
                 innerWidth: 0,
                 innerHeight: 0
             },
@@ -105,7 +105,7 @@ const TRANSOM_TEMPLATES = {
         unit: 'mm',
         schema: '3x3',
         colWidths: [42, 810, 42],
-        rowHeights: [42, 948, 2000],
+        rowHeights: [42, 943, 2010],
         imgSrc: '',
         cells: [
             {

@@ -2,7 +2,7 @@
 import {defineStore} from 'pinia'
 import {cloneObjectDeep} from '@utils'
 import {useConfigsStore} from '@stores'
-import {LEAF_HINGE_SIDE, LEAF_SWING_DIRECTION, LEAF_TYPES, PROFILE_TYPE} from '@constants';
+import {LEAF_TYPES, PROFILE_TYPE} from '@constants';
 
 export const useModelingStore = defineStore('modeling', {
     state: () => ({
@@ -10,8 +10,6 @@ export const useModelingStore = defineStore('modeling', {
         activeTransomId: null,
         selectedProfileId: null,
         selectedTemplateId: null,
-        showDimensions: true,
-        showDividers: false
     }),
 
     getters: {
@@ -66,18 +64,19 @@ export const useModelingStore = defineStore('modeling', {
             return arr
         },
 
-        verticalDividers() {
-            return this.colBoundaries.slice(1, -1)
-        },
+        /* verticalHandles() {
+             return this.colBoundaries.slice(1, -1)
+         },
 
-        horizontalDividers() {
-            return this.rowBoundaries.slice(1, -1)
-        },
+         horizontalHandles() {
+             return this.rowBoundaries.slice(1, -1)
+         },*/
 
         calculatedCells() {
             const transom = this.activeTransom;
+            const profile = transom.profile;
 
-            if (!transom || !transom.cells) return
+            if (!transom || !transom.cells || !profile) return
 
             const rowCount = transom.rowHeights?.length || 0
             const colCount = transom.colWidths?.length || 0
@@ -110,27 +109,25 @@ export const useModelingStore = defineStore('modeling', {
                     }
                 }
 
-                // Дополнительные свойства для расчетов
-                cell.isActive = cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
-                cell.hingeSide = cell.hingeSide || LEAF_HINGE_SIDE.LEFT //петли слева/справа
-                cell.swingDirection = cell.swingDirection || LEAF_SWING_DIRECTION.OUTWARD //открывание наружу/внутрь
+                const offsets = this.calculateOffsets(cell, rowCount, colCount)
 
+                // Корректировка для ячеек PROFILE_TYPE
                 if (cell.type === PROFILE_TYPE) {
                     if (width > height) {
                         // Горизонтальная ячейка
+                        height = profile.width + offsets.left + offsets.right;
                         cell.isHorizontal = true;
                     } else if (width < height) {
                         // Вертикальная ячейка
+                        width = profile.width + offsets.top + offsets.bottom;
                         cell.isVertical = true;
                     }
 
                     cell.isLocked = true;
                 }
 
-                const offsets = this.calculateOffsets(cell, rowCount, colCount)
                 const innerWidth = Math.max(0, width - offsets.left - offsets.right)
                 const innerHeight = Math.max(0, height - offsets.top - offsets.bottom)
-
 
                 return {
                     ...cell,
@@ -142,20 +139,47 @@ export const useModelingStore = defineStore('modeling', {
                     rowSpan,
                     offsets,
                     innerWidth,
-                    innerHeight,
-
+                    innerHeight
                 }
             })
         },
 
+        getLockedCellsMaps() {
+            return (cells) => {
+                const lockedColumnWidths = {};
+                const lockedRowHeights = {};
+
+                cells.forEach(cell => {
+                    const colIndex = cell.col - 1;
+                    const rowIndex = cell.row - 1;
+
+                    if (cell.isVertical) {
+                        lockedColumnWidths[colIndex] = Math.max(lockedColumnWidths[colIndex] || 0, cell.width);
+                    }
+                    if (cell.isHorizontal) {
+                        lockedRowHeights[rowIndex] = Math.max(lockedRowHeights[rowIndex] || 0, cell.height);
+                    }
+                });
+
+                return {lockedColumnWidths, lockedRowHeights};
+            }
+        },
+
+        //Вспомогательные функции
         hasActiveLeaf() {
             if (!this.activeTransom || !this.activeTransom.cells) return false
 
             return this.activeTransom.cells.some(cell =>
-                cell.type === LEAF_TYPES.ACTIVE_LEAF ||
-                cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
+                this.isActiveLeaf(cell)
             )
+        },
+
+        isActiveLeaf() {
+            return (cell) =>
+            cell.type === LEAF_TYPES.ACTIVE_LEAF ||
+            cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
         }
+
     },
 
     actions: {
@@ -267,187 +291,40 @@ export const useModelingStore = defineStore('modeling', {
                 this.updateCellSizes()
             }
         },
+   /*     updateActiveTransomTemplate(templateId) {
+            const transomIndex = this.transoms.findIndex(t => t.id === this.activeTransomId)
+
+            if (transomIndex === -1) {
+                return
+            }
+
+            const template = this.configsStore.getTransomTemplateById(templateId)
+            const profile = this.configsStore.getProfileById(this.selectedProfileId)
+
+            if (template && profile) {
+                // Сохраняем ID и имя оригинальной фрамуги
+                const originalId = this.transoms[transomIndex].id
+                const originalName = this.transoms[transomIndex].name
+
+                // Пересоздаём объект с новым шаблоном
+                this.transoms[transomIndex] = {
+                    ...cloneObjectDeep(template),
+                    id: originalId,
+                    name: originalName,
+                    profileId: this.selectedProfileId,
+                    profile: cloneObjectDeep(profile),
+                    templateId: this.selectedTemplateId,
+                }
+
+                this.updateCellSizes();
+            }
+
+        },*/
 
         // Расчет отступов для ячейки
-        getNeighbors(currentCell) {
-            const transom = this.activeTransom;
-            if (!transom || !transom.cells) return {top: [], bottom: [], left: [], right: []};
-
-            const neighbors = {top: [], bottom: [], left: [], right: []};
-            const cells = transom.cells;
-
-            cells.forEach(cell => {
-                if (cell === currentCell) return;
-
-                const colStart = cell.col;
-                const colEnd = cell.col + (cell.colSpan || 1) - 1;
-                const rowStart = cell.row;
-                const rowEnd = cell.row + (cell.rowSpan || 1) - 1;
-
-                const currentColStart = currentCell.col;
-                const currentColEnd = currentCell.col + (currentCell.colSpan || 1) - 1;
-                const currentRowStart = currentCell.row;
-                const currentRowEnd = currentCell.row + (currentCell.rowSpan || 1) - 1;
-
-                // Сверху: нижняя граница другой ячейки касается верхней текущей
-                if (rowEnd === currentRowStart - 1 && Math.max(colStart, currentColStart) <= Math.min(colEnd, currentColEnd)) {
-                    neighbors.top.push(cell);
-                }
-
-                // Снизу: верхняя граница другой ячейки касается нижней текущей
-                if (rowStart === currentRowEnd + 1 && Math.max(colStart, currentColStart) <= Math.min(colEnd, currentColEnd)) {
-                    neighbors.bottom.push(cell);
-                }
-
-                // Слева: правая граница другой ячейки касается левой текущей
-                if (colEnd === currentColStart - 1 && Math.max(rowStart, currentRowStart) <= Math.min(rowEnd, currentRowEnd)) {
-                    neighbors.left.push(cell);
-                }
-
-                // Справа: левая граница другой ячейки касается правой текущей
-                if (colStart === currentColEnd + 1 && Math.max(rowStart, currentRowStart) <= Math.min(rowEnd, currentRowEnd)) {
-                    neighbors.right.push(cell);
-                }
-            });
-
-            return neighbors;
-        },
-
-// Расчет отступов для ячейки
         calculateOffsets(cell, rowCount, colCount) {
-
             const offsets = {top: 0, bottom: 0, left: 0, right: 0}
-            const isActive = /*cell.isActive ||*/ cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL //ToDo cell.isActive
-            const isProfile = cell.type === PROFILE_TYPE
-            const colStart = cell.col
-            const colEnd = cell.col + (cell.colSpan || 1) - 1
-            const rowStart = cell.row
-            const rowEnd = cell.row + (cell.rowSpan || 1) - 1
-
-            // Получаем соседние соседние ячейки
-            const neighbors = this.getNeighbors(cell);
-            console.log('neighbors: ', neighbors)
-
-            // Базовые offsets
-            // Если ячейка находится в последней строке фрамуги (нижняя граница фрамуги)
-            if (rowEnd === rowCount) {
-                // Для активного полотна (isActive) устанавливаем нижний отступ 10 мм,
-                // иначе (для профиля или других типов) отступ 0 мм
-                offsets.bottom = isActive ? 10 : 0;
-            }
-
-            // Если ячейка находится в первой колонке (левая граница фрамуги)
-            if (colStart === 1) {
-                // Для активного полотна устанавливаем левый отступ 5 мм.
-                // Для неактивных ячеек: если в фрамуге есть активные полотна (this.hasActiveLeaf),
-                // отступ 3 мм, иначе 5 мм (для согласованности с общими отступами)
-                offsets.left = isActive ? 5 : (this.hasActiveLeaf ? 3 : 5);
-            }
-
-            // Если ячейка находится в последней колонке (правая граница фрамуги)
-            if (colEnd === colCount) {
-                // Аналогично для правого отступа: 5 мм для активного полотна,
-                // 3 мм для неактивных, если есть активные полотна, иначе 5 мм
-                offsets.right = isActive ? 5 : (this.hasActiveLeaf ? 3 : 5);
-            }
-
-            // Если ячейка находится в первой строке (верхняя граница фрамуги)
-            if (rowStart === 1) {
-                // Для активного полотна верхний отступ 5 мм,
-                // для неактивных — 3 мм (меньший отступ для профилей или других типов)
-                offsets.top = isActive ? 5 : 3;
-            }
-
-            // Если ячейка — активное полотно и находится внутри фрамуги
-            // (не касается ни одной из границ: ни первой/последней строки, ни первой/последней колонки)
-            if (isActive && rowStart !== 1 && rowEnd !== rowCount && colStart !== 1 && colEnd !== colCount) {
-                // Устанавливаем отступы 5 мм со всех сторон для активного полотна,
-                // чтобы обеспечить одинаковое расстояние от соседних ячеек
-                offsets.top = 5;
-                offsets.bottom = 5;
-                offsets.left = 5;
-                offsets.right = 5;
-            }
-
-            // Если ячейка — активное полотно, находится в последней строке,
-            // но не в первой/последней колонке (т.е. нижняя граница фрамуги, но не боковые)
-            if (isActive && rowEnd === rowCount && colStart !== 1 && colEnd !== colCount) {
-                // Устанавливаем верхний и боковые отступы 5 мм,
-                // нижний отступ 10 мм (учитываем нижнюю границу фрамуги для активного полотна)
-                offsets.top = 5;
-                offsets.left = 5;
-                offsets.right = 5;
-                offsets.bottom = 10;
-            }
-
-            // Корретировка отступов с учетом соседей
-
-            // Если граничит с заблокированным вертикальным профилем (слева или справа) → со всех сторон 5 мм
-            if (
-                neighbors.left.some(n => n && n.isVertical && n.isLocked) ||
-                neighbors.right.some(n => n && n.isVertical && n.isLocked)
-            ) {
-                offsets.top = offsets.bottom = offsets.left = offsets.right = 5;
-            }
-
-            // Если граничит с заблокированным горизонтальным профилем (сверху или снизу) → со всех сторон 5 мм
-            if (
-                neighbors.top.some(n => n && n.isHorizontal && n.isLocked) ||
-                neighbors.bottom.some(n => n && n.isHorizontal && n.isLocked)
-            ) {
-                offsets.top = offsets.bottom = offsets.left = offsets.right = 5;
-            }
-
-            // Если граничит с другим активным полотном справа → убираем правый отступ
-            if (neighbors.right.some(n => n && n.isActive && n.col > cell.col)) {
-                offsets.right = 0;
-            }
-
-            // Если граничит с другим активным полотном снизу → убираем нижний отступ
-            if (neighbors.bottom.some(n => n && n.isActive && n.row > cell.row)) {
-                offsets.bottom = 0;
-            }
-
-            /*// Условие 1: Если у полотна есть PROFILE с любой стороны, установить 5мм со всех сторон
-           const hasProfileNeighbor =
-                neighbors.top.some(n => n && n.type === PROFILE_TYPE) ||
-                neighbors.bottom.some(n => n && n.type === PROFILE_TYPE) ||
-                neighbors.left.some(n => n && n.type === PROFILE_TYPE) ||
-                neighbors.right.some(n => n && n.type === PROFILE_TYPE);
-
-            if (hasProfileNeighbor) {
-                offsets.top = 5;
-                offsets.bottom = 5;
-                offsets.left = 5;
-                offsets.right = 5;
-            }
-
-            // Условие 2: Если граничит с другим активным полотном, убрать отступ у "левой/верхней" ячейки
-            // Справа: если есть активные соседи справа, и текущая левее
-            if (neighbors.right.some(n => n && (n.type === LEAF_TYPES.ACTIVE_LEAF || n.type === LEAF_TYPES.ACTIVE_LEAF_SMALL))) {
-                const hasActiveRight = neighbors.right.some(n => n.col > cell.col);
-                if (hasActiveRight) {
-                    offsets.right = 0;
-                }
-            }
-
-            // Снизу: если есть активные соседи снизу, и текущая выше
-            if (neighbors.bottom.some(n => n && (n.type === LEAF_TYPES.ACTIVE_LEAF || n.type === LEAF_TYPES.ACTIVE_LEAF_SMALL))) {
-                const hasActiveBottom = neighbors.bottom.some(n => n.row > cell.row);
-                if (hasActiveBottom) {
-                    offsets.bottom = 0;
-                }
-            }*/
-
-            // Слева и сверху: не снимаем отступ, т.к. это делает "левая/верхняя" ячейка
-
-
-            return offsets
-        },
-
-       /* calculateOffsets(cell, rowCount, colCount) {
-            const offsets = {top: 0, bottom: 0, left: 0, right: 0}
-            const isActive = cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
+            const isActive = this.isActiveLeaf(cell);
             const isProfile = cell.type === PROFILE_TYPE
             const colStart = cell.col
             const colEnd = cell.col + (cell.colSpan || 1) - 1
@@ -486,17 +363,25 @@ export const useModelingStore = defineStore('modeling', {
 
             return offsets
         },
-*/
+
         // Обновление размеров ячеек
         updateCellSizes() {
 
             const transom = this.activeTransom
             if (!transom || !transom.cells) return false
 
-            this.updateHeights()
-            this.updateWidths()
+            const calculatedCells = this.calculatedCells
 
-            transom.cells = cloneObjectDeep(this.calculatedCells)/*.map(cell => ({
+            const lockedMaps = this.getLockedCellsMaps(calculatedCells);
+            console.log('lockedMaps', lockedMaps)
+            transom.lockedRowHeights = lockedMaps.lockedRowHeights
+            transom.lockedColumnWidths = lockedMaps.lockedColumnWidths
+
+            transom.cells.forEach((cell, index) => {
+                Object.assign(cell, calculatedCells[index]);
+            });
+
+           /* transom.cells = calculatedCells.map(cell => ({
                 ...cell,
                 width: cell.width,
                 height: cell.height,
@@ -504,9 +389,132 @@ export const useModelingStore = defineStore('modeling', {
                 innerWidth: cell.innerWidth,
                 innerHeight: cell.innerHeight
             }))*/
+
+            this.updateHeights()
+            this.updateWidths()
+        },
+// Обновление ширины колонки
+        updateColWidth(index, newValue) {
+            if (this.isColumnLocked(index)) return;
+
+            const transom = this.activeTransom;
+            if (!transom) return;
+
+            const newColWidths = [...transom.colWidths];
+            const oldWidth = newColWidths[index];
+            const delta = newValue - oldWidth;
+
+            // Минимальная ширина колонки
+            const minWidth = transom.profile.width * 3;
+
+            if (Math.abs(delta) < 1) return; // Игнорируем незначительные изменения
+
+            // Находим подходящую колонку для компенсации изменения
+            let compensationIndex = -1;
+
+            // Пробуем найти незаблокированную колонку для компенсации
+            if (index === newColWidths.length - 1) {
+                // Если изменяем последнюю колонку - компенсируем за счет предпоследней
+                for (let i = newColWidths.length - 2; i >= 0; i--) {
+                    if (!this.isColumnLocked(i) && newColWidths[i] - delta >= minWidth) {
+                        compensationIndex = i;
+                        break;
+                    }
+                }
+            } else {
+                // Если изменяем не последнюю колонку - компенсируем за счет следующей
+                for (let i = index + 1; i < newColWidths.length; i++) {
+                    if (!this.isColumnLocked(i) && newColWidths[i] - delta >= minWidth) {
+                        compensationIndex = i;
+                        break;
+                    }
+                }
+
+                // Если не нашли подходящую колонку справа, ищем слева
+                if (compensationIndex === -1) {
+                    for (let i = index - 1; i >= 0; i--) {
+                        if (!this.isColumnLocked(i) && newColWidths[i] - delta >= minWidth) {
+                            compensationIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (compensationIndex !== -1) {
+                newColWidths[index] = Math.max(minWidth, newValue);
+                newColWidths[compensationIndex] = Math.max(minWidth, newColWidths[compensationIndex] - delta);
+
+                // Обновляем данные
+                transom.colWidths = newColWidths.map(w => Math.round(w));
+                transom.width = newColWidths.reduce((sum, w) => sum + w, 0);
+
+                // Обновляем размеры ячеек с учетом новых заблокированных размеров
+                this.updateCellSizes();
+            }
         },
 
-        // Обновление ширины колонки
+       // Обновление высоты строки
+        updateRowHeight(index, newValue) {
+            if (this.isRowLocked(index)) return;
+
+            const transom = this.activeTransom;
+            if (!transom) return;
+
+            const newRowHeights = [...transom.rowHeights];
+            const oldHeight = newRowHeights[index];
+            const delta = newValue - oldHeight;
+
+            // Минимальная высота строки
+            const minHeight = transom.profile.width * 3;
+
+            if (Math.abs(delta) < 1) return; // Игнорируем незначительные изменения
+
+            // Находим подходящую строку для компенсации изменения
+            let compensationIndex = -1;
+
+            // Пробуем найти незаблокированную строку для компенсации
+            if (index === newRowHeights.length - 1) {
+                // Если изменяем последнюю строку - компенсируем за счет предпоследней
+                for (let i = newRowHeights.length - 2; i >= 0; i--) {
+                    if (!this.isRowLocked(i) && newRowHeights[i] - delta >= minHeight) {
+                        compensationIndex = i;
+                        break;
+                    }
+                }
+            } else {
+                // Если изменяем не последнюю строку - компенсируем за счет следующей
+                for (let i = index + 1; i < newRowHeights.length; i++) {
+                    if (!this.isRowLocked(i) && newRowHeights[i] - delta >= minHeight) {
+                        compensationIndex = i;
+                        break;
+                    }
+                }
+
+                // Если не нашли подходящую строку снизу, ищем сверху
+                if (compensationIndex === -1) {
+                    for (let i = index - 1; i >= 0; i--) {
+                        if (!this.isRowLocked(i) && newRowHeights[i] - delta >= minHeight) {
+                            compensationIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (compensationIndex !== -1) {
+                newRowHeights[index] = Math.max(minHeight, newValue);
+                newRowHeights[compensationIndex] = Math.max(minHeight, newRowHeights[compensationIndex] - delta);
+
+                // Обновляем данные
+                transom.rowHeights = newRowHeights.map(h => Math.round(h));
+                transom.height = newRowHeights.reduce((sum, h) => sum + h, 0);
+
+                // Обновляем размеры ячеек с учетом новых заблокированных размеров
+                this.updateCellSizes();
+            }
+        },
+       /* // Обновление ширины колонки
         updateColWidth(index, newValue) { //draft version
             if (this.isColumnLocked(index)) return
 
@@ -574,10 +582,24 @@ export const useModelingStore = defineStore('modeling', {
                     }
                 }
             }
+        },*/
+        // Проверка заблокированной колонки
+        isColumnLocked(index) {
+            const transom = this.activeTransom;
+            if (!transom || !transom.lockedColumnWidths) return false;
+
+            return index in transom.lockedColumnWidths;
         },
 
+        // Проверка заблокированной строки
+        isRowLocked(index) {
+            const transom = this.activeTransom;
+            if (!transom || !transom.lockedRowHeights) return false;
 
-        // Проверка заблокированной колонки
+            return index in transom.lockedRowHeights;
+        },
+
+       /* // Проверка заблокированной колонки
         isColumnLocked(index) {
             const transom = this.activeTransom
             if (!transom || !transom.cells) return false
@@ -621,7 +643,7 @@ export const useModelingStore = defineStore('modeling', {
 
                 return height < width && (startRow <= index && index < endRow)
             })
-        },
+        },*/
 
         // Изменение типа ячейки
         changeCellType(cellIndex, newType) {
@@ -700,93 +722,32 @@ export const useModelingStore = defineStore('modeling', {
             return Math.round(maxWidth);
         },*/
 
-
-        calculateProfileColumnWidths() {
-            const transom = this.activeTransom;
-            if (!transom || !transom.profile || !transom.cells) return {};
-
-            const profile = transom.profile;
-            const rowCount = transom.rowHeights?.length || 0;
-            const colCount = transom.colWidths?.length || 0;
-
-            const columnWidths = {}
-
-            this.calculatedCells.forEach(cell => {
-                if (
-                    cell.type === PROFILE_TYPE &&
-                    cell.height > cell.width //проверяем на вертикальность
-                    /* (cell.colSpan === 1 || cell.colSpan === undefined) &&
-                     (cell.rowSpan !== 1 && cell.rowSpan !== undefined)*/
-                ) {
-                    const colIndex = cell.col - 1;
-                    if (colIndex >= 0 && colIndex < colCount) {
-                        const offsets = this.calculateOffsets(cell, rowCount, colCount);
-                        const width = profile.width + Math.max(offsets.left, offsets.right);
-                        // Сохраняем максимальную ширину для колонки
-                        columnWidths[colIndex] = Math.max(columnWidths[colIndex] || 0, width);
-                    }
-                }
-            });
-
-            return columnWidths;
-        },
-
-        calculateProfileRowHeights() {
-            const transom = this.activeTransom;
-            if (!transom || !transom.profile || !transom.cells) return {};
-
-            const profile = transom.profile;
-            const rowCount = transom.rowHeights?.length || 0;
-            const colCount = transom.colWidths?.length || 0;
-
-            const rowHeights = {};
-
-            this.calculatedCells.forEach(cell => {
-                if (
-                    cell.type === PROFILE_TYPE &&
-                    cell.height < cell.width //проверяем на горизонтальность
-                    /*(cell.rowSpan === 1 || cell.rowSpan === undefined) &&
-                    (cell.colSpan !== 1 && cell.colSpan !== undefined)*/
-                ) {
-                    const rowIndex = cell.row - 1;
-                    if (rowIndex >= 0 && rowIndex < rowCount) {
-                        const offsets = this.calculateOffsets(cell, rowCount, colCount);
-                        const height = profile.width + Math.max(offsets.top, offsets.bottom);
-                        rowHeights[rowIndex] = Math.max(rowHeights[rowIndex] || 0, height);
-                    }
-                }
-            });
-
-            return rowHeights;
-        },
-
         updateWidths() {
             const transom = this.activeTransom
             // Пересчет colWidths пропорционально
             const currentWidth = transom.colWidths.reduce((sum, w) => sum + w, 0);
-            const minWidth = transom.profile.width * 3; //ToDo min
+            const minWidth = transom.profile.width * 3; // toDo min
 
             if (currentWidth > 0) {
                 const ratio = transom.width / currentWidth;
-                // получаем ширины колонок с вертикальным профилем
-                const columnProfileWidths = this.calculateProfileColumnWidths()
 
+                // получаем ширины колонок с вертикальным профилем
                 const newColWidths = transom.colWidths.map((width, index) => {
                     // Если колонка содержит профиль
-                    if (index in columnProfileWidths) {
-                        return Math.round(columnProfileWidths[index]);
+                    if (index in transom.lockedColumnWidths) {
+                        return Math.round(transom.lockedColumnWidths[index]);
                     }
 
                     const newWidth = Math.round(width * ratio);
                     return Math.max(minWidth, newWidth);
                 });
 
-                // Корректировка для точного соответствия validatedWidth
+                // Корректировка для точного соответствия ширины проема
                 const newTotalWidth = newColWidths.reduce((sum, w) => sum + w, 0);
                 const diff = transom.width - newTotalWidth;
 
                 if (diff !== 0 && newColWidths.length > 0) {
-                    const lastUnlockedIndex = newColWidths.findLastIndex((_, idx) => !columnProfileWidths[idx]);
+                    const lastUnlockedIndex = newColWidths.findLastIndex((_, idx) => !transom.lockedColumnWidths[idx]);
                     if (lastUnlockedIndex !== -1) {
                         newColWidths[lastUnlockedIndex] = Math.max(minWidth, newColWidths[lastUnlockedIndex] + diff);
                     }
@@ -800,31 +761,28 @@ export const useModelingStore = defineStore('modeling', {
             const transom = this.activeTransom
             // Пересчет rowHeights пропорционально
             const currentHeight = transom.rowHeights.reduce((sum, h) => sum + h, 0);
-            const minHeight = transom.profile.width * 3; //ToDo min
+            const minHeight = transom.profile.width * 3; // toDo min
 
             if (currentHeight > 0) {
                 const ratio = transom.height / currentHeight;
 
-                const columnProfileHeights = this.calculateProfileRowHeights()
-
-                console.log('columnProfileHeights', columnProfileHeights)
                 //ToDo min
                 const newRowHeights = transom.rowHeights.map((height, index) => {
                     // Если строка содержит профиль
-                    if (index in columnProfileHeights) {
-                        return Math.round(columnProfileHeights[index]);
+                    if (index in transom.lockedRowHeights) {
+                        return Math.round(transom.lockedRowHeights[index]);
                     }
 
-                    // if (this.isRowLocked(index)) return height; // Не изменяем заблокированные строки
                     const newHeight = Math.round(height * ratio);
-                    return Math.max(minHeight, newHeight); // Минимальная высота 100
+                    return Math.max(minHeight, newHeight);
                 });
 
-                // Корректировка для точного соответствия validatedHeight
+                // Корректировка для точного соответствия высоты проема
                 const newTotalHeight = newRowHeights.reduce((sum, h) => sum + h, 0);
                 const diff = transom.height - newTotalHeight;
+
                 if (diff !== 0 && newRowHeights.length > 0) {
-                    const lastUnlockedIndex = newRowHeights.findLastIndex((_, idx) => !columnProfileHeights[idx]);
+                    const lastUnlockedIndex = newRowHeights.findLastIndex((_, idx) => !transom.lockedRowHeights[idx]);
                     if (lastUnlockedIndex !== -1) {
                         newRowHeights[lastUnlockedIndex] = Math.max(minHeight, newRowHeights[lastUnlockedIndex] + diff);
                     }
@@ -833,6 +791,7 @@ export const useModelingStore = defineStore('modeling', {
                 transom.rowHeights = newRowHeights;
             }
         },
+
         // Получение минимальных/максимальных размеров
         getTransomSizeLimits() {
             const transom = this.activeTransom
