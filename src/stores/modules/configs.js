@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { cloneObjectDeep } from '@utils';
 
 
-
+/** @type {ProfilesTypes} */
 const PROFILES_TYPES = {
     'modulasg': {
         id: 'modulasg',
@@ -158,6 +158,7 @@ const TRANSOM_TEMPLATES = {
 
 export const useConfigsStore = defineStore('configs', {
     state: () => ({
+        /** @type {ProfileTypes} */
         profileTypes: cloneObjectDeep(PROFILES_TYPES),
         transomTemplates: cloneObjectDeep(TRANSOM_TEMPLATES),
     }),
