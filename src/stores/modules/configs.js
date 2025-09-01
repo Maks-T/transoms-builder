@@ -105,7 +105,7 @@ const TRANSOM_TEMPLATES = {
         unit: 'mm',
         schema: '3x3',
         colWidths: [42, 810, 42],
-        rowHeights: [42, 943, 2010],
+        rowHeights: [42, 943, 2015],
         imgSrc: '',
         cells: [
             {
@@ -169,7 +169,7 @@ export const useConfigsStore = defineStore('configs', {
         getProfileById: (state) => (id) => state.profileTypes[id],
         getTransomTemplateById: (state) => (id) => state.transomTemplates[id],
         defaultProfileId: (state) => Object.keys(state.profileTypes)[0],
-        defaultTemplateId: (state) => Object.keys(state.transomTemplates)[0]
+        defaultTemplateId: (state) => Object.keys(state.transomTemplates)[1]
     },
 
     actions: {

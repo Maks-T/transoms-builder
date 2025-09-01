@@ -23,14 +23,6 @@ export const useModelingStore = defineStore('modeling', {
             return state.transoms.find(transom => transom.id === state.activeTransomId)
         },
 
-        selectedProfile(state) {
-            return this.configsStore.getProfileById(state.selectedProfileId)
-        },
-
-        selectedTemplate(state) {
-            return this.configsStore.getTransomTemplateById(state.selectedTemplateId)
-        },
-
         profileTypesArray() {
             return this.configsStore.profileTypesArray
         },
@@ -123,8 +115,6 @@ export const useModelingStore = defineStore('modeling', {
                         // Вертикальная ячейка
                         cell.isVertical = true;
                     }
-
-                    cell.isLocked = true;
                 }
 
                 const offsets = this.calculateOffsets(cell, rowCount, colCount)
@@ -313,12 +303,13 @@ export const useModelingStore = defineStore('modeling', {
             return neighbors;
         },
 
-// Расчет отступов для ячейки
+       // Расчет отступов для ячейки
         calculateOffsets(cell, rowCount, colCount) {
 
             const offsets = {top: 0, bottom: 0, left: 0, right: 0}
             const isActive = /*cell.isActive ||*/ cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL //ToDo cell.isActive
             const isProfile = cell.type === PROFILE_TYPE
+            const isLeaf = cell.type !== PROFILE_TYPE
             const colStart = cell.col
             const colEnd = cell.col + (cell.colSpan || 1) - 1
             const rowStart = cell.row
@@ -326,7 +317,6 @@ export const useModelingStore = defineStore('modeling', {
 
             // Получаем соседние соседние ячейки
             const neighbors = this.getNeighbors(cell);
-            console.log('neighbors: ', neighbors)
 
             // Базовые offsets
             // Если ячейка находится в последней строке фрамуги (нижняя граница фрамуги)
@@ -369,6 +359,35 @@ export const useModelingStore = defineStore('modeling', {
                 offsets.right = 5;
             }
 
+            // Корретировка отступов с учетом соседей
+            if (isLeaf) {
+                // Если граничит с вертикальным профилем (слева или справа) → со всех сторон 5 мм
+                if (
+                    neighbors.left.some(n => n && n.isVertical && n.type === PROFILE_TYPE) ||
+                    neighbors.right.some(n => n && n.isVertical && n.type === PROFILE_TYPE)
+                ) {
+                    offsets.top = offsets.bottom = offsets.left = offsets.right = 5;
+                }
+
+                // Если граничит с горизонтальным профилем (сверху или снизу) → со всех сторон 5 мм
+                if (
+                    neighbors.top.some(n => n && n.isHorizontal && n.type === PROFILE_TYPE) ||
+                    neighbors.bottom.some(n => n && n.isHorizontal && n.type === PROFILE_TYPE)
+                ) {
+                    offsets.top = offsets.bottom = offsets.left = offsets.right = 5;
+                }
+
+                // Если граничит с другим активным полотном справа → убираем правый отступ
+                if (neighbors.right.some(n => n && n.isActive && n.col > cell.col)) {
+                    offsets.right = 0;
+                }
+
+                // Если граничит с другим активным полотном снизу → убираем нижний отступ
+                if (neighbors.bottom.some(n => n && n.isActive && n.row > cell.row)) {
+                    offsets.bottom = 0;
+                }
+            }
+
             // Если ячейка — активное полотно, находится в последней строке,
             // но не в первой/последней колонке (т.е. нижняя граница фрамуги, но не боковые)
             if (isActive && rowEnd === rowCount && colStart !== 1 && colEnd !== colCount) {
@@ -379,68 +398,6 @@ export const useModelingStore = defineStore('modeling', {
                 offsets.right = 5;
                 offsets.bottom = 10;
             }
-
-            // Корретировка отступов с учетом соседей
-
-            // Если граничит с заблокированным вертикальным профилем (слева или справа) → со всех сторон 5 мм
-            if (
-                neighbors.left.some(n => n && n.isVertical && n.isLocked) ||
-                neighbors.right.some(n => n && n.isVertical && n.isLocked)
-            ) {
-                offsets.top = offsets.bottom = offsets.left = offsets.right = 5;
-            }
-
-            // Если граничит с заблокированным горизонтальным профилем (сверху или снизу) → со всех сторон 5 мм
-            if (
-                neighbors.top.some(n => n && n.isHorizontal && n.isLocked) ||
-                neighbors.bottom.some(n => n && n.isHorizontal && n.isLocked)
-            ) {
-                offsets.top = offsets.bottom = offsets.left = offsets.right = 5;
-            }
-
-            // Если граничит с другим активным полотном справа → убираем правый отступ
-            if (neighbors.right.some(n => n && n.isActive && n.col > cell.col)) {
-                offsets.right = 0;
-            }
-
-            // Если граничит с другим активным полотном снизу → убираем нижний отступ
-            if (neighbors.bottom.some(n => n && n.isActive && n.row > cell.row)) {
-                offsets.bottom = 0;
-            }
-
-            /*// Условие 1: Если у полотна есть PROFILE с любой стороны, установить 5мм со всех сторон
-           const hasProfileNeighbor =
-                neighbors.top.some(n => n && n.type === PROFILE_TYPE) ||
-                neighbors.bottom.some(n => n && n.type === PROFILE_TYPE) ||
-                neighbors.left.some(n => n && n.type === PROFILE_TYPE) ||
-                neighbors.right.some(n => n && n.type === PROFILE_TYPE);
-
-            if (hasProfileNeighbor) {
-                offsets.top = 5;
-                offsets.bottom = 5;
-                offsets.left = 5;
-                offsets.right = 5;
-            }
-
-            // Условие 2: Если граничит с другим активным полотном, убрать отступ у "левой/верхней" ячейки
-            // Справа: если есть активные соседи справа, и текущая левее
-            if (neighbors.right.some(n => n && (n.type === LEAF_TYPES.ACTIVE_LEAF || n.type === LEAF_TYPES.ACTIVE_LEAF_SMALL))) {
-                const hasActiveRight = neighbors.right.some(n => n.col > cell.col);
-                if (hasActiveRight) {
-                    offsets.right = 0;
-                }
-            }
-
-            // Снизу: если есть активные соседи снизу, и текущая выше
-            if (neighbors.bottom.some(n => n && (n.type === LEAF_TYPES.ACTIVE_LEAF || n.type === LEAF_TYPES.ACTIVE_LEAF_SMALL))) {
-                const hasActiveBottom = neighbors.bottom.some(n => n.row > cell.row);
-                if (hasActiveBottom) {
-                    offsets.bottom = 0;
-                }
-            }*/
-
-            // Слева и сверху: не снимаем отступ, т.к. это делает "левая/верхняя" ячейка
-
 
             return offsets
         },
@@ -670,36 +627,6 @@ export const useModelingStore = defineStore('modeling', {
             return true; //ToDo
         },
 
-        /*calculateColumnWidthIsHasProfile(columnIndex) {
-            const transom = this.activeTransom;
-            if (!transom || !transom.profile || !transom.cells) return 0;
-
-            const profile = transom.profile;
-            const rowCount = transom.rowHeights?.length || 0;
-            const colCount = transom.colWidths?.length || 0;
-
-            // Находим все ячейки профиля для указанной колонки
-            const profileCells = transom.cells.filter(cell =>
-                cell.type === PROFILE_TYPE &&
-                cell.col === columnIndex + 1 &&
-                (cell.colSpan === 1 || cell.colSpan === undefined) &&
-                (cell.rowSpan !== 1 && cell.rowSpan !== undefined)
-            );
-
-            console.log('profileCells', profileCells, 'columnIndex', columnIndex)
-
-            if (profileCells.length === 0) return 0;
-
-            // Вычисляем максимальную ширину
-            const maxWidth = profileCells.reduce((max, cell) => {
-                const offsets = this.calculateOffsets(cell, rowCount, colCount);
-                const width = profile.width + Math.max(offsets.left, offsets.right);
-                return Math.max(max, width);
-            }, 0);
-
-            return Math.round(maxWidth);
-        },*/
-
 
         calculateProfileColumnWidths() {
             const transom = this.activeTransom;
@@ -770,12 +697,15 @@ export const useModelingStore = defineStore('modeling', {
                 const ratio = transom.width / currentWidth;
                 // получаем ширины колонок с вертикальным профилем
                 const columnProfileWidths = this.calculateProfileColumnWidths()
+                console.log('columnProfileWidths', columnProfileWidths)
 
                 const newColWidths = transom.colWidths.map((width, index) => {
                     // Если колонка содержит профиль
                     if (index in columnProfileWidths) {
                         return Math.round(columnProfileWidths[index]);
                     }
+
+                  //  return Math.max(minWidth, width);
 
                     const newWidth = Math.round(width * ratio);
                     return Math.max(minWidth, newWidth);
@@ -815,21 +745,26 @@ export const useModelingStore = defineStore('modeling', {
                         return Math.round(columnProfileHeights[index]);
                     }
 
-                    // if (this.isRowLocked(index)) return height; // Не изменяем заблокированные строки
+                  /*  return Math.max(minHeight, height);*/
+
                     const newHeight = Math.round(height * ratio);
-                    return Math.max(minHeight, newHeight); // Минимальная высота 100
+                    console.log('height', height, 'newHeight', newHeight, )
+
+                    return Math.max(minHeight, newHeight); // Минимальная высота 100*/
                 });
 
+                console.log('newRowHeights before', newRowHeights)
                 // Корректировка для точного соответствия validatedHeight
                 const newTotalHeight = newRowHeights.reduce((sum, h) => sum + h, 0);
                 const diff = transom.height - newTotalHeight;
+
                 if (diff !== 0 && newRowHeights.length > 0) {
                     const lastUnlockedIndex = newRowHeights.findLastIndex((_, idx) => !columnProfileHeights[idx]);
                     if (lastUnlockedIndex !== -1) {
                         newRowHeights[lastUnlockedIndex] = Math.max(minHeight, newRowHeights[lastUnlockedIndex] + diff);
                     }
                 }
-
+                console.log('newRowHeights after', newRowHeights)
                 transom.rowHeights = newRowHeights;
             }
         },
@@ -846,22 +781,5 @@ export const useModelingStore = defineStore('modeling', {
             }
         },
 
-        // Логирование активной фрамуги
-        logActiveTransom() {
-            return
-            if (this.activeTransom) {
-                console.log('=== АКТИВНАЯ ФРАМУГА ===')
-                console.log('ID:', this.activeTransom.id)
-                console.log('Название:', this.activeTransom.name)
-                console.log('Профиль:', this.activeTransom.profileId)
-                console.log('Шаблон:', this.activeTransom.templateId)
-                console.log('Размеры:', `${this.activeTransom.width}×${this.activeTransom.height}${this.activeTransom.unit}`)
-                console.log('Ячеек:', this.activeTransom.cells.length)
-                console.log('Объект:', this.activeTransom)
-                console.log('=========================')
-            } else {
-                console.log('Нет активной фрамуги')
-            }
-        }
     }
 })
