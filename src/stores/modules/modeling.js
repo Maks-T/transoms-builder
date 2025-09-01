@@ -168,6 +168,7 @@ export const useModelingStore = defineStore('modeling', {
                 profileId: this.selectedProfileId,
                 profile: cloneObjectDeep(profile),
                 templateId: this.selectedTemplateId,
+
             }
         },
         //Создание и добавление новой фрамуги
@@ -463,122 +464,6 @@ export const useModelingStore = defineStore('modeling', {
             }))*/
         },
 
-        // Обновление ширины колонки
-        updateColWidth(index, newValue) { //draft version
-            if (this.isColumnLocked(index)) return
-
-            const transomIndex = this.transoms.findIndex(t => t.id === this.activeTransomId)
-            if (transomIndex === -1) return
-
-            const transom = this.transoms[transomIndex]
-            const newColWidths = [...transom.colWidths]
-            const oldWidth = newColWidths[index]
-            const delta = newValue - oldWidth
-
-            if (index === newColWidths.length - 1) { //ToDo что делать если последняя колонка содержит профиль
-                if (newColWidths[index] >= 100 && newColWidths[index - 1] >= 100) {
-                    newColWidths[index] = newValue
-                    newColWidths[index - 1] -= delta
-                    if (newColWidths[index - 1] >= 100) {
-                        this.transoms[transomIndex].colWidths = newColWidths.map(w => Math.round(w)) //this.transoms[transomIndex] -> transom
-                        this.transoms[transomIndex].width = newColWidths.reduce((sum, w) => sum + w, 0)
-                        this.updateCellSizes()
-                    }
-                }
-            } else {
-                if (newColWidths[index] >= 100 && newColWidths[index + 1] >= 100) {
-                    newColWidths[index] = newValue
-                    newColWidths[index + 1] -= delta
-                    if (newColWidths[index + 1] >= 100) {
-                        this.transoms[transomIndex].colWidths = newColWidths.map(w => Math.round(w))
-                        this.transoms[transomIndex].width = newColWidths.reduce((sum, w) => sum + w, 0)
-                        this.updateCellSizes()
-                    }
-                }
-            }
-        },
-
-        // Обновление высоты строки
-        updateRowHeight(index, newValue) { //draft version
-            if (this.isRowLocked(index)) return
-
-            const transomIndex = this.transoms.findIndex(t => t.id === this.activeTransomId)
-            if (transomIndex === -1) return
-
-            const transom = this.transoms[transomIndex]
-            const newRowHeights = [...transom.rowHeights]
-            const oldHeight = newRowHeights[index]
-            const delta = newValue - oldHeight
-
-            if (index === newRowHeights.length - 1) {
-                if (newRowHeights[index] >= 100 && newRowHeights[index - 1] >= 100) {
-                    newRowHeights[index] = newValue
-                    newRowHeights[index - 1] -= delta
-                    if (newRowHeights[index - 1] >= 100) {
-                        this.transoms[transomIndex].rowHeights = newRowHeights.map(h => Math.round(h))
-                        this.transoms[transomIndex].height = newRowHeights.reduce((sum, h) => sum + h, 0)
-                        this.updateCellSizes()
-                    }
-                }
-            } else {
-                if (newRowHeights[index] >= 100 && newRowHeights[index + 1] >= 100) {
-                    newRowHeights[index] = newValue
-                    newRowHeights[index + 1] -= delta
-                    if (newRowHeights[index + 1] >= 100) {
-                        this.transoms[transomIndex].rowHeights = newRowHeights.map(h => Math.round(h))
-                        this.transoms[transomIndex].height = newRowHeights.reduce((sum, h) => sum + h, 0)
-                        this.updateCellSizes()
-                    }
-                }
-            }
-        },
-
-
-        // Проверка заблокированной колонки
-        isColumnLocked(index) {
-            const transom = this.activeTransom
-            if (!transom || !transom.cells) return false
-
-            return transom.cells.some(cell => {
-                if (cell.type !== PROFILE_TYPE) return false
-
-                const colSpan = cell.colSpan || 1
-                const rowSpan = cell.rowSpan || 1
-                const startCol = cell.col - 1
-                const endCol = cell.col - 1 + colSpan
-
-                // Проверяем, что индексы в пределах границ
-                if (endCol > this.colBoundaries.length || startCol < 0) return false
-
-                const width = this.colBoundaries[endCol] - this.colBoundaries[startCol]
-                const height = this.rowBoundaries[cell.row - 1 + rowSpan] - this.rowBoundaries[cell.row - 1]
-
-                return width < height && (startCol <= index && index < endCol)
-            })
-        },
-
-        // Проверка заблокированной строки
-        isRowLocked(index) {
-            const transom = this.activeTransom
-            if (!transom || !transom.cells) return false
-
-            return transom.cells.some(cell => {
-                if (cell.type !== PROFILE_TYPE) return false
-
-                const rowSpan = cell.rowSpan || 1
-                const colSpan = cell.colSpan || 1
-                const startRow = cell.row - 1
-                const endRow = cell.row - 1 + rowSpan
-
-                // Проверяем, что индексы в пределах границ
-                if (endRow > this.rowBoundaries.length || startRow < 0) return false
-
-                const width = this.colBoundaries[cell.col - 1 + colSpan] - this.colBoundaries[cell.col - 1]
-                const height = this.rowBoundaries[endRow] - this.rowBoundaries[startRow]
-
-                return height < width && (startRow <= index && index < endRow)
-            })
-        },
 
         // Изменение типа ячейки
         changeCellType(cellIndex, newType) {
@@ -611,7 +496,6 @@ export const useModelingStore = defineStore('modeling', {
             return true;
         },
 
-
         setTransomHeight(newHeight) {
             const transom = this.activeTransom
 
@@ -627,7 +511,6 @@ export const useModelingStore = defineStore('modeling', {
             return true; //ToDo
         },
 
-
         calculateProfileColumnWidths() {
             const transom = this.activeTransom;
             if (!transom || !transom.profile || !transom.cells) return {};
@@ -641,16 +524,14 @@ export const useModelingStore = defineStore('modeling', {
             this.calculatedCells.forEach(cell => {
                 if (
                     cell.type === PROFILE_TYPE &&
-                    cell.height > cell.width //проверяем на вертикальность
-                    /* (cell.colSpan === 1 || cell.colSpan === undefined) &&
-                     (cell.rowSpan !== 1 && cell.rowSpan !== undefined)*/
+                    cell.isVertical
                 ) {
                     const colIndex = cell.col - 1;
                     if (colIndex >= 0 && colIndex < colCount) {
-                        const offsets = this.calculateOffsets(cell, rowCount, colCount);
-                        const width = profile.width + Math.max(offsets.left, offsets.right);
-                        // Сохраняем максимальную ширину для колонки
-                        columnWidths[colIndex] = Math.max(columnWidths[colIndex] || 0, width);
+                        const offsets = cell.offsets// this.calculateOffsets(cell, rowCount, colCount);
+                        const width = profile.width + offsets.left + offsets.right;
+
+                        columnWidths[colIndex] = Math.max(profile.width, width);
                     }
                 }
             });
@@ -671,15 +552,13 @@ export const useModelingStore = defineStore('modeling', {
             this.calculatedCells.forEach(cell => {
                 if (
                     cell.type === PROFILE_TYPE &&
-                    cell.height < cell.width //проверяем на горизонтальность
-                    /*(cell.rowSpan === 1 || cell.rowSpan === undefined) &&
-                    (cell.colSpan !== 1 && cell.colSpan !== undefined)*/
+                    cell.isHorizontal
                 ) {
                     const rowIndex = cell.row - 1;
                     if (rowIndex >= 0 && rowIndex < rowCount) {
-                        const offsets = this.calculateOffsets(cell, rowCount, colCount);
-                        const height = profile.width + Math.max(offsets.top, offsets.bottom);
-                        rowHeights[rowIndex] = Math.max(rowHeights[rowIndex] || 0, height);
+                        const offsets = cell.offsets //this.calculateOffsets(cell, rowCount, colCount);
+                        const height = profile.width + offsets.top + offsets.bottom;
+                        rowHeights[rowIndex] = Math.max(profile.width, height);
                     }
                 }
             });
@@ -767,6 +646,123 @@ export const useModelingStore = defineStore('modeling', {
                 console.log('newRowHeights after', newRowHeights)
                 transom.rowHeights = newRowHeights;
             }
+        },
+
+        updateColWidth(index, newValue) {
+            const transom = this.activeTransom
+            if (!transom || !transom.colWidths || index < 0 || index >= transom.colWidths.length) return false;
+
+            const minWidth = transom.profile.width * 3;
+            const maxWidth = transom.maxWidth;
+
+            const newWidth = Math.max(minWidth, Math.min(maxWidth, newValue));
+
+            const currentTotalWidth = transom.colWidths.reduce((sum, w) => sum + w, 0);
+            const widthDiff = newWidth - transom.colWidths[index];
+
+            if (widthDiff === 0) return true;
+
+            transom.colWidths[index] = newWidth;
+
+            const newTotalWidth = transom.colWidths.reduce((sum, w) => sum + w, 0);
+            if (newTotalWidth !== transom.width) {
+                transom.width = newTotalWidth;
+            }
+
+            this.updateCellSizes();
+            return true;
+        },
+
+        updateRowHeight(index, newValue) {
+            const transom = this.activeTransom
+            if (!transom || !transom.rowHeights || index < 0 || index >= transom.rowHeights.length) return false;
+
+            const minHeight = transom.profile.width * 3;
+            const maxHeight = transom.maxHeight || 3000;
+            const newHeight = Math.max(minHeight, Math.min(maxHeight, newValue));
+
+            const currentTotalHeight = transom.rowHeights.reduce((sum, h) => sum + h, 0);
+            const heightDiff = newHeight - transom.rowHeights[index];
+
+            if (heightDiff === 0) return true;
+
+            transom.rowHeights[index] = newHeight;
+
+            const newTotalHeight = transom.rowHeights.reduce((sum, h) => sum + h, 0);
+            if (newTotalHeight !== transom.height) {
+                transom.height = newTotalHeight;
+            }
+
+            this.updateCellSizes();
+            return true;
+        },
+
+        updateInnerWidth(cellIndex, newValue) {
+            const transom = this.activeTransom
+            if (!transom || !transom.cells || cellIndex < 0 || cellIndex >= this.calculatedCells.length) return false;
+
+            const cell = this.calculatedCells[cellIndex];
+            if (!cell || cell.type === PROFILE_TYPE) return false;
+
+            const minWidth = transom.profile.width * 3;
+            const maxWidth = transom.maxWidth || 3000;
+            const newInnerWidth = Math.max(minWidth, Math.min(maxWidth, newValue));
+
+            const offsets = cell.offsets;
+            const newOuterWidth = newInnerWidth + offsets.left + offsets.right;
+
+            const colSpan = cell.colSpan || 1;
+            const colIndex = cell.col - 1;
+
+            if (colSpan === 1) {
+                this.updateColWidth(colIndex, newOuterWidth);
+            } else {
+                const currentColWidths = transom.colWidths.slice(colIndex, colIndex + colSpan);
+                const currentTotalWidth = currentColWidths.reduce((sum, w) => sum + w, 0);
+                const ratio = newOuterWidth / currentTotalWidth;
+
+                for (let i = 0; i < colSpan; i++) {
+                    const newColWidth = Math.round(currentColWidths[i] * ratio);
+                    this.updateColWidth(colIndex + i, Math.max(minWidth, newColWidth));
+                }
+            }
+
+            this.updateCellSizes();
+            return true;
+        },
+
+        updateInnerHeight(cellIndex, newValue) {
+            const transom = this.activeTransom
+            if (!transom || !transom.cells || cellIndex < 0 || cellIndex >= this.calculatedCells.length) return false;
+
+            const cell = this.calculatedCells[cellIndex];
+            if (!cell || cell.type === PROFILE_TYPE) return false;
+
+            const minHeight = transom.profile.width * 3;
+            const maxHeight = transom.maxHeight || 3000;
+            const newInnerHeight = Math.max(minHeight, Math.min(maxHeight, newValue));
+
+            const offsets = cell.offsets;
+            const newOuterHeight = newInnerHeight + offsets.top + offsets.bottom;
+
+            const rowSpan = cell.rowSpan || 1;
+            const rowIndex = cell.row - 1;
+
+            if (rowSpan === 1) {
+                this.updateRowHeight(rowIndex, newOuterHeight);
+            } else {
+                const currentRowHeights = transom.rowHeights.slice(rowIndex, rowIndex + rowSpan);
+                const currentTotalHeight = currentRowHeights.reduce((sum, h) => sum + h, 0);
+                const ratio = newOuterHeight / currentTotalHeight;
+
+                for (let i = 0; i < rowSpan; i++) {
+                    const newRowHeight = Math.round(currentRowHeights[i] * ratio);
+                    this.updateRowHeight(rowIndex + i, Math.max(minHeight, newRowHeight));
+                }
+            }
+
+            this.updateCellSizes();
+            return true;
         },
         // Получение минимальных/максимальных размеров
         getTransomSizeLimits() {
