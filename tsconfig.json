@@ -10,13 +10,14 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
-      "@composables/*": ["./src/composables/*"],
       "@src/*": ["./src/*"],
+      "@composables/*": ["./src/composables/*"],
       "@components/*": ["./src/components/*"],
       "@stores/*": ["./src/stores/*"],
       "@services/*": ["./src/services/*"],
       "@utils/*": ["./src/utils/*"],
-      "@constants/*": ["./src/constants/*"]
+      "@constants/*": ["./src/constants/*"],
+      "@directives/*": ["./src/directives/*"]
     },
     "allowJs": true,
     "checkJs": false,

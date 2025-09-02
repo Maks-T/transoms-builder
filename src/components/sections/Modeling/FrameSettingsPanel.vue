@@ -2,54 +2,44 @@
   <div class="frame-settings">
 
     <!-- Поля для размеров фрамуги -->
-    <div class="dimension-inputs" v-if="activeTransom">
-      <div class="input-group">
-        <label for="frame-width">Ширина:</label>
-        <input
-            id="frame-width"
-            type="number"
-            :value="activeTransom.width"
-            @input="onInputTransomWidthDebounced"
-            :min="activeTransom.minWidth || 100"
-            :max="activeTransom.maxWidth || 3000"
-        >
+    <div class="frame-settings__sizes" v-if="activeTransom">
+      <InputText
+          id="frame-width"
+          type="number"
+          :value="activeTransom.width"
+          @input="onInputTransomWidthDebounced"
+          :min="activeTransom.minWidth"
+          :max="activeTransom.maxWidth"
+          :label="_('Ширина: ')"
+      />
 
-      </div>
-
-      <div class="input-group">
-        <label for="frame-height">Высота:</label>
-        <input
-            id="frame-height"
-            type="number"
-            :value="activeTransom.height"
-            @input="onInputTransomHeightDebounced"
-            :min="activeTransom.minHeight || 100"
-            :max="activeTransom.maxHeight || 3000"
-        >
-      </div>
+      <InputText
+          id="frame-height"
+          type="number"
+          :value="activeTransom.height"
+          @input="onInputTransomHeightDebounced"
+          :min="activeTransom.minHeight"
+          :max="activeTransom.maxHeight"
+          :label="_('Высота: ')"
+      />
     </div>
+    <div class="frame-settings__options">
+      <!-- Селект профилей -->
+      <Select
+          v-model="selectedProfileId"
+          :options="modelingStore.profileTypesArray"
+          placeholder="Выберите профиль"
+          :label="_('Профиль: ')"
+      />
+      <!-- Селект шаблонов -->
+      <Select
+          v-model="selectedTemplateId"
+          :options="modelingStore.transomTemplatesArray"
+          placeholder="Выберите шаблон"
+          :label="_('Шаблон: ')"
+      />
 
-    <!-- Селект профилей -->
-    <select v-model="selectedProfileId">
-      <option
-          v-for="profile in modelingStore.profileTypesArray"
-          :key="profile.id"
-          :value="profile.id"
-      >
-        {{ profile.name }}
-      </option>
-    </select>
-
-    <!-- Селект шаблонов -->
-    <select v-model="selectedTemplateId">
-      <option
-          v-for="template in modelingStore.transomTemplatesArray"
-          :key="template.id"
-          :value="template.id"
-      >
-        {{ template.name }}
-      </option>
-    </select>
+    </div>
 
   </div>
 </template>
@@ -59,7 +49,8 @@ import { useModelingStore } from "@stores"
 import {watch, computed, ref, onMounted} from "vue"
 import { storeToRefs } from "pinia"
 import {useDebounce} from "@src/composables";
-
+import {InputText, Select} from "@components/ui";
+import { useTranslate as _ } from '@src/composables/index.js';
 
 const modelingStore = useModelingStore()
 const { activeTransom } = storeToRefs(modelingStore);
@@ -94,11 +85,30 @@ onMounted(() => {
     modelingStore.setTransomTemplate(modelingStore.configsStore.defaultTemplateId)
   }
 })
+
+
+
 </script>
 
 <style lang="scss" scoped>
 .frame-settings {
   grid-row: 1;
   grid-column: 1 / span 2;
+
+  display: flex;
+  flex-direction: row;
+  gap: rem(6);
+
+  &__sizes {
+    display: flex;
+    flex-direction: row;
+    gap: rem(6);
+  }
+
+  &__options {
+    display: flex;
+    flex-direction: row;
+    gap: rem(6);
+  }
 }
 </style>

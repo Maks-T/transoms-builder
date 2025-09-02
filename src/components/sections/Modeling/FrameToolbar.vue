@@ -76,7 +76,7 @@ const modelingStore = useModelingStore()
 
     &--active {
       box-shadow: 0 rem(2) rem(6) rgba(0, 0, 0, 0.2);
-      color: #007BFF;
+      color: $accent-text-color;
     }
 
   }
