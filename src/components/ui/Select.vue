@@ -130,7 +130,7 @@ watch(() => props.modelValue, val => {
   background: white;
   cursor: pointer;
   transition: border-color 0.2s ease;
-  min-height: 40px;
+  min-height: rem(40);
 }
 
 .select__trigger:hover {
@@ -151,7 +151,7 @@ watch(() => props.modelValue, val => {
 .select__selected {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: rem(8);
   flex: 1;
 }
 

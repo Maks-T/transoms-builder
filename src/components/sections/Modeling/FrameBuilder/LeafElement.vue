@@ -147,12 +147,10 @@ const selectRectConfig = computed(() => {
     height: props.height,
     stroke: '#4bbfff',
     strokeWidth: 4,
-    fill: 'rgba(75,191,255,0.2)',
+    fill: 'transparent',
     dash: [8, 4]
   }
-/*  stroke: '#FF8227',
-      strokeWidth: 4,
-      fill: 'rgba(253,113,9,0.40)',*/
+
 })
 
 

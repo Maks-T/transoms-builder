@@ -99,9 +99,6 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-* {
-  box-sizing: border-box;
-}
 
 .input-text {
   display: flex;

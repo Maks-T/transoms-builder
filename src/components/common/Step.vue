@@ -19,10 +19,17 @@ const props = defineProps({
 </script>
 
 <style lang="scss">
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
 .step {
   display: flex;
   flex-direction: column;
   gap: rem(16);
+  margin-bottom: rem(20);
 
   padding: rem(12) rem(27);
   border-radius: rem(4);
