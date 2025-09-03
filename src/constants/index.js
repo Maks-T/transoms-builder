@@ -17,9 +17,19 @@ export const LEAF_HINGE_SIDE = {
     RIGHT: 'right'  // Петли справа
 }
 
+export const LEAF_HINGE_SIDE_NAMES = {
+    [LEAF_HINGE_SIDE.LEFT]: 'Левое',   // Петли слева
+    [LEAF_HINGE_SIDE.RIGHT]: 'Правое'  // Петли справа
+}
+
 export const LEAF_SWING_DIRECTION = {
     INWARD: 'inward',   // Внутрь помещения
     OUTWARD: 'outward'  // Наружу из помещения
+}
+
+export const LEAF_SWING_DIRECTION_NAMES = {
+    [LEAF_SWING_DIRECTION.INWARD]: 'Внутрь',   // Внутрь помещения
+    [LEAF_SWING_DIRECTION.OUTWARD]: 'Наружу'  // Наружу из помещения
 }
 
 export const PROFILE_TYPE = 'profile'

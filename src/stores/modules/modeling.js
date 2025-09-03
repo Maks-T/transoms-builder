@@ -2,7 +2,7 @@
 import {defineStore} from 'pinia'
 import {cloneObjectDeep} from '@utils'
 import {useConfigsStore} from '@stores'
-import {LEAF_HINGE_SIDE, LEAF_SWING_DIRECTION, LEAF_TYPES, PROFILE_TYPE} from '@constants';
+import {LEAF_HINGE_SIDE, LEAF_SWING_DIRECTION, LEAF_SWING_DIRECTION_NAMES, LEAF_TYPES, PROFILE_TYPE} from '@constants';
 
 export const useModelingStore = defineStore('modeling', {
     state: () => ({
@@ -31,6 +31,14 @@ export const useModelingStore = defineStore('modeling', {
             return this.configsStore.transomTemplatesArray
         },
 
+        //Типы открывания левое/правое
+        openingSidesArray() {
+            return this.configsStore.openingSidesArray
+        },
+        //Направления открывания наружу/внутрь
+        swingDirectionsArray() {
+            return this.configsStore.swingDirectionsArray
+        },
         colBoundaries() {
             const transom = this.activeTransom
             if (!transom || !transom.colWidths) return [0]
@@ -106,7 +114,7 @@ export const useModelingStore = defineStore('modeling', {
 
                 // Дополнительные свойства для расчетов
                 cell.isActive = cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
-                cell.hingeSide = cell.hingeSide || LEAF_HINGE_SIDE.LEFT //петли слева/справа
+                cell.hingeSide = cell.hingeSide || LEAF_HINGE_SIDE.RIGHT //петли слева/справа
                 cell.swingDirection = cell.swingDirection || LEAF_SWING_DIRECTION.OUTWARD //открывание наружу/внутрь
 
                 if (cell.type === PROFILE_TYPE) {

@@ -64,6 +64,21 @@
           :disabled="true"
       />
     </div>
+    <div class="cell-properties__group">
+      <Select v-if="cell.isActive"
+          v-model="selectedHingeSide"
+          :options="modelingStore.openingSidesArray"
+          placeholder="Выберите открывание"
+          :label="_('Тип открывания: ')"
+      />
+      <Select v-if="cell.isActive"
+              v-model="selectedSwingDirection"
+              :options="modelingStore.swingDirectionsArray"
+              placeholder="Направление открывания"
+              :label="_('Направление открывания: ')"
+      />
+    </div>
+
   </div>
 </template>
 
@@ -73,7 +88,7 @@ import { LEAF_NAMES } from "@constants";
 import {useDebounce, useTranslate as _} from "@src/composables/index.js";
 import {useModelingStore} from "@src/stores/index.js";
 import {storeToRefs} from "pinia";
-import {InputText} from "@components/ui/index.js";
+import {InputText, Select} from "@components/ui/index.js";
 
 const modelingStore = useModelingStore()
 const {activeTransom} = storeToRefs(modelingStore)
@@ -102,6 +117,16 @@ const onInputLeafWidthDebounced = useDebounce(($event) => {
   const newCellWidth = Number($event.target.value) + props.cell.offsets.left +  props.cell.offsets.left;
   modelingStore.setCellWidth(props.cell.idx, newCellWidth);
 }, 700);
+
+const selectedHingeSide = computed({
+  get: () => props.cell.hingeSide,
+  set: (value) => props.cell.hingeSide = value
+})
+
+const selectedSwingDirection = computed({
+  get: () => props.cell.swingDirection,
+  set: (value) => props.cell.swingDirection = value
+})
 
 </script>
 

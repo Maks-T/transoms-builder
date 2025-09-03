@@ -6,29 +6,29 @@
       listening: true
     }"
       @mouseup="handleMouseUp"
-   >
+  >
     <!-- Основной прямоугольник окна -->
-    <v-rect :config="mainRectConfig" />
+    <v-rect :config="mainRectConfig"/>
 
     <!-- Внутренний прямоугольник для окна -->
-    <v-rect  :config="innerRectConfig" />
+    <v-rect :config="innerRectConfig"/>
 
     <!-- Название типа полотна -->
-    <v-text :config="textNameRectConfig" />
+    <v-text :config="textNameRectConfig"/>
 
     <!-- Треугольник для отображения типа открывания (для активных полотен) -->
-    <v-line v-if="isActive" :config="openingTriangleConfig" />
+    <v-line v-if="isActive" :config="openingTriangleConfig"/>
 
     <!-- Выделение окна -->
-    <v-rect v-if="isSelected"  :config="selectRectConfig"/>
+    <v-rect v-if="isSelected" :config="selectRectConfig"/>
 
     <!-- Размеры окна (если включены) -->
     <template v-if="showDimensions">
       <!-- Текст размера ширины (с учетом отступов) -->
-      <v-text :config="textWidthRectConfig" />
+      <v-text :config="textWidthRectConfig"/>
 
       <!-- Текст размера высоты (с учетом отступов) -->
-      <v-text :config="textHeightRectConfig" />
+      <v-text :config="textHeightRectConfig"/>
     </template>
 
   </v-group>
@@ -57,11 +57,16 @@ const emit = defineEmits(['select'])
 
 const fillColor = computed(() => {
   switch (props.type) {
-    case LEAF_TYPES.ACTIVE_LEAF: return 'rgba(179, 255, 179, 0.2)'
-    case LEAF_TYPES.INACTIVE_LEAF: return 'rgba(204, 204, 204, 0.2)'
-    case LEAF_TYPES.ACTIVE_LEAF_SMALL: return 'rgba(102, 204, 255, 0.2)'
-    case LEAF_TYPES.INACTIVE_LEAF_SMALL: return 'rgba(153, 153, 153, 0.2)'
-    default: return 'rgba(238, 238, 238, 0.2)'
+    case LEAF_TYPES.ACTIVE_LEAF:
+      return 'rgba(179, 255, 179, 0.2)'
+    case LEAF_TYPES.INACTIVE_LEAF:
+      return 'rgba(204, 204, 204, 0.2)'
+    case LEAF_TYPES.ACTIVE_LEAF_SMALL:
+      return 'rgba(102, 204, 255, 0.2)'
+    case LEAF_TYPES.INACTIVE_LEAF_SMALL:
+      return 'rgba(153, 153, 153, 0.2)'
+    default:
+      return 'rgba(238, 238, 238, 0.2)'
   }
 })
 
@@ -94,7 +99,7 @@ const innerRectConfig = computed(() => {
     width: props.width - 2 * profileOffset,
     height: props.height - 2 * profileOffset,
     stroke: strokeColor.value,
-    strokeWidth: strokeWidth/2,
+    strokeWidth: strokeWidth / 2,
     fill: 'transparent'
   }
 })
@@ -167,19 +172,20 @@ const openingTriangleConfig = computed(() => {
     // Для левого открывания
     return {
       points: [
-        props.width, 0,
-        0, props.height / 2,
-        props.width, props.height
+        0, 0,
+        props.width, props.height / 2,
+        0, props.height
       ],
       ...defaultConfig
     }
+
   } else if (props.hingeSide === LEAF_HINGE_SIDE.RIGHT) {
     // Для правого открывания
     return {
       points: [
-        0, 0,
-        props.width, props.height / 2,
-        0, props.height
+        props.width, 0,
+        0, props.height / 2,
+        props.width, props.height
       ],
       ...defaultConfig
     }

@@ -1,0 +1,81 @@
+@use './../../mixins/functions' as *;
+@use './../../variables' as *;
+
+.btn {
+  display: flex;
+  height: rem(36);
+  padding: rem(9) rem(22);
+  justify-content: center;
+  align-items: center;
+  gap: rem(10);
+  align-self: stretch;
+  border-radius: rem(4);
+  outline: none;
+  cursor: pointer;
+
+  text-align: center;
+  font-size: rem(14);
+  font-weight: 500;
+
+  transition: all 0.2s ease-in-out;
+
+  .icon {
+    display: inline-flex;
+    width: rem(20);
+    height: rem(20);
+  }
+
+
+}
+
+.btn-red {
+  @extend .btn;
+  border: 1px solid #BFBFBF;
+  background: $accent-text-color;
+  color: white;
+
+  .icon {
+    color: white;
+  }
+
+  &:focus,
+  &:hover {
+    background: white;
+    color: $accent-text-color;
+
+    .icon {
+      color: $accent-text-color;
+    }
+  }
+
+  &:active {
+    transform: translate(1px, 1px);
+  }
+
+}
+
+.btn-white {
+  @extend .btn;
+  border: 1px solid $accent-text-color;
+  background: white;
+  color: $accent-text-color;
+
+  .icon {
+    color: $accent-text-color;
+  }
+
+  &:focus,
+  &:hover {
+    background: $accent-text-color;
+    color: white;
+
+    .icon {
+      color: white;
+    }
+  }
+
+  &:active {
+    transform: translate(1px, 1px);
+  }
+
+}
