@@ -16,6 +16,7 @@ export const useModelingStore = defineStore('modeling', {
         selectedProfileId: null,
         selectedTemplateId: null,
         showDimensions: true,
+        showLeafsNames: true,
         showDividers: false,
     }),
 
@@ -210,6 +211,39 @@ export const useModelingStore = defineStore('modeling', {
                 cell.type === LEAF_TYPES.ACTIVE_LEAF ||
                 cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
             )
+        },
+
+        /**
+         * @private
+         * Проверяет валидность активной фрамугиб записывает данные и соощения об ошибке
+         */
+        getActiveTransomValidationData() {
+            const transom = this.activeTransom;
+            if (!transom) return {};
+
+            const sumRowHeights = transom.rowHeights.reduce((s, h) => s + h, 0);
+            const sumColWidths = transom.colWidths.reduce((s, w) => s + w, 0);
+
+            const params = {
+                widthDiff: sumColWidths - transom.width,
+                heightDiff: sumRowHeights - transom.height,
+            };
+
+            const errors = {};
+
+            if (params.widthDiff) {
+                errors.widthDiff = `Оставшаяся ширина: ${params.widthDiff} мм`;
+            }
+            if (params.heightDiff) {
+                errors.heightDiff = `Оставшаяя высота: ${params.heightDiff} мм`;
+            }
+
+            return {
+                isValid: Object.values(params).every(v => v === 0),
+                params,
+                errors,
+            };
+
         }
     },
 
@@ -238,12 +272,18 @@ export const useModelingStore = defineStore('modeling', {
                 profile: cloneObjectDeep(profile),
                 templateId: this.selectedTemplateId,
 
-                validation: {
-                    widthDiff: 0,
-                    heightDiff: 0,
-                    validationKey: 0
+                validationData: {
+                    errors: {
+                        widthDiff: '',
+                        heightDiff: '',
+                    },
+                    params: {
+                        widthDiff: 0,
+                        heightDiff: 0,
+                    },
+                    isValid: true,
                 },
-                isValid: true,
+
             }
         },
 
@@ -544,22 +584,20 @@ export const useModelingStore = defineStore('modeling', {
 
             // Проверка размеров и запись ошибок
             if (innerWidth < minInnerWidth) {
-                console.log({innerWidth, minInnerWidth})
-                errors.innerWidth = `Должна быть > ${minInnerWidth}`;
-                errors.width = `Должна быть > ${minInnerWidth + offsetsW}`;
+                errors.innerWidth = `Должна быть => ${minInnerWidth}`;
+                errors.width = `Должна быть => ${minInnerWidth + offsetsW}`;
             }
             if (innerWidth > maxInnerWidth) {
-                console.log({innerWidth, maxInnerWidth})
-                errors.innerWidth = `Должна быть < ${maxInnerWidth}`;
-                errors.width = `Должна быть < ${maxInnerWidth + offsetsW}`;
+                errors.innerWidth = `Должна быть <= ${maxInnerWidth}`;
+                errors.width = `Должна быть <= ${maxInnerWidth + offsetsW}`;
             }
             if (innerHeight < minInnerHeight) {
-                errors.innerHeight = `Должна быть > ${minInnerHeight}`;
-                errors.height = `Должна быть > ${minInnerHeight + offsetsH}`;
+                errors.innerHeight = `Должна быть => ${minInnerHeight}`;
+                errors.height = `Должна быть => ${minInnerHeight + offsetsH}`;
             }
             if (innerHeight > maxInnerHeight) {
-                errors.innerHeight = `Должна быть < ${maxInnerHeight}`;
-                errors.height = `Должна быть < ${maxInnerHeight + offsetsH}`;
+                errors.innerHeight = `Должна быть <= ${maxInnerHeight}`;
+                errors.height = `Должна быть <= ${maxInnerHeight + offsetsH}`;
             }
 
             return {
@@ -576,11 +614,11 @@ export const useModelingStore = defineStore('modeling', {
          * @returns {boolean} True, если обновление успешно, иначе false
          */
         updateCellSizes() {
-
             const transom = this.activeTransom
             if (!transom || !transom.cells) return false
-            console.log('updateCellSizes')
+
             transom.cells = cloneObjectDeep(this.calculatedCells)
+            transom.validationData = this.getActiveTransomValidationData;
         },
 
 
@@ -614,12 +652,9 @@ export const useModelingStore = defineStore('modeling', {
          */
         setTransomWidth(newWidth) {
             const transom = this.activeTransom
-            if (!transom) return;
+            if (!transom) return false;
 
-            transom.width = Math.max(
-                transom.minWidth,
-                Math.min(transom.maxWidth, newWidth)
-            );
+            transom.width = newWidth
 
             this.updateWidths()
             this.updateCellSizes();
@@ -636,11 +671,7 @@ export const useModelingStore = defineStore('modeling', {
 
             if (!transom) return;
 
-            transom.height = Math.max(
-                transom.minHeight,
-                Math.min(transom.maxHeight, newHeight)
-            );
-
+            transom.height = newHeight
             this.updateHeights()
             this.updateCellSizes();
 
@@ -720,7 +751,6 @@ export const useModelingStore = defineStore('modeling', {
             const transom = this.activeTransom
             // Пересчет colWidths пропорционально
             const currentWidth = transom.colWidths.reduce((sum, w) => sum + w, 0);
-            const minWidth = transom.profile.width * 3; //ToDo min
 
             if (currentWidth > 0) {
                 const ratio = transom.width / currentWidth;
@@ -733,8 +763,7 @@ export const useModelingStore = defineStore('modeling', {
                         return Math.round(columnProfileWidths[index]);
                     }
 
-                    const newWidth = Math.round(width * ratio);
-                    return Math.max(minWidth, newWidth);
+                    return Math.round(width * ratio);
                 });
 
                 // Корректировка для точного соответствия validatedWidth
@@ -744,7 +773,7 @@ export const useModelingStore = defineStore('modeling', {
                 if (diff !== 0 && newColWidths.length > 0) {
                     const lastUnlockedIndex = newColWidths.findLastIndex((_, idx) => !columnProfileWidths[idx]);
                     if (lastUnlockedIndex !== -1) {
-                        newColWidths[lastUnlockedIndex] = Math.max(minWidth, newColWidths[lastUnlockedIndex] + diff);
+                        newColWidths[lastUnlockedIndex] = newColWidths[lastUnlockedIndex] + diff;
                     }
                 }
 
@@ -760,22 +789,19 @@ export const useModelingStore = defineStore('modeling', {
             const transom = this.activeTransom
             // Пересчет rowHeights пропорционально
             const currentHeight = transom.rowHeights.reduce((sum, h) => sum + h, 0);
-            const minHeight = transom.profile.width * 3; //ToDo min
 
             if (currentHeight > 0) {
                 const ratio = transom.height / currentHeight;
 
                 const columnProfileHeights = this.calculateProfileRowHeights()
-                //ToDo min
+
                 const newRowHeights = transom.rowHeights.map((height, index) => {
                     // Если строка содержит профиль
                     if (index in columnProfileHeights) {
                         return Math.round(columnProfileHeights[index]);
                     }
 
-                    const newHeight = Math.round(height * ratio);
-
-                    return Math.max(minHeight, newHeight);
+                    return Math.round(height * ratio);
                 });
 
                 // Корректировка для точного соответствия высоте фрамуги
@@ -785,7 +811,7 @@ export const useModelingStore = defineStore('modeling', {
                 if (diff !== 0 && newRowHeights.length > 0) {
                     const lastUnlockedIndex = newRowHeights.findLastIndex((_, idx) => !columnProfileHeights[idx]);
                     if (lastUnlockedIndex !== -1) {
-                        newRowHeights[lastUnlockedIndex] = Math.max(minHeight, newRowHeights[lastUnlockedIndex] + diff);
+                        newRowHeights[lastUnlockedIndex] = newRowHeights[lastUnlockedIndex] + diff;
                     }
                 }
 
@@ -811,7 +837,6 @@ export const useModelingStore = defineStore('modeling', {
             const ratio = cell.width / newWidth;
 
             //ToDo profile columns
-            //ToDo min and max width
 
             //Пропорционально масштабируем колонки
             for (let i = colStart; i <= colEnd; i++) {
@@ -819,11 +844,6 @@ export const useModelingStore = defineStore('modeling', {
             }
 
             this.updateCellSizes();
-
-
-            const currentTransomWidth = transom.colWidths.reduce((sum, w) => sum + w, 0);
-            transom.validation.widthDiff = currentTransomWidth - transom.width;
-            this.validateActiveTransom();
         },
 
         /**
@@ -843,7 +863,6 @@ export const useModelingStore = defineStore('modeling', {
             const ratio = cell.height / newHeight;
 
             //ToDo profile columns
-            //ToDo min and max height
 
             //Пропорционально масштабируем строки
             for (let i = rowStart; i <= rowEnd; i++) {
@@ -851,23 +870,7 @@ export const useModelingStore = defineStore('modeling', {
             }
 
             this.updateCellSizes();
-
-            const currentTransomHeight = transom.rowHeights.reduce((sum, w) => sum + w, 0);
-            transom.validation.heightDiff = currentTransomHeight - transom.height;
-            this.validateActiveTransom();
         },
-
-        /**
-         * @private
-         * Проверяет валидность активной фрамуги
-         */
-        validateActiveTransom() {
-            const transom = this.activeTransom;
-            if (!transom) return;
-
-            transom.isValid = !Object.values(transom.validation).some(v => v !== 0); //ToDo подумать над типами полей валидации
-            transom.validationKey += 1;
-        }
 
     }
 })

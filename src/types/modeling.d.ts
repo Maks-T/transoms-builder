@@ -6,6 +6,19 @@ interface CellOffsets {
   left: number;
 }
 
+interface TransomValidationData {
+  errors: {
+    widthDiff: string,
+    heightDiff: string,
+  },
+  params: {
+    widthDiff: number,
+    heightDiff: number,
+  },
+  isValid: true,
+
+}
+
 interface Transom {
   id: string;
   name: string;
@@ -21,12 +34,7 @@ interface Transom {
   colWidths: number[];
   rowHeights: number[];
   cells: TransomCell[];
-  validation: {
-    widthDiff: number;
-    heightDiff: number;
-    validationKey: number;
-  };
-  isValid: boolean;
+  validationData: TransomValidationData,
 }
 
 interface sizeCellMessages {
@@ -100,6 +108,7 @@ interface ModelingStore {
   selectedProfileId: string | null;
   selectedTemplateId: string | null;
   showDimensions: boolean;
+  showLeafsNames: Boolean,
   showDividers: boolean;
 
   // Геттеры
@@ -115,9 +124,9 @@ interface ModelingStore {
   horizontalDividers: number[];
   calculatedCells: TransomCell[] | undefined;
   hasActiveLeaf: boolean;
+  getActiveTransomValidationData: () => TransomValidationData;
 
   // Экшены
-
   createTransomObject: () => Transom | null;
   addTransom: () => void;
   setActiveTransom: (transomId: string) => void;
@@ -139,5 +148,5 @@ interface ModelingStore {
   setCellWidth: (cellIndex: number, newWidth: number) => void;
   setCellHeight: (cellIndex: number, newHeight: number) => void;
   getTransomSizeLimits: () => SizeLimits;
-  validateActiveTransom: () => void;
+
 }

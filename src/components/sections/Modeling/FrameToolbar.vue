@@ -4,15 +4,24 @@
         class="frame-toolbar__btn"
         :class="{ 'frame-toolbar__btn--active': modelingStore.showDimensions }"
         @click="modelingStore.showDimensions = !modelingStore.showDimensions"
-        :title="_('Показать размеры полотен')"
+        :title="modelingStore.showDimensions ? _('Скрыть размеры полотен'):_('Показать размеры полотен')"
     >
       <Icon icon="mdi:ruler" />
     </button>
     <button
         class="frame-toolbar__btn"
+        :class="{ 'frame-toolbar__btn--active': modelingStore.showLeafsNames }"
+        @click="modelingStore.showLeafsNames = !modelingStore.showLeafsNames"
+        :title="modelingStore.showLeafsNames ?_('Скрыть названия полотен') :_('Показать названия полотен')"
+    >
+      <Icon icon="fluent:text-t-12-filled" />
+    </button>
+
+    <button
+        class="frame-toolbar__btn"
         :class="{ 'frame-toolbar__btn--active': modelingStore.showDividers }"
         @click="modelingStore.showDividers = !modelingStore.showDividers"
-        :title="_('Показать границы ячеек')"
+        :title="modelingStore.showDividers ? _('Скрыть границы ячеек') : _('Показать границы ячеек')"
     >
       <Icon icon="gis:grid" />
     </button>

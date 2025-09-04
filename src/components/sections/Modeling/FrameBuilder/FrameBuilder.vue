@@ -56,14 +56,13 @@
 
         </v-layer>
       </v-stage>
-      <!-- Блок валидации с сообщениями об оставшейся ширине и высоте -->
+      <!-- Блок валидации с сообщениями об ошибках -->
 
-      <div class="frame-builder__validation" v-if="!activeTransom.isValid">
-        <p v-if="activeTransom.validation.widthDiff !== 0">
-          Оставшаяся ширина: {{ activeTransom.validation.widthDiff }} мм
-        </p>
-        <p v-if="activeTransom.validation.heightDiff !== 0">
-          Оставшаяся высота: {{ activeTransom.validation.heightDiff }} мм
+      <div class="frame-builder__validation"
+           v-if="!activeTransom.validationData.isValid"
+           >
+        <p v-for="(errorMessage, errorKey) in activeTransom.validationData.errors" :key="errorKey">
+          {{ errorMessage }}
         </p>
       </div>
 
@@ -118,7 +117,7 @@ const rectFrameConfig = computed(() => {
     y: props.padding,
     width: activeTransom.value.width * scaleFactor.value,
     height: activeTransom.value.height * scaleFactor.value,
-    stroke: activeTransom.value.isValid ? '#333' : 'red',
+    stroke: activeTransom.value.validationData.isValid ? '#333' : 'red',
     strokeWidth: 3,
     fill: '#ffffff',
   }
@@ -136,6 +135,7 @@ const leafElementProps = computed(() => (cell, index) => {
     type: cell.type,
     isSelected: selectedCellIndex.value === index,
     showDimensions: modelingStore.showDimensions,
+    showLeafsNames: modelingStore.showLeafsNames,
     scaleFactor: scaleFactor.value,
     offsets: cell.offsets,
     hingeSide: cell.hingeSide, //ToDo init in store in cell

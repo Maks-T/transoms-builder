@@ -14,7 +14,7 @@
     <v-rect :config="innerRectConfig"/>
 
     <!-- Название типа полотна -->
-    <v-text :config="textNameRectConfig"/>
+    <v-text v-if="showLeafsNames" :config="textNameRectConfig"/>
 
     <!-- Треугольник для отображения типа открывания (для активных полотен) -->
     <v-line v-if="isActive" :config="openingTriangleConfig"/>
@@ -50,7 +50,9 @@ const props = defineProps({
   hingeSide: String,
   index: Number,
   isSelected: Boolean,
-  showDimensions: Boolean
+  showDimensions: Boolean,
+  showLeafsNames: Boolean,
+  modelingStore: Boolean
 })
 
 const emit = defineEmits(['select'])

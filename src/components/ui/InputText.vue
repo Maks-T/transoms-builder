@@ -130,10 +130,12 @@ defineExpose({
 }
 
 .input-text__field--error {
+  color: $error-color;
   border-color: $error-color;
 }
 
 .input-text__field--error:focus {
+  color: $error-color;
   border-color: $error-color;
   box-shadow: 0 0 0 2px rgba(245, 108, 108, 0.2);
 }
