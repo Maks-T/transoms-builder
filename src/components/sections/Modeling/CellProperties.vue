@@ -83,19 +83,18 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { LEAF_NAMES } from "@constants";
-import {useDebounce, useTranslate as _} from "@src/composables/index.js";
-import {useModelingStore} from "@src/stores/index.js";
+import {computed} from 'vue'
+import {useDebounce, useTranslate as _} from "@src/composables";
+import {useModelingStore} from "@src/stores";
 import {storeToRefs} from "pinia";
-import {InputText, Select} from "@components/ui/index.js";
+import {InputText, Select} from "@components/ui";
 
 const modelingStore = useModelingStore()
 const {activeTransom} = storeToRefs(modelingStore)
 
 const props = defineProps({
   cell: {
-    type: Object,
+    type:  /** @type {TransomCell} */ Object,
     required: true
   }
 })
@@ -114,7 +113,7 @@ const onInputLeafHeightDebounced = useDebounce(($event) => {
 }, 700);
 
 const onInputLeafWidthDebounced = useDebounce(($event) => {
-  const newCellWidth = Number($event.target.value) + props.cell.offsets.left +  props.cell.offsets.left;
+  const newCellWidth = Number($event.target.value) + props.cell.offsets.left +  props.cell.offsets.right;
   modelingStore.setCellWidth(props.cell.idx, newCellWidth);
 }, 700);
 

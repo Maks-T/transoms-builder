@@ -105,12 +105,12 @@ const selectedTemplateId = computed({
 
 
 onMounted(() => {
-  if (modelingStore.configsStore.defaultProfileId) {
-    modelingStore.setProfileType(modelingStore.configsStore.defaultProfileId)
+  if (modelingStore.configsStore.defaultProfile) {
+    modelingStore.setProfileType(modelingStore.configsStore.defaultProfile)
   }
 
-  if (modelingStore.configsStore.defaultTemplateId) { //ToDo remove
-    modelingStore.setTransomTemplate(modelingStore.configsStore.defaultTemplateId)
+  if (modelingStore.configsStore.defaultTemplate) { //ToDo remove
+    modelingStore.setTransomTemplate(modelingStore.configsStore.defaultTemplate)
   }
 })
 

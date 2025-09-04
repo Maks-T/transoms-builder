@@ -4,6 +4,10 @@ import {cloneObjectDeep} from '@utils'
 import {useConfigsStore} from '@stores'
 import {LEAF_HINGE_SIDE, LEAF_SWING_DIRECTION, LEAF_SWING_DIRECTION_NAMES, LEAF_TYPES, PROFILE_TYPE} from '@constants';
 
+/**
+ * Создает хранилище моделирования фрамуг с использованием
+ * @returns {ModelingStore} хранилища моделирования
+ */
 export const useModelingStore = defineStore('modeling', {
     state: () => ({
         transoms: [],
@@ -15,30 +19,56 @@ export const useModelingStore = defineStore('modeling', {
     }),
 
     getters: {
+        /**
+         * Возвращает экземпляр хранилища конфигураций
+         * @returns Хранилище конфигураций
+         */
         configsStore() {
             return useConfigsStore()
         },
-
+        /**
+         * Возвращает активную фрамугу
+         * @param state Состояние хранилища
+         * @returns {Transom | undefined} Объект активной фрамуги или undefined
+         */
         activeTransom(state) {
             return state.transoms.find(transom => transom.id === state.activeTransomId)
         },
-
+        /**
+         * Возвращает массив типов профилей для использования в селектах
+         * @returns {SelectOption[]} Массив объектов с полями label, value и imgSrc
+         */
         profileTypesArray() {
             return this.configsStore.profileTypesArray
         },
-
+        /**
+         * Возвращает массив шаблонов фрамуг для использования в селектах
+         * @returns {SelectOption[]} Массив объектов с полями label, value и imgSrc
+         */
         transomTemplatesArray() {
             return this.configsStore.transomTemplatesArray
         },
 
-        //Типы открывания левое/правое
+        /**
+         * Возвращает массив сторон открывания (левое/правое)
+         * @returns {SelectOption[]} Массив объектов с полями label и value
+         */
         openingSidesArray() {
             return this.configsStore.openingSidesArray
         },
-        //Направления открывания наружу/внутрь
+
+        /**
+         * Возвращает массив направлений открывания (наружу/внутрь)
+         * @returns {SelectOption[]} Массив объектов с полями label и value
+         */
         swingDirectionsArray() {
             return this.configsStore.swingDirectionsArray
         },
+
+        /**
+         * Вычисляет границы колонок активной фрамуги
+         * @returns {number[]} Массив координат границ колонок
+         */
         colBoundaries() {
             const transom = this.activeTransom
             if (!transom || !transom.colWidths) return [0]
@@ -53,6 +83,10 @@ export const useModelingStore = defineStore('modeling', {
             return arr
         },
 
+        /**
+         * Вычисляет границы строк активной фрамуги
+         * @returns {number[]} Массив координат границ строк
+         */
         rowBoundaries() {
             const transom = this.activeTransom
             if (!transom || !transom.rowHeights) return [0]
@@ -66,14 +100,26 @@ export const useModelingStore = defineStore('modeling', {
             return arr
         },
 
+        /**
+         * Возвращает позиции вертикальных разделителей
+         * @returns {number[]} Массив координат вертикальных разделителей
+         */
         verticalDividers() {
             return this.colBoundaries.slice(1, -1)
         },
 
+        /**
+         * Возвращает позиции горизонтальных разделителей
+         * @returns {number[]} Массив координат горизонтальных разделителей
+         */
         horizontalDividers() {
             return this.rowBoundaries.slice(1, -1)
         },
 
+        /**
+         * Вычисляет параметры ячеек активной фрамуги
+         * @returns {TransomCell[] | undefined} Массив вычисленных ячеек или undefined
+         */
         calculatedCells() {
             const transom = this.activeTransom;
 
@@ -148,6 +194,10 @@ export const useModelingStore = defineStore('modeling', {
             })
         },
 
+        /**
+         * Проверяет наличие активных полотен в фрамуге
+         * @returns {boolean} True, если есть активные полотна, иначе false
+         */
         hasActiveLeaf() {
             if (!this.activeTransom || !this.activeTransom.cells) return false
 
@@ -159,7 +209,11 @@ export const useModelingStore = defineStore('modeling', {
     },
 
     actions: {
-        // Создание объекта новой фрамуги
+        /**
+         * Создает объект новой фрамуги
+         * @private
+         * @returns {Transom | null} Объект фрамуги или null, если шаблон или профиль не выбраны
+         */
         createTransomObject() {
             const template = this.configsStore.getTransomTemplateById(this.selectedTemplateId)
             const profile = this.configsStore.getProfileById(this.selectedProfileId)
@@ -187,7 +241,10 @@ export const useModelingStore = defineStore('modeling', {
                 isValid: true,
             }
         },
-        //Создание и добавление новой фрамуги
+
+        /**
+         * Создает и добавляет новую фрамугу
+         */
         addTransom() {
             const newTransom = this.createTransomObject();
 
@@ -203,14 +260,20 @@ export const useModelingStore = defineStore('modeling', {
             this.updateCellSizes();
         },
 
-        // Установка активной фрамуги
+        /**
+         * Устанавливает активную фрамугу
+         * @param transomId Идентификатор фрамуги
+         */
         setActiveTransom(transomId) {
             if (this.transoms.some(transom => transom.id === transomId)) {
                 this.activeTransomId = transomId
             }
         },
 
-        // Изменение типа профиля
+        /**
+         * Устанавливает тип профиля
+         * @param profileId Идентификатор профиля
+         */
         setProfileType(profileId) {
             if (this.configsStore.profileTypes[profileId]) {
                 this.selectedProfileId = profileId
@@ -223,7 +286,10 @@ export const useModelingStore = defineStore('modeling', {
             }
         },
 
-        // Изменение шаблона фрамуги
+        /**
+         * Устанавливает шаблон фрамуги
+         * @param templateId Идентификатор шаблона
+         */
         setTransomTemplate(templateId) {
             if (this.configsStore.transomTemplates[templateId]) {
                 this.selectedTemplateId = templateId
@@ -238,7 +304,11 @@ export const useModelingStore = defineStore('modeling', {
             }
         },
 
-        // Обновление профиля активной фрамуги
+        /**
+         * Обновляет профиль активной фрамуги
+         * @private
+         * @param profileId Идентификатор профиля
+         */
         updateActiveTransomProfile(profileId) {
             const transom = this.activeTransom
             if (!transom) return;
@@ -255,7 +325,11 @@ export const useModelingStore = defineStore('modeling', {
 
         },
 
-        // Обновление шаблона активной фрамуги
+        /**
+         * Обновляет шаблон активной фрамуги
+         * @private
+         * @param templateId Идентификатор шаблона
+         */
         updateActiveTransomTemplate(templateId) {
             const transomIndex = this.transoms.findIndex(t => t.id === this.activeTransomId)
 
@@ -281,7 +355,12 @@ export const useModelingStore = defineStore('modeling', {
             }
         },
 
-        // Расчет отступов для ячейки
+        /**
+         * Определяет соседние ячейки для текущей ячейки
+         * @private
+         * @param {TransomCell} currentCell Ячейка для анализа         *
+         * @returns {Neighbors} Объект с массивами соседних ячеек (top, bottom, left, right)
+         */
         getNeighbors(currentCell) {
             const transom = this.activeTransom;
             if (!transom || !transom.cells) return {top: [], bottom: [], left: [], right: []};
@@ -326,7 +405,14 @@ export const useModelingStore = defineStore('modeling', {
             return neighbors;
         },
 
-        // Расчет отступов для ячейки
+        /**
+         * Рассчитывает отступы для ячейки
+         * @private
+         * @param cell Ячейка
+         * @param rowCount Количество строк
+         * @param colCount Количество колонок
+         * @returns {Offsets} Объект с отступами
+         */
         calculateOffsets(cell, rowCount, colCount) {
 
             const offsets = {top: 0, bottom: 0, left: 0, right: 0}
@@ -425,49 +511,11 @@ export const useModelingStore = defineStore('modeling', {
             return offsets
         },
 
-        /* calculateOffsets(cell, rowCount, colCount) {
-             const offsets = {top: 0, bottom: 0, left: 0, right: 0}
-             const isActive = cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
-             const isProfile = cell.type === PROFILE_TYPE
-             const colStart = cell.col
-             const colEnd = cell.col + (cell.colSpan || 1) - 1
-             const rowStart = cell.row
-             const rowEnd = cell.row + (cell.rowSpan || 1) - 1
-
-             if (rowEnd === rowCount) {
-                 offsets.bottom = isActive ? 10 : 0
-             }
-
-             if (colStart === 1) {
-                 offsets.left = isActive ? 5 : (this.hasActiveLeaf ? 3 : 5)
-             }
-
-             if (colEnd === colCount) {
-                 offsets.right = isActive ? 5 : (this.hasActiveLeaf ? 3 : 5)
-             }
-
-             if (rowStart === 1) {
-                 offsets.top = isActive ? 5 : 3
-             }
-
-             if (isActive && rowStart !== 1 && rowEnd !== rowCount && colStart !== 1 && colEnd !== colCount) {
-                 offsets.top = 5
-                 offsets.bottom = 5
-                 offsets.left = 5
-                 offsets.right = 5
-             }
-
-             if (isActive && rowEnd === rowCount && colStart !== 1 && colEnd !== colCount) {
-                 offsets.top = 5
-                 offsets.left = 5
-                 offsets.right = 5
-                 offsets.bottom = 10
-             }
-
-             return offsets
-         },
- */
-        // Обновление размеров ячеек
+        /**
+         * Обновляет размеры ячеек активной фрамуги
+         * @private
+         * @returns {boolean} True, если обновление успешно, иначе false
+         */
         updateCellSizes() {
 
             const transom = this.activeTransom
@@ -477,7 +525,12 @@ export const useModelingStore = defineStore('modeling', {
         },
 
 
-        // Изменение типа ячейки
+        /**
+         * Изменяет тип ячейки
+         * @param cellIndex Индекс ячейки
+         * @param newType Новый тип ячейки
+         * ToDo
+         */
         changeCellType(cellIndex, newType) {
             const transom = this.activeTransom
             if (!transom) return;
@@ -495,6 +548,11 @@ export const useModelingStore = defineStore('modeling', {
             }
         },
 
+        /**
+         * Устанавливает ширину активной фрамуги
+         * @param newWidth Новая ширина
+         * @returns {boolean} True, если установка успешна
+         */
         setTransomWidth(newWidth) {
             const transom = this.activeTransom
             if (!transom) return;
@@ -509,6 +567,11 @@ export const useModelingStore = defineStore('modeling', {
             return true;
         },
 
+        /**
+         * Устанавливает высоту активной фрамуги
+         * @param newHeight Новая высота
+         * @returns {boolean} True, если установка успешна
+         */
         setTransomHeight(newHeight) {
             const transom = this.activeTransom
 
@@ -525,6 +588,11 @@ export const useModelingStore = defineStore('modeling', {
             return true; //ToDo
         },
 
+        /**
+         * Вычисляет ширины колонок с профилями
+         * @private
+         * @returns {{ [key: number]: number }} Объект с ширинами колонок
+         */
         calculateProfileColumnWidths() {
             const transom = this.activeTransom;
             if (!transom || !transom.profile || !transom.cells) return {};
@@ -553,7 +621,13 @@ export const useModelingStore = defineStore('modeling', {
             return columnWidths;
         },
 
+        /**
+         * Вычисляет высоты строк с профилями
+         * @private
+         * @returns {{ [key: number]: number }} Объект с высотами строк
+         */
         calculateProfileRowHeights() {
+
             const transom = this.activeTransom;
             if (!transom || !transom.profile || !transom.cells) return {};
 
@@ -579,6 +653,10 @@ export const useModelingStore = defineStore('modeling', {
             return rowHeights;
         },
 
+        /**
+         * Обновляет ширины колонок фрамуги
+         * @private
+         */
         updateWidths() {
             const transom = this.activeTransom
             // Пересчет colWidths пропорционально
@@ -615,6 +693,10 @@ export const useModelingStore = defineStore('modeling', {
             }
         },
 
+        /**
+         * Обновляет высоты строк фрамуги
+         * @private
+         */
         updateHeights() {
             const transom = this.activeTransom
             // Пересчет rowHeights пропорционально
@@ -652,6 +734,11 @@ export const useModelingStore = defineStore('modeling', {
             }
         },
 
+        /**
+         * Устанавливает ширину ячейки
+         * @param cellIndex Индекс ячейки
+         * @param newWidth Новая ширина
+         */
         setCellWidth(cellIndex, newWidth) {
             const transom = this.activeTransom;
             if (!transom || !transom.profile || !transom.cells) return;
@@ -680,6 +767,11 @@ export const useModelingStore = defineStore('modeling', {
             this.validateActiveTransom();
         },
 
+        /**
+         * Устанавливает высоту ячейки
+         * @param cellIndex Индекс ячейки
+         * @param newHeight Новая высота
+         */
         setCellHeight(cellIndex, newHeight) {
             const transom = this.activeTransom;
             if (!transom || !transom.profile || !transom.cells) return;
@@ -706,19 +798,26 @@ export const useModelingStore = defineStore('modeling', {
             this.validateActiveTransom();
         },
 
-        // Получение минимальных/максимальных размеров
+        /**
+         * Получает минимальные и максимальные размеры фрамуги
+         * @returns {SizeLimits} Объект с границами размеров
+         */
         getTransomSizeLimits() {
             const transom = this.activeTransom
-            if (!transom) return {minWidth: 100, maxWidth: 3000, minHeight: 100, maxHeight: 3000}
+            if (!transom) return {minWidth: 600, maxWidth: 6000, minHeight: 600, maxHeight: 600}
 
             return {
-                minWidth: transom.minWidth || 100,
-                maxWidth: transom.maxWidth || 3000,
-                minHeight: transom.minHeight || 100,
-                maxHeight: transom.maxHeight || 3000
+                minWidth: transom.minWidth || 600,
+                maxWidth: transom.maxWidth || 6000,
+                minHeight: transom.minHeight || 6000,
+                maxHeight: transom.maxHeight || 600
             }
         },
 
+        /**
+         * @private
+         * Проверяет валидность активной фрамуги
+         */
         validateActiveTransom() {
             const transom = this.activeTransom;
             if (!transom) return;

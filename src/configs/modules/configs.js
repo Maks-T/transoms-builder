@@ -29,6 +29,7 @@ const PROFILES_TYPES = {
     },
 };
 
+/** @type {TransomTemplates} */
 const TRANSOM_TEMPLATES = {
     'transoms-type-1': {
         id: 'transoms-type-1',
