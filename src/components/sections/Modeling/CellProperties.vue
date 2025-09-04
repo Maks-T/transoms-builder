@@ -8,12 +8,17 @@
           :value="cell.width"
           @input="onInputCellWidthDebounced"
           :label="_('Ширина ячейки:')"
+          :title="cell.validationData.titles.width ?? ''"
+          :error="cell.validationData.errors.width ?? ''"
       />
+
       <InputText
           type="number"
           :value="cell.height"
           @input="onInputCellHeightDebounced"
           :label="_('Высота ячейки:')"
+          :title="cell.validationData.titles.height ?? ''"
+          :error="cell.validationData.errors.height ?? ''"
       />
 
     </div>
@@ -23,14 +28,18 @@
       <InputText
           type="number"
           :value="cell.innerWidth"
-          @input="onInputLeafWidthDebounced"
+          @input="onInputLeafWidthDebounced($event, cell.idx)"
           :label="_('Ширина полотна:')"
+          :title="cell.validationData.titles.innerWidth ?? ''"
+          :error="cell.validationData.errors.innerWidth ?? ''"
       />
       <InputText
           type="number"
           :value="cell.innerHeight"
-          @input="onInputLeafHeightDebounced"
+          @input="onInputLeafHeightDebounced($event, cell.idx)"
           :label="_('Высота полотна:')"
+          :title="cell.validationData.titles.innerHeight ?? ''"
+          :error="cell.validationData.errors.innerHeight ?? ''"
       />
     </div>
 

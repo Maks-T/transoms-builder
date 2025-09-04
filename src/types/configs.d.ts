@@ -47,6 +47,7 @@ interface SelectOption {
   imgSrc?: string;
 }
 
+
 interface ConfigsStore {
   // Свойства состояния
   profileTypes: { [key: string]: Profile };
@@ -66,3 +67,4 @@ interface ConfigsStore {
   addProfileType: (profile: Profile) => void;
   addTemplate: (template: TransomTemplate) => void;
 }
+

@@ -1,5 +1,5 @@
 
-interface Offsets {
+interface CellOffsets {
   top: number;
   bottom: number;
   right: number;
@@ -29,13 +29,26 @@ interface Transom {
   isValid: boolean;
 }
 
+interface sizeCellMessages {
+  innerWidth?: string;
+  innerHeight?: string;
+  width?: string;
+  height?: string;
+}
+
+interface ValidationCellData {
+  isValid: boolean;
+  errors: sizeCellMessages;
+  titles: sizeCellMessages
+}
+
 interface TransomCell {
   row: number;
   col: number;
   type: string;
   rowSpan?: number;
   colSpan?: number;
-  offsets?: Offsets;
+  offsets?: CellOffsets;
   innerWidth: number;
   innerHeight: number;
   idx?: number;
@@ -48,8 +61,8 @@ interface TransomCell {
   y?: number;
   width?: number;
   height?: number;
+  validationData?: ValidationCellData | {}
 }
-
 interface Profile {
   id: string;
   name: string;
@@ -113,7 +126,8 @@ interface ModelingStore {
   updateActiveTransomProfile: (profileId: string) => void;
   updateActiveTransomTemplate: (templateId: string) => void;
   getNeighbors: (currentCell: TransomCell) => Neighbors;
-  calculateOffsets: (cell: TransomCell, rowCount: number, colCount: number) => Offsets;
+  calculateOffsets: (cell: TransomCell, rowCount: number, colCount: number) => CellOffsets;
+  getValidationCellData: (cell: TransomCell) => ValidationCellData
   updateCellSizes: () => boolean;
   changeCellType: (cellIndex: number, newType: string) => void;
   setTransomWidth: (newWidth: number) => boolean;

@@ -2,7 +2,8 @@
 import {defineStore} from 'pinia'
 import {cloneObjectDeep} from '@utils'
 import {useConfigsStore} from '@stores'
-import {LEAF_HINGE_SIDE, LEAF_SWING_DIRECTION, LEAF_SWING_DIRECTION_NAMES, LEAF_TYPES, PROFILE_TYPE} from '@constants';
+import {LEAF_HINGE_SIDE, LEAF_SWING_DIRECTION, LEAF_TYPES, PROFILE_TYPE} from '@constants';
+import {LEAF_LIMITS} from "@src/configs";
 
 /**
  * Создает хранилище моделирования фрамуг с использованием
@@ -128,11 +129,10 @@ export const useModelingStore = defineStore('modeling', {
             const rowCount = transom.rowHeights?.length || 0
             const colCount = transom.colWidths?.length || 0
 
-            //ToDo если rowHeights и colWidths не заданы, то посчитать их от схемы
-            //ToDo подумать над автоматическим добавлением ячеек с профилем
+            //ToDo 1. если rowHeights и colWidths не заданы, то посчитать их от схемы с максимальными размерами полотен
+            //ToDo 2. подумать над автоматическим добавлением ячеек с профилем
 
             return transom.cells.map((cell, index) => {
-                cell.idx = index;
 
                 const rowSpan = cell.rowSpan || 1
                 const colSpan = cell.colSpan || 1
@@ -159,38 +159,43 @@ export const useModelingStore = defineStore('modeling', {
                 }
 
                 // Дополнительные свойства для расчетов
-                cell.isActive = cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
-                cell.hingeSide = cell.hingeSide || LEAF_HINGE_SIDE.RIGHT //петли слева/справа
-                cell.swingDirection = cell.swingDirection || LEAF_SWING_DIRECTION.OUTWARD //открывание наружу/внутрь
+                const isActive = cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
+                const hingeSide = cell.hingeSide || LEAF_HINGE_SIDE.RIGHT //петли слева/справа
+                const swingDirection = cell.swingDirection || LEAF_SWING_DIRECTION.OUTWARD //открывание наружу/внутрь
 
-                if (cell.type === PROFILE_TYPE) {
-                    if (width > height) {
-                        // Горизонтальная ячейка
-                        cell.isHorizontal = true;
-                    } else if (width < height) {
-                        // Вертикальная ячейка
-                        cell.isVertical = true;
-                    }
-                }
-
-                const offsets = this.calculateOffsets(cell, rowCount, colCount)
-                const innerWidth = Math.max(0, width - offsets.left - offsets.right)
-                const innerHeight = Math.max(0, height - offsets.top - offsets.bottom)
-
-
-                return {
+                const resultCell = {
                     ...cell,
+                    idx: index,
                     x,
                     y,
                     width,
                     height,
                     colSpan,
                     rowSpan,
-                    offsets,
-                    innerWidth,
-                    innerHeight,
-
+                    isActive,
+                    hingeSide,
+                    swingDirection,
                 }
+
+                if (cell.type === PROFILE_TYPE) {
+                    if (width > height) {
+                        // Горизонтальная ячейка
+                        resultCell.isHorizontal = true;
+                    } else if (width < height) {
+                        // Вертикальная ячейка
+                        resultCell.isVertical = true;
+                    }
+                }
+
+                const offsets = this.calculateOffsets(resultCell, rowCount, colCount)
+                resultCell.innerWidth = width - offsets.left - offsets.right
+                resultCell.innerHeight = height - offsets.top - offsets.bottom
+
+                resultCell.offsets = offsets
+
+                resultCell.validationData = this.getValidationCellData(resultCell);
+
+                return resultCell
             })
         },
 
@@ -411,12 +416,12 @@ export const useModelingStore = defineStore('modeling', {
          * @param cell Ячейка
          * @param rowCount Количество строк
          * @param colCount Количество колонок
-         * @returns {Offsets} Объект с отступами
+         * @returns {CellOffsets} Объект с отступами
          */
         calculateOffsets(cell, rowCount, colCount) {
 
             const offsets = {top: 0, bottom: 0, left: 0, right: 0}
-            const isActive = /*cell.isActive ||*/ cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL //ToDo cell.isActive
+            const isActive = cell.isActive
             const isProfile = cell.type === PROFILE_TYPE
             const isLeaf = cell.type !== PROFILE_TYPE
             const colStart = cell.col
@@ -512,6 +517,60 @@ export const useModelingStore = defineStore('modeling', {
         },
 
         /**
+         * Получаем валидацию и лимиты для указанной ячейки
+         * @param {TransomCell} cell - объект ячейки или null если тип profile
+         * @returns {ValidationCellData | {}}
+         */
+        getValidationCellData(cell) {
+            if (cell.type === PROFILE_TYPE) return {}
+
+            const cellTypeKey = cell.isActive ? 'active' : 'inactive';
+            const limits = LEAF_LIMITS[cellTypeKey];
+
+            const {minInnerWidth, maxInnerWidth, minInnerHeight, maxInnerHeight} = limits;
+            const {innerWidth, innerHeight, offsets} = cell;
+
+            const offsetsW = offsets.left + offsets.right
+            const offsetsH = offsets.top + offsets.bottom
+
+            const titles = {innerWidth: '', innerHeight: '', width: '', height: ''};
+            const errors = {innerWidth: '', innerHeight: '', width: '', height: ''};
+
+            //ToDo translate
+            titles.innerWidth = `от ${minInnerWidth} до ${maxInnerWidth}`;
+            titles.width = `от ${minInnerWidth + offsetsW} до ${maxInnerWidth + offsetsW}`;
+            titles.innerHeight = `от ${minInnerHeight} до ${maxInnerHeight}`;
+            titles.height = `от ${minInnerHeight + offsetsH} до ${maxInnerHeight + offsetsH}`;
+
+            // Проверка размеров и запись ошибок
+            if (innerWidth < minInnerWidth) {
+                console.log({innerWidth, minInnerWidth})
+                errors.innerWidth = `Должна быть > ${minInnerWidth}`;
+                errors.width = `Должна быть > ${minInnerWidth + offsetsW}`;
+            }
+            if (innerWidth > maxInnerWidth) {
+                console.log({innerWidth, maxInnerWidth})
+                errors.innerWidth = `Должна быть < ${maxInnerWidth}`;
+                errors.width = `Должна быть < ${maxInnerWidth + offsetsW}`;
+            }
+            if (innerHeight < minInnerHeight) {
+                errors.innerHeight = `Должна быть > ${minInnerHeight}`;
+                errors.height = `Должна быть > ${minInnerHeight + offsetsH}`;
+            }
+            if (innerHeight > maxInnerHeight) {
+                errors.innerHeight = `Должна быть < ${maxInnerHeight}`;
+                errors.height = `Должна быть < ${maxInnerHeight + offsetsH}`;
+            }
+
+            return {
+                isValid: Object.keys(errors).length === 0,
+                errors,
+                titles
+            };
+
+        },
+
+        /**
          * Обновляет размеры ячеек активной фрамуги
          * @private
          * @returns {boolean} True, если обновление успешно, иначе false
@@ -520,7 +579,7 @@ export const useModelingStore = defineStore('modeling', {
 
             const transom = this.activeTransom
             if (!transom || !transom.cells) return false
-
+            console.log('updateCellSizes')
             transom.cells = cloneObjectDeep(this.calculatedCells)
         },
 
@@ -610,7 +669,7 @@ export const useModelingStore = defineStore('modeling', {
                 ) {
                     const colIndex = cell.col - 1;
                     if (colIndex >= 0 && colIndex < colCount) {
-                        const offsets = cell.offsets// this.calculateOffsets(cell, rowCount, colCount);
+                        const offsets = cell.offsets
                         const width = profile.width + offsets.left + offsets.right;
 
                         columnWidths[colIndex] = Math.max(profile.width, width);
@@ -668,7 +727,7 @@ export const useModelingStore = defineStore('modeling', {
                 // получаем ширины колонок с вертикальным профилем
                 const columnProfileWidths = this.calculateProfileColumnWidths()
 
-                 const newColWidths = transom.colWidths.map((width, index) => {
+                const newColWidths = transom.colWidths.map((width, index) => {
                     // Если колонка содержит профиль
                     if (index in columnProfileWidths) {
                         return Math.round(columnProfileWidths[index]);
@@ -796,22 +855,6 @@ export const useModelingStore = defineStore('modeling', {
             const currentTransomHeight = transom.rowHeights.reduce((sum, w) => sum + w, 0);
             transom.validation.heightDiff = currentTransomHeight - transom.height;
             this.validateActiveTransom();
-        },
-
-        /**
-         * Получает минимальные и максимальные размеры фрамуги
-         * @returns {SizeLimits} Объект с границами размеров
-         */
-        getTransomSizeLimits() {
-            const transom = this.activeTransom
-            if (!transom) return {minWidth: 600, maxWidth: 6000, minHeight: 600, maxHeight: 600}
-
-            return {
-                minWidth: transom.minWidth || 600,
-                maxWidth: transom.maxWidth || 6000,
-                minHeight: transom.minHeight || 6000,
-                maxHeight: transom.maxHeight || 600
-            }
         },
 
         /**

@@ -1,8 +1,7 @@
 import {defineStore} from 'pinia';
 import {cloneObjectDeep} from '@utils';
 
-/** @type {ProfilesTypes} */
-const PROFILES_TYPES = {
+/** @type {ProfilesTypes} */const PROFILES_TYPES = {
     'modulasg': {
         id: 'modulasg',
         name: 'Modula',
@@ -449,4 +448,20 @@ const TRANSOM_TEMPLATES = {
     },
 };
 
-export {PROFILES_TYPES, TRANSOM_TEMPLATES}
+//Внутренние ограничения размеров ячеек (полотен)
+const LEAF_LIMITS = {
+    'active': { //размеры активных полотен
+        minInnerWidth: 300,
+        maxInnerWidth: 1100,
+        minInnerHeight: 600,
+        maxInnerHeight: 3000
+    },
+    'inactive': { //размеры глухих полотен
+        minInnerWidth: 400,
+        maxInnerWidth: 1500,
+        minInnerHeight: 600,
+        maxInnerHeight: 3000
+    },
+}
+
+export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS}
