@@ -133,6 +133,7 @@ export const useModelingStore = defineStore('modeling', {
             //ToDo 1. если rowHeights и colWidths не заданы, то посчитать их от схемы с максимальными размерами полотен
             //ToDo 2. подумать над автоматическим добавлением ячеек с профилем
 
+            console.log('calculatedCells')
             return transom.cells.map((cell, index) => {
 
                 const rowSpan = cell.rowSpan || 1
@@ -189,6 +190,7 @@ export const useModelingStore = defineStore('modeling', {
                 }
 
                 const offsets = this.calculateOffsets(resultCell, rowCount, colCount)
+
                 resultCell.innerWidth = width - offsets.left - offsets.right
                 resultCell.innerHeight = height - offsets.top - offsets.bottom
 
@@ -620,7 +622,6 @@ export const useModelingStore = defineStore('modeling', {
             transom.cells = cloneObjectDeep(this.calculatedCells)
             transom.validationData = this.getActiveTransomValidationData;
         },
-
 
         /**
          * Изменяет тип ячейки
