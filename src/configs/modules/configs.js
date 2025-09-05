@@ -35,10 +35,6 @@ const TRANSOM_TEMPLATES = {
         name: 'Фрамуга 1',
         width: 3100,
         height: 2519,
-        minWidth: 800,
-        minHeight: 800,
-        maxWidth: 6000,
-        maxHeight: 6000,
         profileId: 'modulasg',
         unit: 'mm',
         schema: '1x3',
@@ -50,25 +46,16 @@ const TRANSOM_TEMPLATES = {
                 row: 1,
                 col: 1,
                 type: 'inactive-leaf',
-                offsets: {top: 3, bottom: 0, left: 5, right: 0},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 1,
                 col: 2,
                 type: 'inactive-leaf',
-                offsets: {top: 3, bottom: 0, left: 0, right: 0},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 1,
                 col: 3,
                 type: 'inactive-leaf',
-                offsets: {top: 3, bottom: 0, left: 0, right: 5},
-                innerWidth: 0,
-                innerHeight: 0
             },
 
         ]
@@ -77,11 +64,6 @@ const TRANSOM_TEMPLATES = {
         id: 'transoms-type-2',
         name: 'Фрамуга 2',
         width: 2068,
-        height: 2519,
-        minWidth: 800,
-        minHeight: 800,
-        maxWidth: 6000,
-        maxHeight: 6000,
         profileId: 'modulasg',
         unit: 'mm',
         schema: '2x1',
@@ -93,17 +75,11 @@ const TRANSOM_TEMPLATES = {
                 row: 1,
                 col: 1,
                 type: 'inactive-leaf',
-                offsets: {top: 3, bottom: 0, left: 5, right: 0},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 1,
                 col: 2,
                 type: 'inactive-leaf',
-                offsets: {top: 3, bottom: 0, left: 0, right: 5},
-                innerWidth: 0,
-                innerHeight: 0
             },
 
 
@@ -114,10 +90,6 @@ const TRANSOM_TEMPLATES = {
         name: 'Фрамуга 3',
         width: 2288,
         height: 2519,
-        minWidth: 800,
-        minHeight: 800,
-        maxWidth: 6000,
-        maxHeight: 6000,
         profileId: 'modulasg',
         unit: 'mm',
         schema: '2x2',
@@ -129,33 +101,21 @@ const TRANSOM_TEMPLATES = {
                 row: 1,
                 col: 1,
                 type: 'inactive-leaf-small',
-                offsets: {top: 3, bottom: 0, left: 5, right: 0},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 1,
                 col: 2,
                 type: 'inactive-leaf-small',
-                offsets: {top: 3, bottom: 0, left: 0, right: 5},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 2,
                 col: 1,
                 type: 'inactive-leaf',
-                offsets: {top: 0, bottom: 0, left: 5, right: 0},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 2,
                 col: 2,
                 type: 'inactive-leaf',
-                offsets: {top: 0, bottom: 0, left: 0, right: 5},
-                innerWidth: 0,
-                innerHeight: 0
             },
 
         ]
@@ -165,10 +125,6 @@ const TRANSOM_TEMPLATES = {
         name: 'Фрамуга 4',
         width: 3100,
         height: 2015,
-        minWidth: 800,
-        minHeight: 800,
-        maxWidth: 6000,
-        maxHeight: 6000,
         profileId: 'modulasg',
         unit: 'mm',
         schema: '3x1',
@@ -199,10 +155,6 @@ const TRANSOM_TEMPLATES = {
         name: 'Фрамуга 5',
         width: 3100,
         height: 2519,
-        minWidth: 800,
-        minHeight: 800,
-        maxWidth: 6000,
-        maxHeight: 6000,
         profileId: 'modulasg',
         unit: 'mm',
         schema: '3x2',
@@ -239,10 +191,6 @@ const TRANSOM_TEMPLATES = {
         name: 'Фрамуга 6',
         width: 3100,
         height: 2519,
-        minWidth: 800,
-        minHeight: 800,
-        maxWidth: 6000,
-        maxHeight: 6000,
         profileId: 'modulasg',
         unit: 'mm',
         schema: '3x3',
@@ -288,10 +236,6 @@ const TRANSOM_TEMPLATES = {
         name: 'Фрамуга 7',
         width: 3100,
         height: 2519,
-        minWidth: 800,
-        minHeight: 800,
-        maxWidth: 6000,
-        maxHeight: 6000,
         profileId: 'modulasg',
         unit: 'mm',
         schema: '3x2',
@@ -329,10 +273,6 @@ const TRANSOM_TEMPLATES = {
         name: 'Фрамуга 8',
         width: 894,
         height: 3000,
-        minWidth: 800,
-        minHeight: 800,
-        maxWidth: 5000,
-        maxHeight: 5000,
         profileId: 'modulasg',
         unit: 'mm',
         schema: '3x3',
@@ -345,43 +285,28 @@ const TRANSOM_TEMPLATES = {
                 col: 1,
                 rowSpan: 3,
                 type: 'profile',
-                offsets: {top: 3, bottom: 0, left: 3, right: 0},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 1,
                 col: 2,
                 colSpan: 3,
                 type: 'profile',
-                offsets: {top: 3, bottom: 0, left: 0, right: 3},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 1,
                 col: 3,
                 rowSpan: 3,
                 type: 'profile',
-                offsets: {top: 3, bottom: 0, left: 0, right: 3},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 2,
                 col: 2,
                 type: 'inactive-leaf-small',
-                offsets: {top: 5, bottom: 0, left: 5, right: 5},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 3,
                 col: 2,
                 type: 'active-leaf',
-                offsets: {top: 5, bottom: 10, left: 5, right: 5},
-                innerWidth: 0,
-                innerHeight: 0
             },
 
         ]
@@ -407,42 +332,27 @@ const TRANSOM_TEMPLATES = {
                 col: 1,
                 rowSpan: 3,
                 type: 'profile',
-                offsets: {top: 3, bottom: 0, left: 3, right: 0},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 1,
                 col: 2,
                 type: 'profile',
-                offsets: {top: 3, bottom: 0, left: 0, right: 0},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 2,
                 col: 2,
                 type: 'inactive-leaf-small',
-                offsets: {top: 5, bottom: 5, left: 5, right: 5},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 3,
                 col: 2,
                 type: 'active-leaf',
-                offsets: {top: 5, bottom: 10, left: 0, right: 5},
-                innerWidth: 0,
-                innerHeight: 0
             },
             {
                 row: 1,
                 col: 3,
                 rowSpan: 3,
                 type: 'inactive-leaf',
-                offsets: {top: 3, bottom: 0, left: 0, right: 3},
-                innerWidth: 0,
-                innerHeight: 0
             },
         ]
     },
@@ -460,7 +370,7 @@ const LEAF_LIMITS = {
         minInnerWidth: 400,
         maxInnerWidth: 1500,
         minInnerHeight: 600,
-        maxInnerHeight: 3000
+        maxInnerHeight: 3100
     },
 }
 

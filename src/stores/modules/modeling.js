@@ -664,7 +664,7 @@ export const useModelingStore = defineStore('modeling', {
         /**
          * Устанавливает ширину активной фрамуги
          * @param newWidth Новая ширина
-         * @returns {boolean} True, если установка успешна
+         * @returns {void}
          */
         setTransomWidth(newWidth) {
             const transom = this.activeTransom
@@ -679,7 +679,7 @@ export const useModelingStore = defineStore('modeling', {
         /**
          * Устанавливает высоту активной фрамуги
          * @param newHeight Новая высота
-         * @returns {boolean} True, если установка успешна
+         * @returns {void}
          */
         setTransomHeight(newHeight) {
             const transom = this.activeTransom
