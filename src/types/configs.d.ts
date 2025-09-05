@@ -11,29 +11,29 @@ interface ProfilesTypes {
   [key: string]: ProfileType;
 }
 interface TransomTemplate {
-  id: string;
-  name: string;
-  width: number;
-  height: number;
-  minWidth: number;
-  minHeight: number;
-  maxWidth: number;
-  maxHeight: number;
-  profileId: string;
-  unit: string;
-  schema: string;
-  colWidths: number[];
-  rowHeights: number[];
-  imgSrc: string;
-  cells: {
-    row: number;
-    col: number;
-    type: string;
-    rowSpan?: number;
-    colSpan?: number;
-    offsets?: { top: number; bottom: number; left: number; right: number };
-    innerWidth?: number;
-    innerHeight?: number;
+  id: string;                         // Уникальный идентификатор шаблона фрамуги
+  name: string;                       // Название шаблона фрамуги
+  width: number;                      // Полная ширина шаблона фрамуги в миллиметрах
+  height: number;                     // Полная высота шаблона фрамуги в миллиметрах
+  minWidth: number;                   // Минимальная допустимая ширина шаблона в миллиметрах
+  minHeight: number;                  // Минимальная допустимая высота шаблона в миллиметрах
+  maxWidth: number;                   // Максимальная допустимая ширина шаблона в миллиметрах
+  maxHeight: number;                  // Максимальная допустимая высота шаблона в миллиметрах
+  profileId: string;                  // Идентификатор профиля, связанного с шаблоном
+  unit: string;                       // Единица измерения (например, 'mm' для миллиметров)
+  schema: string;                     // Описание схемы шаблона (например, строковое представление структуры)
+  colWidths: number[];                // Массив ширин колонок шаблона в миллиметрах
+  rowHeights: number[];               // Массив высот строк шаблона в миллиметрах
+  imgSrc: string;                     // Путь к изображению шаблона для отображения в интерфейсе
+  cells: {                            // Массив ячеек, составляющих шаблон фрамуги
+    row: number;                      // Номер строки ячейки (начиная с 1)
+    col: number;                      // Номер столбца ячейки (начиная с 1)
+    type: string;                     // Тип ячейки (например, активное полотно или профиль)
+    rowSpan?: number;                 // Количество строк, которые занимает ячейка (по умолчанию 1)
+    colSpan?: number;                 // Количество столбцов, которые занимает ячейка (по умолчанию 1)
+    offsets?: CellOffsets;            // Отступы ячейки (слева, справа, сверху, снизу)
+    innerWidth?: number;              // Внутренняя ширина ячейки (за вычетом отступов)
+    innerHeight?: number;             // Внутренняя высота ячейки (за вычетом отступов)
   }[];
 }
 

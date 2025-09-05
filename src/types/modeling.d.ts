@@ -7,77 +7,77 @@ interface CellOffsets {
 }
 
 interface TransomValidationData {
-  errors: {
-    widthDiff: string,
-    heightDiff: string,
+  errors: {                // Объект с сообщениями об ошибках валидации
+    widthDiff: string,     // Сообщение об ошибке для разницы в ширине фрамуги
+    heightDiff: string,    // Сообщение об ошибке для разницы в высоте фрамуги
   },
-  params: {
-    widthDiff: number,
-    heightDiff: number,
+  params: {                // Объект с параметрами валидации
+    widthDiff: number,     // Разница между суммой ширин колонок и шириной фрамуги в миллиметрах
+    heightDiff: number,    // Разница между суммой высот строк и высотой фрамуги в миллиметрах
   },
-  isValid: true,
-
+  isValid: boolean,        // Указывает, прошла ли фрамуга валидацию (true, если нет ошибок)
 }
 
 interface Transom {
-  id: string;
-  name: string;
-  width: number;
-  height: number;
-  minWidth: number;
-  minHeight: number;
-  maxWidth: number;
-  maxHeight: number;
-  profileId: string;
-  profile: Profile;
-  templateId: string;
-  colWidths: number[];
-  rowHeights: number[];
-  cells: TransomCell[];
-  validationData: TransomValidationData,
+  id: string;                         // Уникальный идентификатор фрамуги, добавляется динамически (например: transom-1757051406156)
+  name: string;                       // Название фрамуги (например, "Фрамуга #1")
+  width: number;                      // Полная ширина фрамуги в миллиметрах
+  height: number;                     // Полная высота фрамуги в миллиметрах
+  minWidth: number;                   // Минимальная допустимая ширина фрамуги в миллиметрах
+  minHeight: number;                  // Минимальная допустимая высота фрамуги в миллиметрах
+  maxWidth: number;                   // Максимальная допустимая ширина фрамуги в миллиметрах
+  maxHeight: number;                  // Максимальная допустимая высота фрамуги в миллиметрах
+  profileId: string;                  // Идентификатор профиля, используемого в фрамуге
+  profile: Profile;                   // Объект профиля, содержащий его характеристики
+  templateId: string;                 // Идентификатор шаблона фрамуги
+  colWidths: number[];                // Массив ширин колонок фрамуги в миллиметрах
+  rowHeights: number[];               // Массив высот строк фрамуги в миллиметрах
+  cells: TransomCell[];               // Массив ячеек, составляющих фрамугу
+  validationData: TransomValidationData; // Данные валидации фрамуги (ошибки и параметры)
 }
 
 interface sizeCellMessages {
-  innerWidth?: string;
-  innerHeight?: string;
-  width?: string;
-  height?: string;
+  innerWidth?: string;    // Сообщение о внутренней ширине ячейки (например, ограничения или ошибка)
+  innerHeight?: string;   // Сообщение о внутренней высоте ячейки (например, ограничения или ошибка)
+  width?: string;         // Сообщение о полной ширине ячейки (включая отступы)
+  height?: string;        // Сообщение о полной высоте ячейки (включая отступы)
 }
 
 interface ValidationCellData {
-  isValid: boolean;
-  errors: sizeCellMessages;
-  titles: sizeCellMessages
+  isValid: boolean;         // Указывает, прошла ли ячейка валидацию (true, если нет ошибок)
+  errors: sizeCellMessages; // Объект с сообщениями об ошибках валидации размеров ячейки
+  titles: sizeCellMessages; // Объект с подсказками о допустимых размерах ячейки
 }
 
 interface TransomCell {
-  row: number;
-  col: number;
-  type: string;
-  rowSpan?: number;
-  colSpan?: number;
-  offsets?: CellOffsets;
-  innerWidth: number;
-  innerHeight: number;
-  idx?: number;
-  isActive?: boolean;
-  hingeSide?: string;
-  swingDirection?: string;
-  isHorizontal?: boolean;
-  isVertical?: boolean;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  validationData?: ValidationCellData | {}
+  row: number;                // Номер строки, в которой находится ячейка (начиная с 1)
+  col: number;                // Номер столбца, в котором находится ячейка (начиная с 1)
+  type: string;               // Тип ячейки ('active-leaf',  'inactive-leaf','inactive-leaf-small', 'active-leaf-small', 'profile')
+  rowSpan?: number;           // Количество строк, которые занимает ячейка (по умолчанию 1)
+  colSpan?: number;           // Количество столбцов, которые занимает ячейка (по умолчанию 1)
+  offsets?: CellOffsets;      // Отступы ячейки (слева, справа, сверху, снизу)
+  innerWidth: number;         // Внутренняя ширина ячейки (за вычетом отступов) - ширина полотна
+  innerHeight: number;        // Внутренняя высота ячейки (за вычетом отступов) - высота полотна
+  idx?: number;               // Индекс ячейки в массиве ячеек фрамуги
+  isActive?: boolean;         // Указывает, является ли ячейка активным полотном
+  hingeSide?: string;         // Сторона петель (например, левая или правая) - тип открывания
+  swingDirection?: string;    // Направление открывания (например, наружу или внутрь)
+  isHorizontal?: boolean;     // Указывает, является ли ячейка горизонтальной только для профилей (ширина > высоты)
+  isVertical?: boolean;       // Указывает, является ли ячейка вертикальной только для профилей (высота > ширины)
+  x?: number;                 // Координата X верхнего левого угла ячейки
+  y?: number;                 // Координата Y верхнего левого угла ячейки
+  width?: number;             // Полная ширина ячейки (включая отступы)
+  height?: number;            // Полная высота ячейки (включая отступы)
+  validationData?: ValidationCellData | {}; // Данные валидации ячейки (ошибки и подсказки)
+  isInitialized: boolean;     // Указывает, завершены ли все вычисления для ячейки
 }
 interface Profile {
-  id: string;
-  name: string;
-  imgSrc: string;
-  width: number;
-  height: number;
-  gradeName: string;
+  id: string;           // Уникальный идентификатор профиля
+  name: string;         // Название профиля
+  imgSrc: string;       // Путь к изображению профиля
+  width: number;        // Ширина профиля в миллиметрах
+  height: number;       // Высота профиля в миллиметрах
+  gradeName: string;    // Название категории или типа профиля
 }
 
 interface SelectOption {
@@ -93,60 +93,51 @@ interface Neighbors {
   right: TransomCell[];
 }
 
-interface SizeLimits {
-  minWidth: number;
-  maxWidth: number;
-  minHeight: number;
-  maxHeight: number;
-}
-
 
 interface ModelingStore {
   // Свойства состояния
-  transoms: Transom[];
-  activeTransomId: string | null;
-  selectedProfileId: string | null;
-  selectedTemplateId: string | null;
-  showDimensions: boolean;
-  showLeafsNames: Boolean,
-  showDividers: boolean;
+  transoms: Transom[];                    // Массив всех фрамуг в хранилище
+  activeTransomId: string | null;         // Идентификатор активной фрамуги или null, если не выбрана
+  selectedProfileId: string | null;       // Идентификатор выбранного профиля или null, если не выбран
+  selectedTemplateId: string | null;      // Идентификатор выбранного шаблона фрамуги или null, если не выбран
+  showDimensions: boolean;                // Флаг отображения размеров в интерфейсе
+  showLeafsNames: boolean;                // Флаг отображения имен полотен в интерфейсе
+  showDividers: boolean;                  // Флаг отображения разделителей (вертикальных и горизонтальных)
 
   // Геттеры
-  configsStore: ConfigsStore;
-  activeTransom: Transom | undefined;
-  profileTypesArray: SelectOption[];
-  transomTemplatesArray: SelectOption[];
-  openingSidesArray: SelectOption[];
-  swingDirectionsArray: SelectOption[];
-  colBoundaries: number[];
-  rowBoundaries: number[];
-  verticalDividers: number[];
-  horizontalDividers: number[];
-  calculatedCells: TransomCell[] | undefined;
-  hasActiveLeaf: boolean;
-  getActiveTransomValidationData: () => TransomValidationData;
+  configsStore: ConfigsStore;                                  // Экземпляр хранилища конфигураций
+  activeTransom: Transom | undefined;                          // Активная фрамуга или undefined, если не выбрана
+  profileTypesArray: SelectOption[];                           // Массив типов профилей для использования в селектах
+  transomTemplatesArray: SelectOption[];                       // Массив шаблонов фрамуг для использования в селектах
+  openingSidesArray: SelectOption[];                           // Массив сторон открывания (левое/правое) для селектов
+  swingDirectionsArray: SelectOption[];                        // Массив направлений открывания (наружу/внутрь) для селектов
+  colBoundaries: number[];                                     // Массив координат границ колонок активной фрамуги
+  rowBoundaries: number[];                                     // Массив координат границ строк активной фрамуги
+  verticalDividers: number[];                                  // Массив координат вертикальных разделителей
+  horizontalDividers: number[];                                // Массив координат горизонтальных разделителей
+  calculatedCells: TransomCell[] | undefined;                  // Массив вычисленных ячеек активной фрамуги или undefined
+  hasActiveLeaf: boolean;                                      // Указывает, есть ли активные полотна в фрамуге
+  getActiveTransomValidationData: () => TransomValidationData; // Возвращает данные валидации активной фрамуги
 
   // Экшены
-  createTransomObject: () => Transom | null;
-  addTransom: () => void;
-  setActiveTransom: (transomId: string) => void;
-  setProfileType: (profileId: string) => void;
-  setTransomTemplate: (templateId: string) => void;
-  updateActiveTransomProfile: (profileId: string) => void;
-  updateActiveTransomTemplate: (templateId: string) => void;
-  getNeighbors: (currentCell: TransomCell) => Neighbors;
-  calculateOffsets: (cell: TransomCell, rowCount: number, colCount: number) => CellOffsets;
-  getValidationCellData: (cell: TransomCell) => ValidationCellData
-  updateCellSizes: () => boolean;
-  changeCellType: (cellIndex: number, newType: string) => void;
-  setTransomWidth: (newWidth: number) => boolean;
-  setTransomHeight: (newHeight: number) => boolean;
-  calculateProfileColumnWidths: () => { [key: number]: number };
-  calculateProfileRowHeights: () => { [key: number]: number };
-  updateWidths: () => void;
-  updateHeights: () => void;
-  setCellWidth: (cellIndex: number, newWidth: number) => void;
-  setCellHeight: (cellIndex: number, newHeight: number) => void;
-  getTransomSizeLimits: () => SizeLimits;
-
+  createTransomObject: () => Transom | null;                    // Создает объект новой фрамуги или null, если шаблон/профиль не выбраны
+  addTransom: () => void;                                       // Создает и добавляет новую фрамугу в массив
+  setActiveTransom: (transomId: string) => void;                // Устанавливает активную фрамугу по ID
+  setProfileType: (profileId: string) => void;                  // Устанавливает тип профиля и обновляет активную фрамугу
+  setTransomTemplate: (templateId: string) => void;             // Устанавливает шаблон фрамуги и обновляет/создает фрамугу
+  updateActiveTransomProfile: (profileId: string) => void;      // Обновляет профиль активной фрамуги
+  updateActiveTransomTemplate: (templateId: string) => void;    // Обновляет шаблон активной фрамуги
+  getNeighbors: (currentCell: TransomCell) => Neighbors;        // Возвращает соседние ячейки для указанной ячейки
+  calculateOffsets: (cell: TransomCell, rowCount: number, colCount: number) => CellOffsets;    // Рассчитывает отступы ячейки
+  getCellValidationData: (cell: TransomCell) => ValidationCellData;     // Возвращает данные валидации для ячейки
+  updateCellSizes: () => boolean;                                       // Обновляет размеры ячеек активной фрамуги
+  changeCellType: (cellIndex: number, newType: string) => void;         // Изменяет тип ячейки
+  setTransomWidth: (newWidth: number) => void;                       // Устанавливает ширину активной фрамуги
+  setTransomHeight: (newHeight: number) => void;                 // Устанавливает высоту активной фрамуги
+  calculateProfileColumnWidths: () => { [key: number]: number };        // Вычисляет ширины колонок с профилями
+  calculateProfileRowHeights: () => { [key: number]: number };          // Вычисляет высоты строк с профилями
+  updateAutoColWidths: () => void;                                             // Обновляет ширины колонок фрамуги (автоматическое подстраивание под шаблон)
+  updateAutoRowHeights: () => void;                                            // Обновляет высоты строк фрамуги (автоматическое подстраивание под шаблон)
+  setCellWidth: (cellIndex: number, newWidth: number) => void;          // Устанавливает ширину ячейки
+  setCellHeight: (cellIndex: number, newHeight: number) => void;        // Устанавливает высоту ячейки
 }

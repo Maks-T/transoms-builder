@@ -133,14 +133,15 @@ export const useModelingStore = defineStore('modeling', {
             //ToDo 1. если rowHeights и colWidths не заданы, то посчитать их от схемы с максимальными размерами полотен
             //ToDo 2. подумать над автоматическим добавлением ячеек с профилем
 
-            console.log('calculatedCells')
             return transom.cells.map((cell, index) => {
+                cell.idx = index
 
                 const rowSpan = cell.rowSpan || 1
                 const colSpan = cell.colSpan || 1
 
-                let x = this.colBoundaries[cell.col - 1] || 0
-                let y = this.rowBoundaries[cell.row - 1] || 0
+                cell.x = this.colBoundaries[cell.col - 1] || 0
+                cell.y = this.rowBoundaries[cell.row - 1] || 0
+
                 let width = 0
                 let height = 0
 
@@ -159,46 +160,38 @@ export const useModelingStore = defineStore('modeling', {
                         height += transom.rowHeights[rowIndex] || 0
                     }
                 }
+                cell.colSpan = colSpan
+                cell.rowSpan = rowSpan
+                cell.width = width
+                cell.height = height
 
                 // Дополнительные свойства для расчетов
-                const isActive = cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
-                const hingeSide = cell.hingeSide || LEAF_HINGE_SIDE.RIGHT //петли слева/справа
-                const swingDirection = cell.swingDirection || LEAF_SWING_DIRECTION.OUTWARD //открывание наружу/внутрь
-
-                const resultCell = {
-                    ...cell,
-                    idx: index,
-                    x,
-                    y,
-                    width,
-                    height,
-                    colSpan,
-                    rowSpan,
-                    isActive,
-                    hingeSide,
-                    swingDirection,
-                }
+                cell.isActive = cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
+                cell.hingeSide = cell.hingeSide || LEAF_HINGE_SIDE.RIGHT //петли слева/справа
+                cell.swingDirection = cell.swingDirection || LEAF_SWING_DIRECTION.OUTWARD //открывание наружу/внутрь
 
                 if (cell.type === PROFILE_TYPE) {
-                    if (width > height) {
-                        // Горизонтальная ячейка
-                        resultCell.isHorizontal = true;
-                    } else if (width < height) {
-                        // Вертикальная ячейка
-                        resultCell.isVertical = true;
-                    }
+                if (width > height) {
+                    // Горизонтальная ячейка
+                    cell.isHorizontal = true;
+                } else if (width < height) {
+                    // Вертикальная ячейка
+                    cell.isVertical = true;
+                }
                 }
 
-                const offsets = this.calculateOffsets(resultCell, rowCount, colCount)
+                const offsets = this.calculateOffsets(cell, rowCount, colCount)
 
-                resultCell.innerWidth = width - offsets.left - offsets.right
-                resultCell.innerHeight = height - offsets.top - offsets.bottom
+                cell.innerWidth = width - offsets.left - offsets.right
+                cell.innerHeight = height - offsets.top - offsets.bottom
 
-                resultCell.offsets = offsets
+                cell.offsets = offsets
 
-                resultCell.validationData = this.getValidationCellData(resultCell);
+                cell.validationData = this.getCellValidationData(cell);
 
-                return resultCell
+                cell.isInitialized = true;
+
+                return cell
             })
         },
 
@@ -246,7 +239,8 @@ export const useModelingStore = defineStore('modeling', {
                 errors,
             };
 
-        }
+        },
+
     },
 
     actions: {
@@ -302,8 +296,8 @@ export const useModelingStore = defineStore('modeling', {
             this.transoms.push(newTransom)
             this.activeTransomId = newTransom.id;
 
-            this.updateHeights()
-            this.updateWidths()
+            this.updateAutoRowHeights()
+            this.updateAutoColWidths()
             this.updateCellSizes();
         },
 
@@ -312,8 +306,20 @@ export const useModelingStore = defineStore('modeling', {
          * @param transomId Идентификатор фрамуги
          */
         setActiveTransom(transomId) {
-            if (this.transoms.some(transom => transom.id === transomId)) {
-                this.activeTransomId = transomId
+            const currentTransom = this.activeTransom
+            
+            if (currentTransom) {
+                //Сбрасываем инициализацию 
+                currentTransom.cells.forEach(c => {c.isInitialized = false})
+            }
+
+            const transom = this.transoms.find(transom => transom.id === transomId);
+
+            if (transom) {
+                this.activeTransomId = transomId;
+                this.selectedProfileId = transom.profileId;
+                this.selectedTemplateId = transom.templateId;
+
             }
         },
 
@@ -365,8 +371,8 @@ export const useModelingStore = defineStore('modeling', {
                 transom.profileId = profileId
                 transom.profile = cloneObjectDeep(profile)
 
-                this.updateHeights()
-                this.updateWidths()
+                this.updateAutoRowHeights()
+                this.updateAutoColWidths()
                 this.updateCellSizes();
             }
 
@@ -396,8 +402,8 @@ export const useModelingStore = defineStore('modeling', {
 
                 // Заменяем фрамугу в массиве
                 this.transoms[transomIndex] = newTransom
-                this.updateHeights()
-                this.updateWidths()
+                this.updateAutoRowHeights()
+                this.updateAutoColWidths()
                 this.updateCellSizes()
             }
         },
@@ -563,13 +569,21 @@ export const useModelingStore = defineStore('modeling', {
          * @param {TransomCell} cell - объект ячейки или null если тип profile
          * @returns {ValidationCellData | {}}
          */
-        getValidationCellData(cell) {
+        getCellValidationData(cell) {
             if (cell.type === PROFILE_TYPE) return {}
 
             const cellTypeKey = cell.isActive ? 'active' : 'inactive';
             const limits = LEAF_LIMITS[cellTypeKey];
 
-            const {minInnerWidth, maxInnerWidth, minInnerHeight, maxInnerHeight} = limits;
+
+            let {minInnerWidth, maxInnerWidth, minInnerHeight, maxInnerHeight} = limits;
+
+            //Если полотно занимает больше одной колонки, то меняем местами ограничения по высоте и ширине
+            if (cell.colSpan > 2) {
+                [minInnerWidth, maxInnerWidth, minInnerHeight, maxInnerHeight] =
+                    [minInnerHeight, maxInnerHeight, minInnerWidth, maxInnerWidth];
+            }
+
             const {innerWidth, innerHeight, offsets} = cell;
 
             const offsetsW = offsets.left + offsets.right
@@ -602,8 +616,9 @@ export const useModelingStore = defineStore('modeling', {
                 errors.height = `Должна быть <= ${maxInnerHeight + offsetsH}`;
             }
 
+
             return {
-                isValid: Object.keys(errors).length === 0,
+                isValid: Object.keys(errors).length === 0, //ToDo check also every cell
                 errors,
                 titles
             };
@@ -619,7 +634,7 @@ export const useModelingStore = defineStore('modeling', {
             const transom = this.activeTransom
             if (!transom || !transom.cells) return false
 
-            transom.cells = cloneObjectDeep(this.calculatedCells)
+            transom.cells = this.calculatedCells
             transom.validationData = this.getActiveTransomValidationData;
         },
 
@@ -653,13 +668,12 @@ export const useModelingStore = defineStore('modeling', {
          */
         setTransomWidth(newWidth) {
             const transom = this.activeTransom
-            if (!transom) return false;
+            if (!transom) return;
 
             transom.width = newWidth
 
-            this.updateWidths()
+            this.updateAutoColWidths()
             this.updateCellSizes();
-            return true;
         },
 
         /**
@@ -673,10 +687,8 @@ export const useModelingStore = defineStore('modeling', {
             if (!transom) return;
 
             transom.height = newHeight
-            this.updateHeights()
+            this.updateAutoRowHeights()
             this.updateCellSizes();
-
-            return true; //ToDo
         },
 
         /**
@@ -748,7 +760,7 @@ export const useModelingStore = defineStore('modeling', {
          * Обновляет ширины колонок фрамуги
          * @private
          */
-        updateWidths() {
+        updateAutoColWidths() {
             const transom = this.activeTransom
             // Пересчет colWidths пропорционально
             const currentWidth = transom.colWidths.reduce((sum, w) => sum + w, 0);
@@ -786,7 +798,7 @@ export const useModelingStore = defineStore('modeling', {
          * Обновляет высоты строк фрамуги
          * @private
          */
-        updateHeights() {
+        updateAutoRowHeights() {
             const transom = this.activeTransom
             // Пересчет rowHeights пропорционально
             const currentHeight = transom.rowHeights.reduce((sum, h) => sum + h, 0);
@@ -864,7 +876,6 @@ export const useModelingStore = defineStore('modeling', {
             const ratio = cell.height / newHeight;
 
             //ToDo profile columns
-
             //Пропорционально масштабируем строки
             for (let i = rowStart; i <= rowEnd; i++) {
                 transom.rowHeights[i] = Math.round(transom.rowHeights[i] / ratio);
