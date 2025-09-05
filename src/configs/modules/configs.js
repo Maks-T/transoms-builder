@@ -64,11 +64,13 @@ const TRANSOM_TEMPLATES = {
         id: 'transoms-type-2',
         name: 'Фрамуга 2',
         width: 2068,
+        height: 2519,
         profileId: 'modulasg',
         unit: 'mm',
         schema: '2x1',
         colWidths: [1034,1034],
-        rowHeights: [519],
+        rowHeights: [2519],
+
         imgSrc: './img/transomTemplates/transom-2.svg',
         cells: [
             {
@@ -81,8 +83,6 @@ const TRANSOM_TEMPLATES = {
                 col: 2,
                 type: 'inactive-leaf',
             },
-
-
         ]
     },
     'transoms-type-3': {
@@ -369,7 +369,7 @@ const LEAF_LIMITS = {
     'inactive': { //размеры глухих полотен
         minInnerWidth: 400,
         maxInnerWidth: 1500,
-        minInnerHeight: 600,
+        minInnerHeight: 300,
         maxInnerHeight: 3100
     },
 }

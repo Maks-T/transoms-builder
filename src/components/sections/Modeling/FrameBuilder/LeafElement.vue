@@ -100,7 +100,7 @@ const innerRectConfig = computed(() => {
     y: profileOffset,
     width: props.width - 2 * profileOffset,
     height: props.height - 2 * profileOffset,
-    stroke: strokeColor.value,
+    stroke: 'rgba(81,81,81,0.8)',
     strokeWidth: strokeWidth / 2,
     fill: 'transparent'
   }

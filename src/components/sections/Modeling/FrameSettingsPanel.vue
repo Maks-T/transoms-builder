@@ -57,14 +57,14 @@
 
     <Modal
         v-model="isLeafFinishModalOpen"
-        width="1200px"
+        width="1000px"
         :show-close-button="true"
     >
 
       <p>Нет контента</p>
 
       <template #footer>
-        <button @click="handleLeafFinishConfirm">Потвердить</button>
+        <button class="btn-red" @click="handleLeafFinishConfirm">Потвердить</button>
       </template>
 
     </Modal>

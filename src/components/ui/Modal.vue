@@ -6,15 +6,13 @@
         @click.self="handleOverlayClick"
         @keydown.esc="handleEscKey"
     >
-      <div class="modal" :class="modalClass" :style="modalStyle">
+      <div class="modal" :class="modalClass" :style="[modalStyle, { width: computedWidth }]">
         <button
             v-if="showCloseButton"
             class="modal__close-btn"
             @click="closeModal"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M13 1L1 13M1 1L13 13" stroke="currentColor" stroke-width="2"/>
-          </svg>
+          <Icon class="icon" icon="iconamoon:close-light"/>
         </button>
         <!-- Заголовок модального окна -->
         <div v-if="$slots.header || title" class="modal__header">
@@ -38,7 +36,8 @@
 </template>
 
 <script setup>
-import {onMounted, onUnmounted, watch, ref} from 'vue'
+import {onMounted, onUnmounted, watch, ref, computed} from 'vue'
+import {Icon} from '@iconify/vue';
 
 const props = defineProps({
   // Управление видимостью
@@ -92,9 +91,16 @@ const emit = defineEmits([
 
 const isOpen = ref(false)
 
+// Вычисляем ширину для стилей
+const computedWidth = computed(() => {
+  if (typeof props.width === 'number') {
+    return `${props.width}px`
+  }
+  return props.width
+})
+
 // Обработчик клика по оверлею
 const handleOverlayClick = () => {
-  console.log()
   closeModal()
 }
 
@@ -121,7 +127,11 @@ const openModal = () => {
 const lockBodyScroll = () => {
   if (props.lockScroll) {
     document.body.style.overflow = 'hidden'
-   //document.body.style.paddingRight = '16px' // Компенсация для скроллбара
+    // Определяем ширину скроллбара и компенсируем её
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`
+    }
   }
 }
 
@@ -129,7 +139,7 @@ const lockBodyScroll = () => {
 const unlockBodyScroll = () => {
   if (props.lockScroll) {
     document.body.style.overflow = ''
-    //document.body.style.paddingRight = ''
+    document.body.style.paddingRight = ''
   }
 }
 
@@ -178,76 +188,90 @@ defineExpose({
 })
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .modal-overlay {
   position: fixed;
+  z-index: 1000;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: 20px;
+
+  padding: rem(20);
+
+  background-color: rgba(75, 75, 75, 0.46);
 }
 
 .modal {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+
   max-width: 90vw;
   max-height: 90vh;
-  overflow: auto;
-  position: relative;
-  width: v-bind(typeof props.width==='number' ? props.width + 'px': props . width);
+
+  background: white;
+  border-radius: rem(4);
+  box-shadow: 0 rem(10) rem(30) rgba(0, 0, 0, 0.3);
+
+
+  &__title {
+    margin: 0;
+    font-size: rem(24);
+    font-weight: 600;
+    color: #333;
+  }
+
+  &__close-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%);
+
+    width: rem(30);
+    height: rem(30);
+    border: none;
+    outline: none;
+    cursor: pointer;
+    background: transparent;
+
+    .icon {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      color: $base-border-color;
+      border: 1px solid $base-border-color;
+      border-radius: 50%;
+      background: white;
+
+      &:hover {
+        color: $accent-text-color;
+        border: 1px solid $accent-text-color;
+      }
+    }
+
+  }
+
+  &__content {
+    padding: rem(20);
+  }
+
+  &__header {
+    border-top: 1px solid #eee;
+    padding: rem(20);
+  }
+
+  &__footer {
+    padding: rem(20);
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
 }
 
-.modal__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px 0;
-  margin-bottom: 16px;
-}
-
-.modal__title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #333;
-}
-
-.modal__close-btn {
-  background: none;
-  border: none;
-  padding: 8px;
-  cursor: pointer;
-  color: #666;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal__close-btn:hover {
-  background-color: #f5f5f5;
-  color: #333;
-}
-
-.modal__content {
-  padding: 0 24px 24px;
-}
-
-.modal__footer {
-  padding: 16px 24px 24px;
-  border-top: 1px solid #eee;
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
 
 /* Анимации */
 .modal-fade-enter-active,

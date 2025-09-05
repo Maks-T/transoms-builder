@@ -2,7 +2,7 @@
 
   <SectionModeling />
   <SectionTempResults />
-  <TransomTest />
+
 </template>
 
 <script setup>
