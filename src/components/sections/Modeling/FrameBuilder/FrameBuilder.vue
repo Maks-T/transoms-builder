@@ -17,12 +17,7 @@
                 listening: false
               }"
           />-->
-          <!-- Группа для рамки фрамуги -->
-          <v-group>
-            <v-rect
-                :config="rectFrameConfig"
-            />
-          </v-group>
+
 
           <!-- Группа для элементов -->
           <v-group>
@@ -32,7 +27,18 @@
                   v-bind="leafElementProps(cell, index)"
                   @select="handleSelectCell(index)"
               />
+              <ProfileElement
+                  v-if="cell.type === 'profile'"
+                  v-bind="profileElementProps(cell, index)"
+              />
             </template>
+          </v-group>
+
+          <!-- Группа для рамки фрамуги -->
+          <v-group>
+            <v-rect
+                :config="rectFrameConfig"
+            />
           </v-group>
 
           <!-- Группа для разделителей -->
@@ -80,6 +86,7 @@ import {ref, computed, onMounted, onUnmounted, watch} from 'vue'
 import {useModelingStore} from "@src/stores";
 import {storeToRefs} from 'pinia'
 import LeafElement from "@components/sections/Modeling/FrameBuilder/LeafElement.vue";
+import ProfileElement from "@components/sections/Modeling/FrameBuilder/ProfileElement.vue";
 
 const modelingStore = useModelingStore()
 
@@ -119,7 +126,8 @@ const rectFrameConfig = computed(() => {
     height: activeTransom.value.height * scaleFactor.value,
     stroke: activeTransom.value.validationData.isValid ? '#333' : 'red',
     strokeWidth: 3,
-    fill: '#ffffff',
+    fill: 'transparent',
+    listening: false
   }
 })
 
@@ -143,6 +151,25 @@ const leafElementProps = computed(() => (cell, index) => {
   }
 
 })
+
+const profileElementProps = computed(() => (cell, index) => {
+
+  return {
+    x: cell.x * scaleFactor.value + props.padding,
+    y: cell.y * scaleFactor.value + props.padding,
+    width: cell.width * scaleFactor.value,
+    height: cell.height * scaleFactor.value,
+    realWidth: cell.width,
+    realHeight: cell.height,
+    type: cell.type,
+    showDimensions: modelingStore.showDimensions,
+    scaleFactor: scaleFactor.value,
+    offsets: cell.offsets,
+    index
+  }
+
+})
+
 
 const dividersVerticalLineConfig = computed(() => (divider) => {
   return {

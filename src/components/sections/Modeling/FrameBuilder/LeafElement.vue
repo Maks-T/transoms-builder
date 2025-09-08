@@ -51,8 +51,7 @@ const props = defineProps({
   index: Number,
   isSelected: Boolean,
   showDimensions: Boolean,
-  showLeafsNames: Boolean,
-  modelingStore: Boolean
+  showLeafsNames: Boolean
 })
 
 const emit = defineEmits(['select'])
@@ -89,7 +88,7 @@ const mainRectConfig = computed(() => {
     width: props.width,
     height: props.height,
     stroke: strokeColor.value,
-    strokeWidth: strokeWidth.value,
+    strokeWidth: strokeWidth,
     fill: fillColor.value,
   }
 })

@@ -130,7 +130,7 @@ const TRANSOM_TEMPLATES = {
         schema: '3x1',
         colWidths: [1145,810,1145],
         rowHeights: [2015],
-        imgSrc: './img/transomTemplates/transom-2.svg',
+        imgSrc: './img/transomTemplates/transom-4.svg',
         cells: [
             {
                 row: 1,
@@ -288,8 +288,8 @@ const TRANSOM_TEMPLATES = {
             },
             {
                 row: 1,
-                col: 2,
-                colSpan: 3,
+                col: 1,
+                colSpan: 3, //пересекает
                 type: 'profile',
             },
             {
