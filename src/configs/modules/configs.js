@@ -1,5 +1,21 @@
-import {defineStore} from 'pinia';
-import {cloneObjectDeep} from '@utils';
+
+
+const ADDITIONAL_PROFILES_TYPES = [
+    {
+        mountProfile: { // Крепление к внешним поверхностям и неподвижным элементам АВД 0159
+            id: 'p0159_G',
+            gradeName: 'Профиль АВД 0159',
+        },
+        connectorProfile: { // Соединение полотен с коробом или между собой S5x32
+            id: 's532_G',
+            gradeName: 'Профиль S 5х32',
+        },
+        adapterProfile: {// Комбинированное соединение короба с полотнами АВД 7967
+            id: 'p7967_G',
+            gradeName: 'Профиль АВД 7967',
+        },
+    }
+];
 
 /** @type {ProfilesTypes} */const PROFILES_TYPES = {
     'modulasg': {
@@ -8,7 +24,8 @@ import {cloneObjectDeep} from '@utils';
         width: 39,
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/modulasl.webp',
-        gradeName: 'Профиль S41X39'
+        gradeName: 'Профиль S41X39',
+        additionalProfiles: ADDITIONAL_PROFILES_TYPES
     },
     'spaziosg': {
         id: 'spaziosg',
@@ -16,7 +33,8 @@ import {cloneObjectDeep} from '@utils';
         width: 70,
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/spaziosl.webp',
-        gradeName: 'Профиль S41X39'
+        gradeName: 'Профиль S41X39',
+        additionalProfiles: ADDITIONAL_PROFILES_TYPES
     },
     'spazioltsl': {
         id: 'spazioltsl',
@@ -24,7 +42,8 @@ import {cloneObjectDeep} from '@utils';
         width: 20,
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/spazioltsl.webp',
-        gradeName: 'Профиль S41X39'
+        gradeName: 'Профиль S41X39',
+        additionalProfiles: ADDITIONAL_PROFILES_TYPES
     },
 };
 
@@ -46,6 +65,12 @@ const TRANSOM_TEMPLATES = {
                 row: 1,
                 col: 1,
                 type: 'inactive-leaf',
+
+                profiles: {
+                    left: [{}],
+                    top: [],
+                }
+
             },
             {
                 row: 1,

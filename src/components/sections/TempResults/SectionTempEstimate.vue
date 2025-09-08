@@ -13,14 +13,16 @@
             <th>Наименование</th>
             <th>Ед</th>
             <th>Кол-во</th>
+            <th>Цена, руб</th>
           </tr>
           </thead>
           <tbody>
           <tr v-for="(mat, subindex) in cell.materials" :key="subindex">
             <td>{{ index + 1 }}.{{ subindex + 1 }}</td>
-            <td>{{ mat.name }}</td>
+            <td>{{ mat.id }}</td>
             <td>{{ mat.unit }}</td>
             <td>{{ mat.quantity.toFixed(3) }}</td>
+            <td>{{ '' }}</td>
           </tr>
           </tbody>
         </table>
@@ -33,13 +35,15 @@
             <th>Наименование</th>
             <th>Ед</th>
             <th>Кол-во</th>
+            <th>Цена, руб</th>
           </tr>
           </thead>
           <tbody>
-          <tr v-for="(quantity, name) in totalProfiles" :key="name">
-            <td>{{ name }}</td>
+          <tr v-for="(quantity, id) in totalProfiles" :key="id">
+            <td>{{ id }}</td>
             <td>мп</td>
             <td>{{ quantity.toFixed(3) }}</td>
+            <td>{{ '' }}</td>
           </tr>
           </tbody>
         </table>
@@ -49,13 +53,15 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import {computed, watch} from 'vue';
 import { useModelingStore, useEstimateStore } from '@stores';
 import Step from "@components/common/Step.vue";
 import { PROFILE_TYPE } from '@constants';
 
 const modelingStore = useModelingStore();
 const estimateStore = useEstimateStore();
+
+
 
 const cells = computed(() => {
   return estimateStore.profilesPerCell.map(cell => {
@@ -69,6 +75,12 @@ const cells = computed(() => {
   });
 });
 
+watch(() =>  cells, (newCells) => {
+  console.log('estimateNewCells', newCells.value)
+})
+
+console.log('estimateCells', cells.value)
+console.log('additionalProfilesPerCell', estimateStore.additionalProfilesPerCell)
 const totalProfiles = computed(() => estimateStore.totalProfiles);
 </script>
 
