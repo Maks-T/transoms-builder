@@ -1,6 +1,6 @@
 
 
-const ADDITIONAL_PROFILES_TYPES = [
+const ATTACH_PROFILES_TYPES =
     {
         mountProfile: { // Крепление к внешним поверхностям и неподвижным элементам АВД 0159
             id: 'p0159_G',
@@ -8,14 +8,14 @@ const ADDITIONAL_PROFILES_TYPES = [
         },
         connectorProfile: { // Соединение полотен с коробом или между собой S5x32
             id: 's532_G',
-            gradeName: 'Профиль S 5х32',
+            gradeName: 'Профиль S5х32',
         },
         adapterProfile: {// Комбинированное соединение короба с полотнами АВД 7967
             id: 'p7967_G',
             gradeName: 'Профиль АВД 7967',
         },
     }
-];
+;
 
 /** @type {ProfilesTypes} */const PROFILES_TYPES = {
     'modulasg': {
@@ -25,7 +25,7 @@ const ADDITIONAL_PROFILES_TYPES = [
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/modulasl.webp',
         gradeName: 'Профиль S41X39',
-        additionalProfiles: ADDITIONAL_PROFILES_TYPES
+        attachProfiles: ATTACH_PROFILES_TYPES
     },
     'spaziosg': {
         id: 'spaziosg',
@@ -34,7 +34,7 @@ const ADDITIONAL_PROFILES_TYPES = [
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/spaziosl.webp',
         gradeName: 'Профиль S41X39',
-        additionalProfiles: ADDITIONAL_PROFILES_TYPES
+        attachProfiles: ATTACH_PROFILES_TYPES
     },
     'spazioltsl': {
         id: 'spazioltsl',
@@ -43,7 +43,7 @@ const ADDITIONAL_PROFILES_TYPES = [
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/spazioltsl.webp',
         gradeName: 'Профиль S41X39',
-        additionalProfiles: ADDITIONAL_PROFILES_TYPES
+        attachProfiles: ATTACH_PROFILES_TYPES
     },
 };
 

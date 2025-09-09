@@ -32,5 +32,11 @@ export const LEAF_SWING_DIRECTION_NAMES = {
     [LEAF_SWING_DIRECTION.OUTWARD]: 'Наружу'  // Наружу из помещения
 }
 
+export const CELL_TYPES = {
+    ACTIVE: 'active',
+    INACTIVE: 'inactive',
+    PROFILE: 'profile'
+}
+
 export const PROFILE_TYPE = 'profile'
 
