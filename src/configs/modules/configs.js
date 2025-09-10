@@ -1,3 +1,4 @@
+import {ATTACH_PROFILE_TYPES} from "@constants/index.js";
 
 
 const ATTACH_PROFILES_TYPES =
@@ -93,7 +94,7 @@ const TRANSOM_TEMPLATES = {
         profileId: 'modulasg',
         unit: 'mm',
         schema: '2x1',
-        colWidths: [1034,1034],
+        colWidths: [1034, 1034],
         rowHeights: [2519],
 
         imgSrc: './img/transomTemplates/transom-2.svg',
@@ -118,7 +119,7 @@ const TRANSOM_TEMPLATES = {
         profileId: 'modulasg',
         unit: 'mm',
         schema: '2x2',
-        colWidths: [1144,1144],
+        colWidths: [1144, 1144],
         rowHeights: [503, 2016],
         imgSrc: './img/transomTemplates/transom-3.svg',
         cells: [
@@ -153,7 +154,7 @@ const TRANSOM_TEMPLATES = {
         profileId: 'modulasg',
         unit: 'mm',
         schema: '3x1',
-        colWidths: [1145,810,1145],
+        colWidths: [1145, 810, 1145],
         rowHeights: [2015],
         imgSrc: './img/transomTemplates/transom-4.svg',
         cells: [
@@ -183,7 +184,7 @@ const TRANSOM_TEMPLATES = {
         profileId: 'modulasg',
         unit: 'mm',
         schema: '3x2',
-        colWidths: [1145,810,1145],
+        colWidths: [1145, 810, 1145],
         rowHeights: [504, 2015],
         imgSrc: './img/transomTemplates/transom-5.svg',
         cells: [
@@ -219,7 +220,7 @@ const TRANSOM_TEMPLATES = {
         profileId: 'modulasg',
         unit: 'mm',
         schema: '3x3',
-        colWidths: [1145,810,1145],
+        colWidths: [1145, 810, 1145],
         rowHeights: [504, 2015],
         imgSrc: './img/transomTemplates/transom-6.svg',
         cells: [
@@ -264,7 +265,7 @@ const TRANSOM_TEMPLATES = {
         profileId: 'modulasg',
         unit: 'mm',
         schema: '3x2',
-        colWidths: [1145,810,1145],
+        colWidths: [1145, 810, 1145],
         rowHeights: [504, 2015],
         imgSrc: './img/transomTemplates/transom-7.svg',
         cells: [
@@ -399,4 +400,77 @@ const LEAF_LIMITS = {
     },
 }
 
-export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS}
+//правила для определения дополнительных профилей креплений
+const ATTACH_PROFILE_RULES = {
+    // Глухое полотно
+    inactive: {
+        left: {
+            null: ATTACH_PROFILE_TYPES.MOUNT,
+            inactive: ATTACH_PROFILE_TYPES.MOUNT,
+            active: ATTACH_PROFILE_TYPES.ADAPTER,
+            profile: ATTACH_PROFILE_TYPES.MOUNT
+        },
+        right: {
+            null: ATTACH_PROFILE_TYPES.MOUNT,
+            inactive: ATTACH_PROFILE_TYPES.CONNECTOR,
+            active: ATTACH_PROFILE_TYPES.ADAPTER,
+            profile: ATTACH_PROFILE_TYPES.MOUNT
+        },
+        top: {
+            null: ATTACH_PROFILE_TYPES.MOUNT,
+            inactive: ATTACH_PROFILE_TYPES.MOUNT,
+            active: null,
+            profile: ATTACH_PROFILE_TYPES.MOUNT
+        },
+        bottom: {
+            null: ATTACH_PROFILE_TYPES.MOUNT,
+            inactive: ATTACH_PROFILE_TYPES.CONNECTOR,
+            active: ATTACH_PROFILE_TYPES.ADAPTER,
+            profile: null
+        }
+    },
+
+    // Активное полотно
+    active: {
+        left: {
+            inactive: ATTACH_PROFILE_TYPES.CONNECTOR,
+            profile: ATTACH_PROFILE_TYPES.CONNECTOR
+        },
+        right: {
+            inactive: ATTACH_PROFILE_TYPES.CONNECTOR,
+            profile: ATTACH_PROFILE_TYPES.CONNECTOR
+        },
+        top: {
+            null: ATTACH_PROFILE_TYPES.CONNECTOR,
+            inactive: ATTACH_PROFILE_TYPES.CONNECTOR,
+            profile: ATTACH_PROFILE_TYPES.CONNECTOR
+        },
+        bottom: {
+            //ToDo
+            // Активное полотно снизу не требует дополнительных профилей
+        }
+    },
+
+    // Короб (профиль)
+    profile: {
+        left: {
+            null: ATTACH_PROFILE_TYPES.MOUNT,
+            inactive: ATTACH_PROFILE_TYPES.ADAPTER,
+            active: ATTACH_PROFILE_TYPES.ADAPTER
+        },
+        right: {
+            null: ATTACH_PROFILE_TYPES.MOUNT,
+            inactive: ATTACH_PROFILE_TYPES.ADAPTER,
+            active: ATTACH_PROFILE_TYPES.ADAPTER
+        },
+        top: {
+            null: ATTACH_PROFILE_TYPES.MOUNT
+        },
+        bottom: {
+            inactive: ATTACH_PROFILE_TYPES.ADAPTER,
+            active: ATTACH_PROFILE_TYPES.ADAPTER
+        }
+    }
+}
+
+export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS, ATTACH_PROFILE_RULES}

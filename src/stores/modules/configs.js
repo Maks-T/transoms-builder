@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia';
 import {cloneObjectDeep} from '@utils';
-import {PROFILES_TYPES, TRANSOM_TEMPLATES} from '@src/configs'
+import {PROFILES_TYPES, TRANSOM_TEMPLATES,ATTACH_PROFILE_RULES} from '@src/configs'
 import {LEAF_HINGE_SIDE, LEAF_HINGE_SIDE_NAMES, LEAF_SWING_DIRECTION, LEAF_SWING_DIRECTION_NAMES} from "@constants";
 
 /**

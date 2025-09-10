@@ -12,3 +12,7 @@ export const cloneObjectDeep = (obj) => {
 
         return JSON.parse(JSON.stringify(obj));
 }
+
+let  uniqCounter = 1;
+export const uniqId = (prefix = 'uniq') => `${prefix}-${Math.random().toString(36).slice(2, 8)}-${uniqCounter++}`;
+

@@ -40,3 +40,8 @@ export const CELL_TYPES = {
 
 export const PROFILE_TYPE = 'profile'
 
+export const ATTACH_PROFILE_TYPES = {
+    MOUNT: 'mountProfile',      // АВД 0159
+    CONNECTOR: 'connectorProfile', // S5х32
+    ADAPTER: 'adapterProfile',   // АВД 7967
+}
