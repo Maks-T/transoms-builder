@@ -446,8 +446,7 @@ const ATTACH_PROFILE_RULES = {
             profile: ATTACH_PROFILE_TYPES.CONNECTOR
         },
         bottom: {
-            //ToDo
-            // Активное полотно снизу не требует дополнительных профилей
+            null: ATTACH_PROFILE_TYPES.MOUNT,
         }
     },
 

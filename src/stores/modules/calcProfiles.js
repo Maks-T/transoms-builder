@@ -146,7 +146,17 @@ export const useCalcProfilesStore = defineStore('calc-profiles', {
                 if (neighborsOnSide.length > 0) {
                     neighborsOnSide.forEach(neighbor => {
                         const neighborType = neighbor ? this.getCellType(neighbor) : null;
-                        const profileRule = this.getAttachProfileRule(cellType, side, neighborType);
+                        let profileRule = this.getAttachProfileRule(cellType, side, neighborType);
+
+                        // Исключение: для inactive ячейки справа с inactive соседом, если сверху есть profile
+                        if (cellType === CELL_TYPES.INACTIVE &&
+                            side === 'right' &&
+                            neighborType === CELL_TYPES.INACTIVE) {
+                            const topNeighbors = this.getNeighborsOnSide(neighbors, 'top');
+                            if (topNeighbors.some(n => this.getCellType(n) === CELL_TYPES.PROFILE)) {
+                                profileRule = ATTACH_PROFILE_TYPES.MOUNT;
+                            }
+                        }
 
                         if (profileRule) {
                             const profile = this.createProfileObject(profileRule, cell, side, neighbor);
