@@ -66,12 +66,6 @@ const TRANSOM_TEMPLATES = {
                 row: 1,
                 col: 1,
                 type: 'inactive-leaf',
-
-                profiles: {
-                    left: [{}],
-                    top: [],
-                }
-
             },
             {
                 row: 1,
@@ -84,6 +78,22 @@ const TRANSOM_TEMPLATES = {
                 type: 'inactive-leaf',
             },
 
+        ],
+        cfgMaterials: [
+            //= на каждое полотно и фрамугу по 4 шт. соответственно
+            {priceId: 'prF1_G', cellsIdx: [0,1,2], fnCondition: '', fnQuantity: 1, fnPosition: ''}, //если cellIdx === null || undefined || '' то применить ко всем ячейкам
+            //кол-во профиля АВД 0159
+            {priceId: 'dowel_Chapai', cellsIdx: '[0,1,2]', fnCondition: '', fnQuantity: '3', fnPosition: ''}, //пока нет в базе
+            {priceId: 'dowel_Chapai', cellsIdx: '[0,2]', fnCondition: '', fnQuantity: '3', fnPosition: ''},
+            {priceId: 'dowel_Chapai', cellsIdx: '[1]', fnCondition: '', fnQuantity: '2', fnPosition: ''},
+            {priceId: 'fix440_G', cellsIdx: '[0,1,2]', fnCondition: '', fnQuantity: '3', fnPosition: ''}, //пока нет в базе
+            {priceId: 'fix440_G', cellsIdx: '[0,2]', fnCondition: '', fnQuantity: '3', fnPosition: ''},
+            {priceId: 'fix440_G', cellsIdx: '[1]', fnCondition: '', fnQuantity: '2', fnPosition: ''},
+            {priceId: 'fix7985_G', cellsIdx: '[1]', fnCondition: '', fnQuantity: '2', fnPosition: ''},
+            //уплотнитель = кол-во м.п. профиля S41x39
+            //perimeter = (cell.width + cell.height) * 2
+            {priceId: 'seltht4_G', cellsIdx: '[0,1,2]', fnCondition: "modulasg['modulasg', 'spaziosg', 'spazioltsl'].includes(profileId)", fnQuantity: 'perimeter', fnPosition: ''},
+            {priceId: 'film17500del_D', cellsIdx: '[0,1,2]', fnCondition: '', fnQuantity: '5', fnPosition: ''},
         ]
     },
     'transoms-type-2': {
@@ -143,7 +153,6 @@ const TRANSOM_TEMPLATES = {
                 col: 2,
                 type: 'inactive-leaf',
             },
-
         ]
     },
     'transoms-type-4': {
@@ -173,7 +182,6 @@ const TRANSOM_TEMPLATES = {
                 col: 3,
                 type: 'inactive-leaf',
             },
-
         ]
     },
     'transoms-type-5': {
