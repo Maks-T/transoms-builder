@@ -1,17 +1,15 @@
 <template>
 
   <SectionModeling />
-  <SectionTempResults />
-  <SectionTempAttachProfiles />
-
+  <SectionMaterials />
 </template>
 
 <script setup>
 import {useTranslate as _} from "@composables";
 import SectionModeling from "@components/sections/Modeling/SectionModeling.vue";
+
+import SectionMaterials from "@components/sections/TempResults/SectionMaterials.vue";
 import './assets/styles/index.scss'
-import SectionTempResults from "@components/sections/TempResults/SectionTempResults.vue";
-import SectionTempAttachProfiles from "@components/sections/TempResults/SectionTempCalcProfiles.vue";
 
 </script>
 

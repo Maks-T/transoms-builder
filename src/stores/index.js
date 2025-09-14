@@ -1,5 +1,5 @@
 import {useModelingStore} from "@stores/modules/modeling.js";
 import {useConfigsStore} from "@stores/modules/configs.js";
-import {useCalcProfilesStore} from "@stores/modules/calcProfiles.js";
+import {useMaterialsStore} from "@stores/modules/materials.js";
 
-export {useModelingStore, useConfigsStore, useCalcProfilesStore}
+export {useModelingStore, useConfigsStore, useMaterialsStore}

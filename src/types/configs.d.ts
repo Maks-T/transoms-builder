@@ -4,7 +4,8 @@ interface ProfileType {
   imgSrc: string;
   width: number;
   height: number;
-  gradeName: string;
+  gradeName: string; //ToDo deprecated
+  priceId: string;
 }
 
 interface ProfilesTypes {

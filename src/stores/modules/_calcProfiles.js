@@ -154,7 +154,7 @@ export const useCalcProfilesStore = defineStore('calc-profiles', {
                             neighborType === CELL_TYPES.INACTIVE) {
                             const topNeighbors = this.getNeighborsOnSide(neighbors, 'top');
                             if (topNeighbors.some(n => this.getCellType(n) === CELL_TYPES.PROFILE)) {
-                                profileRule = ATTACH_PROFILE_TYPES.MOUNT;
+
                             }
                         }
 

@@ -1,7 +1,8 @@
 import {defineStore} from 'pinia';
 import {cloneObjectDeep} from '@utils';
-import {PROFILES_TYPES, TRANSOM_TEMPLATES,ATTACH_PROFILE_RULES} from '@src/configs'
+import {PROFILES_TYPES, TRANSOM_TEMPLATES, PRICES, MATERIALS_ON_SIDE_RULES} from '@src/configs'
 import {LEAF_HINGE_SIDE, LEAF_HINGE_SIDE_NAMES, LEAF_SWING_DIRECTION, LEAF_SWING_DIRECTION_NAMES} from "@constants";
+
 
 /**
  * Хранилище для управления конфигурационными данными приложения:
@@ -12,6 +13,8 @@ export const useConfigsStore = defineStore('configs', {
     state: () => ({
         profileTypes: cloneObjectDeep(PROFILES_TYPES),
         transomTemplates: cloneObjectDeep(TRANSOM_TEMPLATES),
+        materialsRules: MATERIALS_ON_SIDE_RULES,
+        prices: PRICES
     }),
 
     getters: {
@@ -58,7 +61,8 @@ export const useConfigsStore = defineStore('configs', {
         getProfileById: (state) => (id) => state.profileTypes[id],
         getTransomTemplateById: (state) => (id) => state.transomTemplates[id],
         defaultProfile: (state) => Object.keys(state.profileTypes)[0],
-        defaultTemplate: (state) => Object.keys(state.transomTemplates)[7]
+        defaultTemplate: (state) => Object.keys(state.transomTemplates)[0],
+        getMaterialsRules: (state) => state.materialsRules
     },
 
     actions: {

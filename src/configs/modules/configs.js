@@ -26,7 +26,7 @@ const ATTACH_PROFILES_TYPES =
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/modulasl.webp',
         gradeName: 'Профиль S41X39',
-        attachProfiles: ATTACH_PROFILES_TYPES
+        priceId: 's4139_G'
     },
     'spaziosg': {
         id: 'spaziosg',
@@ -35,7 +35,7 @@ const ATTACH_PROFILES_TYPES =
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/spaziosl.webp',
         gradeName: 'Профиль S41X39',
-        attachProfiles: ATTACH_PROFILES_TYPES
+        priceId: 's4139_G'
     },
     'spazioltsl': {
         id: 'spazioltsl',
@@ -44,7 +44,7 @@ const ATTACH_PROFILES_TYPES =
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/spazioltsl.webp',
         gradeName: 'Профиль S41X39',
-        attachProfiles: ATTACH_PROFILES_TYPES
+        priceId: 's4139_G'
     },
 };
 
@@ -408,6 +408,92 @@ const LEAF_LIMITS = {
     },
 }
 
+/**
+ * length - длина соседнего полотна, если left или right, то cell.innerHeight, если top или bottom, то cell.innerWidth
+ */
+
+const MT_SETS = {
+    INACTIVE_NULL: [
+        {id: 'p0159_G', q: (p) => p.length + 100}, //attach
+        {id: 'seltht4_G', q: (p) => p.length + 100}, //Уплотнитель
+        {id: 'prF1_G', q: 1}, //Сухарь
+        {id: 'dowel_chapai', q: (p) => Math.ceil(p.length / 400) + 1},
+        {id: 'fix7985_G', q: 1}, //Винт M4х14 DIN 7985
+    ]
+}
+
+//правила для материалов
+const MATERIALS_ON_SIDE_RULES = {
+    // Глухое полотно
+    inactive: {
+        left: {
+            null: [...MT_SETS.INACTIVE_NULL],
+            inactive: [],
+            active: [],
+            profile: {}
+        },
+        right: {
+            null: [...MT_SETS.INACTIVE_NULL],
+            inactive: [],
+            active: [],
+            profile:{}
+        },
+        top: {
+            null: [...MT_SETS.INACTIVE_NULL],
+            inactive: [],
+            active: null,
+            profile: {}
+        },
+        bottom: {
+            null: [...MT_SETS.INACTIVE_NULL],
+            inactive: [],
+            active: [],
+            profile: null
+        }
+    },
+
+    // Активное полотно
+    active: {
+        left: {
+            inactive: [],
+            profile: {}
+        },
+        right: {
+            inactive: [],
+            profile: {}
+        },
+        top: {
+            null: [],
+            inactive: [],
+            profile: {}
+        },
+        bottom: {
+            null: [],
+        }
+    },
+
+    // Короб (профиль)
+    profile: {
+        left: {
+            null: [],
+            inactive: [],
+            active: {}
+        },
+        right: {
+            null: [],
+            inactive: [],
+            active: {}
+        },
+        top: {
+            null: {}
+        },
+        bottom: {
+            inactive: [],
+            active: {}
+        }
+    }
+}
+
 //правила для определения дополнительных профилей креплений
 const ATTACH_PROFILE_RULES = {
     // Глухое полотно
@@ -480,4 +566,4 @@ const ATTACH_PROFILE_RULES = {
     }
 }
 
-export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS, ATTACH_PROFILE_RULES}
+export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS, ATTACH_PROFILE_RULES, MATERIALS_ON_SIDE_RULES}
