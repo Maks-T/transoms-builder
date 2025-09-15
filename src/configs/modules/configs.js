@@ -353,7 +353,8 @@ const TRANSOM_TEMPLATES = {
             },
             {
                 row: 1,
-                col: 2,
+                col: 1,
+                colSpan: 2,
                 type: 'profile',
             },
             {
@@ -444,7 +445,7 @@ const MT_SETS = {
     // Комплект для профиля с полотном в качестве соседа
     PROFILE_LEAF: [
         {id: 'p7967_G', q: (p) => p.length + 100}, // Профиль АВД 7967 + 100мм запас
-        {id: 'seltht4_G', q: (p) => p.length + 100}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+        //{id: 'seltht4_G', q: (p) => p.length + 100},  Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
         {id: 'sealAl43_G', q: (p) => p.length + 100}, // Уплотнитель АЛ-43 + 100мм запас
         {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
     ],
@@ -461,9 +462,12 @@ const MT_SETS = {
         {id: 'rigelDefault', q: 1},
         {id: 'screwM20', q: 2}, //по два штуки на каждый ригель
         {id: 'screwM20', q: 2}, //по два штуки на каждый ригель
-    ]
+    ],
+    PROFILE_INACTIVE: [{id: 'corner-100-100-8', q: 1}]
 }
-//правила для материалов
+
+
+//правила для материалов null - примыкание к стене
 const MATERIALS_ON_SIDE_RULES = {
     // Глухое полотно
     inactive: {
@@ -471,25 +475,25 @@ const MATERIALS_ON_SIDE_RULES = {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
             inactive: [...MT_SETS.INACTIVE_LEFT_BOTTOM_INACTIVE],
             active: [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE],
-            profile: [...MT_SETS.INACTIVE_PROFILE]
+            verticalProfile: [...MT_SETS.INACTIVE_PROFILE]
         },
         right: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
             inactive: [...MT_SETS.INACTIVE_RIGHT_TOP_INACTIVE],
             active: [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE],
-            profile: [...MT_SETS.INACTIVE_PROFILE]
+            verticalProfile: [...MT_SETS.INACTIVE_PROFILE]
         },
         top: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
             inactive: [...MT_SETS.INACTIVE_RIGHT_TOP_INACTIVE],
             active: null,
-            profile: [...MT_SETS.INACTIVE_PROFILE]
+            horizontalProfile: [...MT_SETS.INACTIVE_PROFILE]
         },
         bottom: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
             inactive: [...MT_SETS.INACTIVE_LEFT_BOTTOM_INACTIVE],
             active: [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE, ...MT_SETS.INACTIVE_BOTTOM_ACTIVE],
-            profile: null
+            horizontalProfile: null
         }
     },
 
@@ -497,17 +501,17 @@ const MATERIALS_ON_SIDE_RULES = {
     active: {
         left: {
             inactive: [...MT_SETS.ACTIVE_ANY],
-            profile: [...MT_SETS.ACTIVE_ANY],
+            verticalProfile: [...MT_SETS.ACTIVE_ANY],
             null: [...MT_SETS.ACTIVE_ANY],
         },
         right: {
             inactive: [...MT_SETS.ACTIVE_ANY],
-            profile: [...MT_SETS.ACTIVE_ANY],
+            verticalProfile: [...MT_SETS.ACTIVE_ANY],
             null: [...MT_SETS.ACTIVE_ANY],
         },
         top: {
             inactive: [...MT_SETS.ACTIVE_ANY],
-            profile: [...MT_SETS.ACTIVE_ANY],
+            horizontalProfile: [...MT_SETS.ACTIVE_ANY],
             null: [...MT_SETS.ACTIVE_ANY],
         },
         bottom: {
@@ -516,7 +520,7 @@ const MATERIALS_ON_SIDE_RULES = {
     },
 
     // Короб (профиль)
-    profile: {
+    verticalProfile: {
         left: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL, ...MT_SETS.PROFILE_RIGHT_LEFT_NULL],
             inactive: [...MT_SETS.PROFILE_LEAF],
@@ -527,11 +531,18 @@ const MATERIALS_ON_SIDE_RULES = {
             inactive: [...MT_SETS.PROFILE_LEAF],
             active: [...MT_SETS.PROFILE_LEAF]
         },
+    },
+    horizontalProfile: {
+        left: {
+            inactive: [...MT_SETS.PROFILE_INACTIVE], //уголок
+        },
+        right: {
+           inactive: [...MT_SETS.PROFILE_INACTIVE], //уголок
+        },
         top: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL]
         },
         bottom: {
-            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
             inactive: [...MT_SETS.PROFILE_LEAF],
             active: [...MT_SETS.PROFILE_LEAF]
         }
