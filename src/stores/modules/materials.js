@@ -8,7 +8,7 @@ import {uniqId} from "@utils/index.js";
  * @returns MaterialConfig
  */
 export const useMaterialsStore = defineStore('materials', {
-    
+
     state: () => ({}),
 
     getters: {
@@ -44,9 +44,49 @@ export const useMaterialsStore = defineStore('materials', {
          * @returns {string} Тип ячейки: 'profile', 'active', 'inactive'.
          */
         getCellType(cell) {
-            if (cell.type === PROFILE_TYPE) return CELL_TYPES.PROFILE;
+            if (cell.type === PROFILE_TYPE && cell.isVertical)  return 'verticalProfile';
+            if (cell.type === PROFILE_TYPE && cell.isHorizontal)  return 'horizontalProfile';
             if (cell.isActive) return CELL_TYPES.ACTIVE;
             return CELL_TYPES.INACTIVE;
+        },
+
+        /**
+         * Определяет упрощенный тип соседней ячейки на основе ее свойств с учетом исключений.
+         * @param cell
+         * @param side
+         * @param neighbor
+         * @param neighbors
+         * @returns {string}
+         */
+        getNeighborType(cell, side, neighbor, neighbors) {
+            const cType = this.getCellType(cell)
+            const nType = neighbor ? this.getCellType(neighbor) : null
+
+            // 1. Исключение: inactive справа + inactive сосед, но сверху profile
+            if (
+                cType === CELL_TYPES.INACTIVE &&
+                side === 'right' &&
+                nType === CELL_TYPES.INACTIVE
+            ) {
+                const topNeighbors = this.getNeighborsOnSide(neighbors, 'top')
+                if (topNeighbors.some(n => this.getCellType(n) === CELL_TYPES.PROFILE)) {
+                    return CELL_TYPES.PROFILE; //Соединение как с коробом
+                }
+            }
+
+            // 2. Исключение: если сосед profile и ориентация конфликтует со стороной
+            //Исключение если соседний профиль (может вынести в правило)
+            if (
+                cType === CELL_TYPES.PROFILE &&
+                nType === CELL_TYPES.INACTIVE &&
+                cell.isHorizontal &&
+                ['left', 'right'].includes(side)
+            ) {
+                console.log('profileWithCorner')
+                return 'profileWithCorner'
+            }
+
+            return nType
         },
 
         /**
@@ -138,14 +178,11 @@ export const useMaterialsStore = defineStore('materials', {
 
             // Определяем стороны для основного профиля
             let profileSides;
-            if (cellType === CELL_TYPES.PROFILE) {
-                if (cell.isVertical) {
-                    profileSides = ['left']; // Вертикальный профиль только на длинной стороне
-                } else if (cell.isHorizontal) {
-                    profileSides = ['top']; // Горизонтальный профиль только на длинной стороне
-                } else {
-                    profileSides = []; // Пропускаем, если не определена ориентация
-                }
+
+            if (cellType === 'verticalProfile') {
+                profileSides = ['left'];
+            } else if (cellType === 'horizontalProfile') {
+                profileSides = ['top'];
             } else {
                 profileSides = ['left', 'right', 'top', 'bottom']; // Для полотен — прямоугольник из профилей
             }
@@ -168,13 +205,13 @@ export const useMaterialsStore = defineStore('materials', {
             const sides = ['left', 'right', 'top', 'bottom'];
 
             sides.forEach((side) => {
-                if (
+                /*if (
                     cellType === CELL_TYPES.PROFILE &&
                     ((cell.isVertical && ['top', 'bottom'].includes(side)) ||
                         (cell.isHorizontal && ['left', 'right'].includes(side)))
                 ) {
                     return; // Исключаем из расчета стороны ширины у ячейки типа Профиль (короб)
-                }
+                }*/
 
                 const neighborsOnSide = this.getNeighborsOnSide(neighbors, side);
 
@@ -183,6 +220,19 @@ export const useMaterialsStore = defineStore('materials', {
                     neighborsOnSide.forEach((neighbor) => {
                         const neighborType = neighbor ? this.getCellType(neighbor) : null;
                         let materialsSet;
+
+                        this.getNeighborType(cell, side, neighbor, neighbors)
+                        //Исключение если соседний профиль (может вынести в правило)
+                        if (
+                            cellType !== CELL_TYPES.PROFILE &&
+                            neighborType === CELL_TYPES.PROFILE &&
+                            (//(neighbor.isVertical && ['top', 'bottom'].includes(side)) ||
+                                (neighbor.isHorizontal && ['left', 'right'].includes(side)))
+                        ) {
+                            //добавляем только уголок в таком случае
+                            materialsSet = [{id: 'corner-100-100-8', q: 1}]
+                            //return; // Исключаем из расчета стороны ширины у ячейки типа Профиль (короб)
+                        }
 
                         // Исключение: для inactive ячейки справа с inactive соседом, если сверху есть profile
                         if (
@@ -194,11 +244,14 @@ export const useMaterialsStore = defineStore('materials', {
                             if (topNeighbors.some((n) => this.getCellType(n) === CELL_TYPES.PROFILE)) {
                                 //соединение как с профилем
                                 materialsSet = this.getMaterialsSet(cellType, side, CELL_TYPES.PROFILE);
+                            } else {
+                                materialsSet = this.getMaterialsSet(cellType, side, neighborType);
                             }
-                        } else {
-                            materialsSet = this.getMaterialsSet(cellType, side, neighborType);
                         }
 
+                        if (!materialsSet) {
+                            materialsSet = this.getMaterialsSet(cellType, side, neighborType);
+                        }
 
                         if (Array.isArray(materialsSet)) {
                             materialsSet.forEach((materialSet) => {
@@ -208,6 +261,7 @@ export const useMaterialsStore = defineStore('materials', {
                                 }
                             });
                         }
+
                     });
                 } else {
                     // Обработка случая, когда нет соседей (граница фрамуги)

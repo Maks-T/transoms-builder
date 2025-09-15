@@ -19,6 +19,9 @@
     <!-- Треугольник для отображения типа открывания (для активных полотен) -->
     <v-line v-if="isActive" :config="openingTriangleConfig"/>
 
+    <!-- Номер ячейки -->
+    <v-text :config="numberTextConfig"/>
+
     <!-- Выделение окна -->
     <v-rect v-if="isSelected" :config="selectRectConfig"/>
 
@@ -194,6 +197,21 @@ const openingTriangleConfig = computed(() => {
 
   return null;
 })
+
+// Конфигурация для текста номера ячейки
+const numberTextConfig = computed(() => {
+  return {
+    x: props.width / 2,
+    y: props.height * 0.4,
+    text: String(props.index + 1),
+    fontSize: 8,
+    fill: 'rgba(81,81,81,0.6)',
+    align: 'center',
+    verticalAlign: 'middle',
+    offsetX: 3,
+    offsetY: 3
+  };
+});
 
 
 const handleMouseUp = (event) => {

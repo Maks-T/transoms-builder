@@ -1,6 +1,6 @@
 <template>
   <div class="section-materials">
-    <h2>Раскрой материалов</h2>
+    <h2>Материалы</h2>
 
     <!-- Вкладки для переключения -->
     <div class="tabs">
@@ -8,24 +8,24 @@
           :class="{ 'active': activeTab === 'detailed' }"
           @click="activeTab = 'detailed'"
       >
-        Спецификация раскроя
+        Спецификация подробно
       </button>
       <button
           :class="{ 'active': activeTab === 'summary' }"
           @click="activeTab = 'summary'"
       >
-        Спецификация по ячейкам
+        Спецификация кратко
       </button>
     </div>
 
     <!-- Подробный вид -->
     <div v-if="activeTab === 'detailed'">
       <div v-for="(cellMaterials, cellIdx) in materials" :key="cellIdx" class="cell-materials">
-        <h3>Ячейка {{ Number(cellIdx) + 1 }}</h3>
+        <h3>Ячейка {{ Number(cellIdx) + 1 }} {{ cells[cellIdx]?.type }}</h3>
         <table class="materials-table">
           <thead>
           <tr>
-            <th>Номер ячейки</th>
+
             <th>Сторона</th>
             <th>Материал</th>
             <th>Количество</th>
@@ -35,7 +35,7 @@
           </thead>
           <tbody>
           <tr v-for="material in cellMaterials" :key="material.id">
-            <td>{{ Number(cellIdx) + 1 }}</td>
+
             <td>{{ material.side }}</td>
             <td>{{ material.price?.name || material.price?.id }}</td>
             <td>{{ material.quantity }}</td>
@@ -51,7 +51,7 @@
     <div v-if="activeTab === 'summary'">
       <!-- Сумма по ячейкам -->
       <div v-for="(cellSummary, cellIdx) in summarizedByCell" :key="cellIdx" class="cell-summary">
-        <h3>Ячейка {{ Number(cellIdx) + 1 }}</h3>
+        <h3> Ячейка {{ Number(cellIdx) + 1 }} {{ cells[cellIdx]?.type }}</h3>
         <table class="summary-table">
           <thead>
           <tr>
@@ -109,13 +109,14 @@ const materialsStore = useMaterialsStore();
 const { activeTransom } = storeToRefs(modelingStore);
 
 const materials = /** @type MaterialsObject */ ref({});
-
+const cells = /** @type TransomCell[] */ ref([]);
 // Отслеживание изменений ячеек активной фрамуги
 watch(
     activeTransom,
     (activeTransom) => {
       if (activeTransom) {
         materials.value = materialsStore.calculateTransomMaterials(activeTransom);
+        cells.value = activeTransom.cells;
         console.log('materials', materials.value);
       }
     },

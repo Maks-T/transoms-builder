@@ -1,20 +1,76 @@
 export const PRICES = {
     "s4139_G": {
-        "name": "Профиль S 41х39"//ToDo скопировать с базы
+        "id": "s4139_G",
+        "name": "Профиль S 41х39",
+        "param1": "6",
+        "param2": "1.2",
+        "param3": "6",
+        "param4": "120",
+        "weight": 1.242,
+        "unit": "мп",
+        "priceIn": 8.9,
+        "priceEUR": 0,
+        "priceUSD": 0,
+        "priceRUB": 0,
+        "priceBYN": 0,
+        "pricePLN": 0,
+        "price": 0
     },
-    "p0159_G": {//ToDo скопировать с базы
+    "p0159_G": {
         "id": "p0159_G",
         "name": "Профиль АВД 0159",
+        "param1": "23",
+        "param2": "1.2",
+        "param3": "5.5",
+        "param4": "65",
+        "weight": 1.303,
+        "unit": "мп",
+        "priceIn": 7.16,
+        "priceEUR": 0,
+        "priceUSD": 0,
+        "priceRUB": 0,
+        "priceBYN": 0,
+        "pricePLN": 0,
+        "price": 0
     },
-    "s532_G": { //ToDo скопировать с базы
+
+    "s532_G": {
         "id": "s532_G",
-        "name": "Профиль S5х32",
+        "name": "Профиль S 5х32",
+        "param1": "",
+        "param2": "1.2",
+        "param3": "6",
+        "param4": "40",
+        "weight": 0.219,
+        "unit": "мп",
+        "priceIn": 1.76,
+        "priceEUR": 0,
+        "priceUSD": 0,
+        "priceRUB": 0,
+        "priceBYN": 0,
+        "pricePLN": 0,
+        "price": 0
     },
-    "p7967_G": {//ToDo скопировать с базы
+
+    "p7967_G": {
         "id": "p7967_G",
         "name": "Профиль АВД 7967",
+        "param1": "23",
+        "param2": "1.2",
+        "param3": "5.5",
+        "param4": "65",
+        "weight": 1.303,
+        "unit": "мп",
+        "priceIn": 7.16,
+        "priceEUR": 0,
+        "priceUSD": 0,
+        "priceRUB": 0,
+        "priceBYN": 0,
+        "pricePLN": 0,
+        "price": 0
     },
-    "dowel_chapai": {
+
+    "dowel_chapai": { //ToDo нет в базе
         "id": "dowel_chapai",
         "name": "Дюбель чапай",
         "param1": "",
@@ -195,5 +251,53 @@ export const PRICES = {
         "priceBYN": 0,
         "pricePLN": 0,
         "price": 0
-    }
+    },
+    "fix430_G": { //ToDo нет в базе
+        "id": "fix430_G",
+        "name": "Винт М4 х 30",
+        "param1": "",
+        "param2": "",
+        "weight": 0,
+        "unit": "шт",
+        "priceIn": 0,
+        "priceEUR": 0,
+        "priceUSD": 0,
+        "priceRUB": 0,
+        "priceBYN": 0,
+        "pricePLN": 0,
+        "price": 0
+    },
+
+    "corner-100-100-8": { //ToDo нет в базе
+        "id": "corner-100-100-8",
+        "name": "Уголок 100х100х8 ",
+        "param1": "",
+        "param2": "",
+        "weight": 0,
+        "unit": "шт",
+        "priceIn":0,
+        "priceEUR": 0,
+        "priceUSD": 0,
+        "priceRUB": 0,
+        "priceBYN": 0,
+        "pricePLN": 0,
+        "price": 0
+    },
+
+    "plate-27-200-4": { //ToDo нет в базе
+        "id": "plate-27-200-4",
+        "name": "Пластина 27х200х4",
+        "param1": "",
+        "param2": "",
+        "weight": 0,
+        "unit": "шт",
+        "priceIn": 0,
+        "priceEUR": 0,
+        "priceUSD": 0,
+        "priceRUB": 0,
+        "priceBYN": 0,
+        "pricePLN": 0,
+        "price": 0
+    },
+
 }

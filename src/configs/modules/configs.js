@@ -79,22 +79,6 @@ const TRANSOM_TEMPLATES = {
             },
 
         ],
-        cfgMaterials: [
-            //= на каждое полотно и фрамугу по 4 шт. соответственно
-            {priceId: 'prF1_G', cellsIdx: [0,1,2], fnCondition: '', fnQuantity: 1, fnPosition: ''}, //если cellIdx === null || undefined || '' то применить ко всем ячейкам
-            //кол-во профиля АВД 0159
-            {priceId: 'dowel_Chapai', cellsIdx: '[0,1,2]', fnCondition: '', fnQuantity: '3', fnPosition: ''}, //пока нет в базе
-            {priceId: 'dowel_Chapai', cellsIdx: '[0,2]', fnCondition: '', fnQuantity: '3', fnPosition: ''},
-            {priceId: 'dowel_Chapai', cellsIdx: '[1]', fnCondition: '', fnQuantity: '2', fnPosition: ''},
-            {priceId: 'fix440_G', cellsIdx: '[0,1,2]', fnCondition: '', fnQuantity: '3', fnPosition: ''}, //пока нет в базе
-            {priceId: 'fix440_G', cellsIdx: '[0,2]', fnCondition: '', fnQuantity: '3', fnPosition: ''},
-            {priceId: 'fix440_G', cellsIdx: '[1]', fnCondition: '', fnQuantity: '2', fnPosition: ''},
-            {priceId: 'fix7985_G', cellsIdx: '[1]', fnCondition: '', fnQuantity: '2', fnPosition: ''},
-            //уплотнитель = кол-во м.п. профиля S41x39
-            //perimeter = (cell.width + cell.height) * 2
-            {priceId: 'seltht4_G', cellsIdx: '[0,1,2]', fnCondition: "modulasg['modulasg', 'spaziosg', 'spazioltsl'].includes(profileId)", fnQuantity: 'perimeter', fnPosition: ''},
-            {priceId: 'film17500del_D', cellsIdx: '[0,1,2]', fnCondition: '', fnQuantity: '5', fnPosition: ''},
-        ]
     },
     'transoms-type-2': {
         id: 'transoms-type-2',
@@ -413,41 +397,72 @@ const LEAF_LIMITS = {
  */
 
 const MT_SETS = {
+    // Комплект для глухого полотна или профиля со стеной
     INACTIVE_OR_PROFILE_NULL: [
-        {id: 'p0159_G', q: (p) => p.length + 100}, //attach
-        {id: 'seltht4_G', q: (p) => p.length + 100}, //Уплотнитель
-        {id: 'prF1_G', q: 1}, //Сухарь
-        {id: 'dowel_chapai', q: (p) => Math.floor(p.length / 400) + 1},
-        {id: 'fix440_G', q: (p) => Math.floor(p.length / 400) + 1},
+        {id: 'p0159_G', q: (p) => p.length + 100}, // Профиль АВД 0159 (пристенный) + 100мм запас
+        {id: 'seltht4_G', q: (p) => p.length + 100}, // Уплотнитель Ш1/Т1 4мм для S41х39 для профиля S41х39 + 100мм запас
+        {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно/фрамугу
+        {id: 'dowel_chapai', q: (p) => Math.floor(p.length / 400) + 1}, // Дюбель чапай: профиль 0159/400мм + 1 шт на отверстие 6мм
+        {id: 'fix440_G', q: (p) => Math.floor(p.length / 400) + 1}, // Саморез 4х40 = количеству дюбелей чапай
     ],
+
+    // Комплект для левой/нижней стороны глухого полотна с неактивным полотном
     INACTIVE_LEFT_BOTTOM_INACTIVE: [
-        {id: 'p0159_G', q: (p) => p.length + 100}, //attach
-        {id: 'prF1_G', q: 1}, //Сухарь
-        {id: 'fix7985_G', q: (p) =>Math.floor(p.length / 300) + 1}, //Винт M4х14 DIN 7985
+        {id: 'p0159_G', q: (p) => p.length + 100}, // Профиль АВД 0159 (соединительный) + 100мм запас
+        {id: 'seltht4_G', q: (p) => p.length + 100}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+        {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
+        {id: 'fix7985_G', q: (p) => Math.floor(p.length / 300) + 1}, // Винт M4х14: профиль 0159/300мм для соединения полотен
     ],
+
+    // Комплект для правой/верхней стороны глухого полотна с неактивным полотном
     INACTIVE_RIGHT_TOP_INACTIVE: [
-        {id: 's532_G', q: (p) => p.length + 100}, //attach
+        {id: 's532_G', q: (p) => p.length + 100}, // Профиль S 5х32 + 100мм запас
     ],
+
+    // Комплект для левой/нижней/верхней стороны с активным полотном
     INACTIVE_LEFT_BOTTOM_TOP_ACTIVE: [
-        {id: 'p7967_G', q: (p) => p.length + 100}, //attach
-        {id: 'sealAl43_G', q: (p) => p.length + 100}, //Уплотнитель
-        {id: 'prF1_G', q: 1}, //Сухарь
+        {id: 'p7967_G', q: (p) => p.length + 100}, // Профиль АВД 7967 + 100мм запас
+        {id: 'seltht4_G', q: (p) => p.length + 100}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+        {id: 'sealAl43_G', q: (p) => p.length + 100}, // Уплотнитель АЛ-43 для профиля 7996 + 100мм запас
+        {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
     ],
+
+    // Комплект для профиля с профильным соседом
     INACTIVE_PROFILE: [
-        {id: 'p0159_G', q: (p) => p.length + 100}, //attach
-        {id: 'prF1_G', q: 1}, //Сухарь
-        {id: 'fix7985_G', q: (p) =>Math.floor(p.length / 300) + 1}, //Винт M4х14 DIN 7985
+        {id: 'p0159_G', q: (p) => p.length + 100}, // Профиль АВД 0159 + 100мм запас
+        {id: 'seltht4_G', q: (p) => p.length + 100}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+        {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
+        {id: 'fix7985_G', q: (p) => Math.floor(p.length / 300) + 1}, // Винт M4х14: профиль 0159/300мм
     ],
+
+    // Комплект для активного полотна с любым соседом
     ACTIVE_ANY: [
-        {id: 's532_G', q: (p) => p.length + 100}, //attach
+        {id: 's532_G', q: (p) => p.length + 100}, // Профиль S 5х32 + 100мм запас
+        {id: 'seltht4_G', q: (p) => p.length + 100}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
     ],
+
+    // Комплект для профиля с полотном в качестве соседа
     PROFILE_LEAF: [
-        {id: 'p7967_G', q: (p) => p.length + 100}, //attach
-        {id: 'sealAl43_G', q: (p) => p.length + 100}, //Уплотнитель
-        {id: 'prF1_G', q: 1}, //Сухарь
+        {id: 'p7967_G', q: (p) => p.length + 100}, // Профиль АВД 7967 + 100мм запас
+        {id: 'seltht4_G', q: (p) => p.length + 100}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+        {id: 'sealAl43_G', q: (p) => p.length + 100}, // Уплотнитель АЛ-43 + 100мм запас
+        {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
+    ],
+
+    // Дополнительный комплект для профиля (левая/правая стороны) - крепление к стене
+    PROFILE_RIGHT_LEFT_NULL: [
+        {id: 'dowel_chapai', q: (p) => Math.floor((p.length - 200) / 575) + 1}, // Дюбель чапай для отверстий 6мм
+        {id: 'fix440_G', q: (p) => Math.floor((p.length - 200) / 575) + 1}, // Саморез 4х40 = количеству дюбелей чапай
+        {id: 'fix430_G', q: (p) => (Math.floor((p.length - 200) / 575) + 1) * 2}, // Винт М4х30: по 1 шт на каждое отверстие 3мм × 2
+    ],
+    // Дополнительный комплект ригелей
+    INACTIVE_BOTTOM_ACTIVE: [
+        {id: 'rigelDefault', q: 1},
+        {id: 'rigelDefault', q: 1},
+        {id: 'screwM20', q: 2}, //по два штуки на каждый ригель
+        {id: 'screwM20', q: 2}, //по два штуки на каждый ригель
     ]
 }
-
 //правила для материалов
 const MATERIALS_ON_SIDE_RULES = {
     // Глухое полотно
@@ -473,7 +488,7 @@ const MATERIALS_ON_SIDE_RULES = {
         bottom: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
             inactive: [...MT_SETS.INACTIVE_LEFT_BOTTOM_INACTIVE],
-            active: [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE],
+            active: [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE, ...MT_SETS.INACTIVE_BOTTOM_ACTIVE],
             profile: null
         }
     },
@@ -482,31 +497,33 @@ const MATERIALS_ON_SIDE_RULES = {
     active: {
         left: {
             inactive: [...MT_SETS.ACTIVE_ANY],
-            profile: [...MT_SETS.ACTIVE_ANY]
+            profile: [...MT_SETS.ACTIVE_ANY],
+            null: [...MT_SETS.ACTIVE_ANY],
         },
         right: {
             inactive: [...MT_SETS.ACTIVE_ANY],
             profile: [...MT_SETS.ACTIVE_ANY],
+            null: [...MT_SETS.ACTIVE_ANY],
         },
         top: {
-            null: [],
             inactive: [...MT_SETS.ACTIVE_ANY],
             profile: [...MT_SETS.ACTIVE_ANY],
+            null: [...MT_SETS.ACTIVE_ANY],
         },
         bottom: {
-            null: null,
+            null: [...MT_SETS.ACTIVE_ANY],
         }
     },
 
     // Короб (профиль)
     profile: {
         left: {
-            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
+            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL, ...MT_SETS.PROFILE_RIGHT_LEFT_NULL],
             inactive: [...MT_SETS.PROFILE_LEAF],
             active: [...MT_SETS.PROFILE_LEAF]
         },
         right: {
-            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
+            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL, ...MT_SETS.PROFILE_RIGHT_LEFT_NULL],
             inactive: [...MT_SETS.PROFILE_LEAF],
             active: [...MT_SETS.PROFILE_LEAF]
         },
@@ -514,7 +531,7 @@ const MATERIALS_ON_SIDE_RULES = {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL]
         },
         bottom: {
-            null: null,
+            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
             inactive: [...MT_SETS.PROFILE_LEAF],
             active: [...MT_SETS.PROFILE_LEAF]
         }

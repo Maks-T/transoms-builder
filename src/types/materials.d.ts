@@ -6,7 +6,7 @@ interface MaterialConfig {
 interface MaterialObject {
     id: string;                               // Уникальный идентификатор объекта материала
     cellIdx: number;                          // Индекс ячейки, к которой относится материал
-    price: ProductPrice;                             // Объект прайса материала с деталями (имя, единица, цена и т.д.)
+    price: ProductPrice;                      // Объект прайса материала (имя, единица, цена и т.д.)
     side: string;                             // Сторона ячейки ('left', 'right', 'top', 'bottom')
     quantity: number;                         // Рассчитанное количество материала
 }
