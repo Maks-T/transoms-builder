@@ -1,23 +1,3 @@
-import {ATTACH_PROFILE_TYPES} from "@constants/index.js";
-
-
-const ATTACH_PROFILES_TYPES =
-    {
-        mountProfile: { // Крепление к внешним поверхностям и неподвижным элементам АВД 0159
-            id: 'p0159_G',
-            gradeName: 'Профиль АВД 0159',
-        },
-        connectorProfile: { // Соединение полотен с коробом или между собой S5x32
-            id: 's532_G',
-            gradeName: 'Профиль S5х32',
-        },
-        adapterProfile: {// Комбинированное соединение короба с полотнами АВД 7967
-            id: 'p7967_G',
-            gradeName: 'Профиль АВД 7967',
-        },
-    }
-;
-
 /** @type {ProfilesTypes} */const PROFILES_TYPES = {
     'modulasg': {
         id: 'modulasg',
@@ -25,7 +5,7 @@ const ATTACH_PROFILES_TYPES =
         width: 39,
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/modulasl.webp',
-        gradeName: 'Профиль S41X39',
+        gradeName: 'Профиль S41X39', //ToDo deprecated
         priceId: 's4139_G'
     },
     'spaziosg': {
@@ -334,10 +314,6 @@ const TRANSOM_TEMPLATES = {
         name: 'Фрамуга 9',
         width: 1667,
         height: 3000,
-        minWidth: 800,
-        minHeight: 800,
-        maxWidth: 5000,
-        maxHeight: 5000,
         profileId: 'modulasg',
         unit: 'mm',
         schema: '3x3',
@@ -394,7 +370,7 @@ const LEAF_LIMITS = {
 }
 
 /**
- * length - длина соседнего полотна, если left или right, то cell.innerHeight, если top или bottom, то cell.innerWidth
+ * length - длина соседнего полотна, если сторона left или right, то cell.innerHeight, если top или bottom, то cell.innerWidth
  */
 
 const MT_SETS = {
@@ -537,7 +513,7 @@ const MATERIALS_ON_SIDE_RULES = {
             inactive: [...MT_SETS.PROFILE_INACTIVE], //уголок
         },
         right: {
-           inactive: [...MT_SETS.PROFILE_INACTIVE], //уголок
+            inactive: [...MT_SETS.PROFILE_INACTIVE], //уголок
         },
         top: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL]
@@ -549,76 +525,5 @@ const MATERIALS_ON_SIDE_RULES = {
     }
 }
 
-//правила для определения дополнительных профилей креплений
-const ATTACH_PROFILE_RULES = {
-    // Глухое полотно
-    inactive: {
-        left: {
-            null: ATTACH_PROFILE_TYPES.MOUNT,
-            inactive: ATTACH_PROFILE_TYPES.MOUNT,
-            active: ATTACH_PROFILE_TYPES.ADAPTER,
-            profile: ATTACH_PROFILE_TYPES.MOUNT
-        },
-        right: {
-            null: ATTACH_PROFILE_TYPES.MOUNT,
-            inactive: ATTACH_PROFILE_TYPES.CONNECTOR,
-            active: ATTACH_PROFILE_TYPES.ADAPTER,
-            profile: ATTACH_PROFILE_TYPES.MOUNT
-        },
-        top: {
-            null: ATTACH_PROFILE_TYPES.MOUNT,
-            inactive: ATTACH_PROFILE_TYPES.MOUNT,
-            active: null,
-            profile: ATTACH_PROFILE_TYPES.MOUNT
-        },
-        bottom: {
-            null: ATTACH_PROFILE_TYPES.MOUNT,
-            inactive: ATTACH_PROFILE_TYPES.CONNECTOR,
-            active: ATTACH_PROFILE_TYPES.ADAPTER,
-            profile: null
-        }
-    },
 
-    // Активное полотно
-    active: {
-        left: {
-            inactive: ATTACH_PROFILE_TYPES.CONNECTOR,
-            profile: ATTACH_PROFILE_TYPES.CONNECTOR
-        },
-        right: {
-            inactive: ATTACH_PROFILE_TYPES.CONNECTOR,
-            profile: ATTACH_PROFILE_TYPES.CONNECTOR
-        },
-        top: {
-            null: ATTACH_PROFILE_TYPES.CONNECTOR,
-            inactive: ATTACH_PROFILE_TYPES.CONNECTOR,
-            profile: ATTACH_PROFILE_TYPES.CONNECTOR
-        },
-        bottom: {
-            null: ATTACH_PROFILE_TYPES.MOUNT,
-        }
-    },
-
-    // Короб (профиль)
-    profile: {
-        left: {
-            null: ATTACH_PROFILE_TYPES.MOUNT,
-            inactive: ATTACH_PROFILE_TYPES.ADAPTER,
-            active: ATTACH_PROFILE_TYPES.ADAPTER
-        },
-        right: {
-            null: ATTACH_PROFILE_TYPES.MOUNT,
-            inactive: ATTACH_PROFILE_TYPES.ADAPTER,
-            active: ATTACH_PROFILE_TYPES.ADAPTER
-        },
-        top: {
-            null: ATTACH_PROFILE_TYPES.MOUNT
-        },
-        bottom: {
-            inactive: ATTACH_PROFILE_TYPES.ADAPTER,
-            active: ATTACH_PROFILE_TYPES.ADAPTER
-        }
-    }
-}
-
-export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS, ATTACH_PROFILE_RULES, MATERIALS_ON_SIDE_RULES}
+export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS, MATERIALS_ON_SIDE_RULES}

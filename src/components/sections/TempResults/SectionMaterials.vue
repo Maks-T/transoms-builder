@@ -89,7 +89,7 @@
             <td>{{ summary.name }}</td>
             <td>{{ summary.totalQuantity }}</td>
             <td>{{ summary.unit }}</td>
-            <td>{{ summary.priceIn }} BYN</td>
+            <td>{{ summary.priceIn }}</td>
           </tr>
           </tbody>
         </table>

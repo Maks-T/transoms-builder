@@ -55,6 +55,7 @@ interface MaterialsStore {
     getNeighborsOnSide(neighbors: Neighbors, side: string): TransomCell[];  // Возвращает соседние ячейки для указанной стороны
     getMaterialsSet(cellType: string, side: string, neighborType: string | null): MaterialConfig[] | null;  // Возвращает набор конфигов для материалов
     createMaterialObject(materialCfg: MaterialConfig, cell: TransomCell, side: string, neighbor?: TransomCell | null): MaterialObject | undefined;  // Создает объект материала
+    applyExceptionsToNeighborType(cellType: string, side: string, neighborType: string | null, neighbors: Neighbors); //Применяет исключения для определения типа соседней ячейки.
     calculateMaterialsByCell(cell: TransomCell): MaterialObject[];  // Вычисляет материалы для одной ячейки
     calculateTransomMaterials(transom: Transom): MaterialsObject;  // Вычисляет все материалы для фрамуги
 }

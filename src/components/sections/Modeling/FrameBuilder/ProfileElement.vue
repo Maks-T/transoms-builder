@@ -51,7 +51,7 @@ const mainRectConfig = computed(() => {
 const numberTextConfig = computed(() => {
   return {
     x: props.width / 2,
-    y: props.height * 0.4,
+    y: props.height / 2,
     text: String(props.index + 1),
     fontSize: 8,
     fill: 'rgb(227,227,227)',

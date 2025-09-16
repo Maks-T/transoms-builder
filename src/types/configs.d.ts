@@ -53,6 +53,10 @@ interface ConfigsStore {
   // Свойства состояния
   profileTypes: { [key: string]: Profile };
   transomTemplates: { [key: string]: TransomTemplate };
+  materialsRules: MaterialsRules;
+  prices: {
+    [id: string]: ProductPrice;
+  }
 
   // Геттеры
   profileTypesArray: SelectOption[];
@@ -63,7 +67,7 @@ interface ConfigsStore {
   getTransomTemplateById: (id: string) => TransomTemplate | undefined;
   defaultProfile: string;
   defaultTemplate: string;
-
+  getMaterialsRules:MaterialsRules
   // Экшены
   addProfileType: (profile: Profile) => void;
   addTemplate: (template: TransomTemplate) => void;

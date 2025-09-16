@@ -32,16 +32,11 @@ export const LEAF_SWING_DIRECTION_NAMES = {
     [LEAF_SWING_DIRECTION.OUTWARD]: 'Наружу'  // Наружу из помещения
 }
 
-export const CELL_TYPES = {
+export const RULE_CELL_TYPES = {
     ACTIVE: 'active',
     INACTIVE: 'inactive',
-    PROFILE: 'profile'
+    VERTICAL_PROFILE: 'verticalProfile',
+    HORIZONTAL_PROFILE: 'horizontalProfile'
 }
 
 export const PROFILE_TYPE = 'profile'
-
-export const ATTACH_PROFILE_TYPES = {
-    MOUNT: 'mountProfile',      // АВД 0159
-    CONNECTOR: 'connectorProfile', // S5х32
-    ADAPTER: 'adapterProfile',   // АВД 7967
-}
