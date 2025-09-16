@@ -410,12 +410,12 @@ export const useModelingStore = defineStore('modeling', {
 
         /**
          * Определяет соседние ячейки для текущей ячейки
-         * @private
+         * @public
+         * @param {Transom} transom Расчетная фрамуга        *
          * @param {TransomCell} currentCell Ячейка для анализа         *
          * @returns {Neighbors} Объект с массивами соседних ячеек (top, bottom, left, right)
          */
-        getNeighbors(currentCell) {
-            const transom = this.activeTransom;
+        getNeighbors(currentCell, transom) {
             if (!transom || !transom.cells) return {top: [], bottom: [], left: [], right: []};
 
             const neighbors = {top: [], bottom: [], left: [], right: []};
@@ -478,7 +478,7 @@ export const useModelingStore = defineStore('modeling', {
             const rowEnd = cell.row + (cell.rowSpan || 1) - 1
 
             // Получаем соседние соседние ячейки
-            const neighbors = this.getNeighbors(cell);
+            const neighbors = this.getNeighbors(cell, this.activeTransom);
 
             // Базовые offsets
             // Если ячейка находится в последней строке фрамуги (нижняя граница фрамуги)

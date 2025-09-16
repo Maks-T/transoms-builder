@@ -51,7 +51,7 @@ interface SelectOption {
 
 interface ConfigsStore {
   // Свойства состояния
-  profileTypes: { [key: string]: Profile };
+  profileTypes: { [key: string]: ProfileType };
   transomTemplates: { [key: string]: TransomTemplate };
   materialsRules: MaterialsRules;
   prices: {
@@ -63,13 +63,13 @@ interface ConfigsStore {
   transomTemplatesArray: SelectOption[];
   openingSidesArray: SelectOption[];
   swingDirectionsArray: SelectOption[];
-  getProfileById: (id: string) => Profile | undefined;
+  getProfileById: (id: string) => ProfileType | undefined;
   getTransomTemplateById: (id: string) => TransomTemplate | undefined;
   defaultProfile: string;
   defaultTemplate: string;
   getMaterialsRules:MaterialsRules
   // Экшены
-  addProfileType: (profile: Profile) => void;
+  addProfileType: (profile: ProfileType) => void;
   addTemplate: (template: TransomTemplate) => void;
 }
 

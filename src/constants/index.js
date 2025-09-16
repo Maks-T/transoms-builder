@@ -36,7 +36,8 @@ export const RULE_CELL_TYPES = {
     ACTIVE: 'active',
     INACTIVE: 'inactive',
     VERTICAL_PROFILE: 'verticalProfile',
-    HORIZONTAL_PROFILE: 'horizontalProfile'
+    HORIZONTAL_PROFILE: 'horizontalProfile',
+    FORCED_ACTIVE: 'forcedActive'
 }
 
 export const PROFILE_TYPE = 'profile'

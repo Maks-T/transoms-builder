@@ -28,7 +28,7 @@ interface Transom {
   maxWidth: number;                   // Максимальная допустимая ширина фрамуги в миллиметрах
   maxHeight: number;                  // Максимальная допустимая высота фрамуги в миллиметрах
   profileId: string;                  // Идентификатор профиля, используемого в фрамуге
-  profile: Profile;                   // Объект профиля, содержащий его характеристики
+  profile: ProfileType;                   // Объект профиля, содержащий его характеристики
   templateId: string;                 // Идентификатор шаблона фрамуги
   colWidths: number[];                // Массив ширин колонок фрамуги в миллиметрах
   rowHeights: number[];               // Массив высот строк фрамуги в миллиметрах
@@ -71,14 +71,7 @@ interface TransomCell {
   validationData?: ValidationCellData | {}; // Данные валидации ячейки (ошибки и подсказки)
   isInitialized: boolean;     // Указывает, завершены ли все вычисления для ячейки
 }
-interface Profile {
-  id: string;           // Уникальный идентификатор профиля
-  name: string;         // Название профиля
-  imgSrc: string;       // Путь к изображению профиля
-  width: number;        // Ширина профиля в миллиметрах
-  height: number;       // Высота профиля в миллиметрах
-  gradeName: string;    // Название категории или типа профиля
-}
+
 
 interface SelectOption {
   label: string;
@@ -127,7 +120,7 @@ interface ModelingStore {
   setTransomTemplate: (templateId: string) => void;             // Устанавливает шаблон фрамуги и обновляет/создает фрамугу
   updateActiveTransomProfile: (profileId: string) => void;      // Обновляет профиль активной фрамуги
   updateActiveTransomTemplate: (templateId: string) => void;    // Обновляет шаблон активной фрамуги
-  getNeighbors: (currentCell: TransomCell) => Neighbors;        // Возвращает соседние ячейки для указанной ячейки
+  getNeighbors: (currentCell: TransomCell, transom: Transom) => Neighbors;        // Возвращает соседние ячейки для указанной ячейки
   calculateOffsets: (cell: TransomCell, rowCount: number, colCount: number) => CellOffsets;    // Рассчитывает отступы ячейки
   getCellValidationData: (cell: TransomCell) => ValidationCellData;     // Возвращает данные валидации для ячейки
   updateCellSizes: () => boolean;                                       // Обновляет размеры ячеек активной фрамуги

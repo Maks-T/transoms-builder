@@ -122,13 +122,14 @@ export const useMaterialsStore = defineStore('materials', {
 
         /**
          * Применяет исключения для определения типа соседней ячейки.
+         * @param {TransomCell} cell - Текущая ячейка фрамуги
          * @param {string} cellType - Тип текущей ячейки.
          * @param {string} side - Сторона ячейки ('left', 'right', 'top', 'bottom').
          * @param {string | null} neighborType - Исходный тип соседней ячейки.
          * @param {Neighbors} neighbors - Объект с соседями ячейки.
          * @returns {string | null} Скорректированный тип соседней ячейки.
          */
-        applyExceptionsToNeighborType(cellType, side, neighborType, neighbors) {
+        applyExceptionsToNeighborType(cell, cellType, side, neighborType, neighbors) {
             if (cellType !== RULE_CELL_TYPES.INACTIVE || !neighborType) return neighborType;
 
             // 1. Исключение: для inactive ячейки справа с inactive соседом, если сверху есть horizontalProfile
@@ -147,6 +148,18 @@ export const useMaterialsStore = defineStore('materials', {
                 }
             }
 
+            // 3. Если есть слева и справа inactive сосед и их высота равна высоте ячейки
+            // и если снизу active сосед и его ширина равна ширине ячейки
+            if (side === 'bottom'
+                && neighborType === RULE_CELL_TYPES.ACTIVE
+                && cell.width === neighbors.bottom[0]?.width
+                && cell.height === neighbors.left[0]?.height
+                && cell.height === neighbors.right[0]?.height
+                //ToDo возмоно добавить, что слева и справа inactive
+            ) {
+               return RULE_CELL_TYPES.FORCED_ACTIVE
+             }
+
             return neighborType;
         },
 
@@ -161,7 +174,8 @@ export const useMaterialsStore = defineStore('materials', {
             const cellType = this.getRuleCellType(cell);
 
             // Получаем соседей ячейки
-            const neighbors = this.modelingStore.getNeighbors(cell);
+            const neighbors = this.modelingStore.getNeighbors(cell, transom);
+
             if (!neighbors) {
                 console.warn('Не удалось получить соседей для ячейки', cell.idx);
                 return materials;
@@ -196,13 +210,6 @@ export const useMaterialsStore = defineStore('materials', {
             const sides = ['left', 'right', 'top', 'bottom'];
 
             sides.forEach((side) => {
-                /* if (
-                     cellType === RULE_CELL_TYPES.PROFILE &&
-                     ((cell.isVertical && ['top', 'bottom'].includes(side)) ||
-                         (cell.isHorizontal && ['left', 'right'].includes(side)))
-                 ) {
-                     return; // Исключаем из расчета стороны ширины у ячейки типа Профиль (короб)
-                 }*/
 
                 const neighborsOnSide = this.getNeighborsOnSide(neighbors, side);
 
@@ -211,36 +218,7 @@ export const useMaterialsStore = defineStore('materials', {
                     neighborsOnSide.forEach((neighbor) => {
                         let neighborType = neighbor ? this.getRuleCellType(neighbor) : null;
                         //применяем исключения
-                        neighborType = this.applyExceptionsToNeighborType(cellType, side, neighborType, neighbors)
-
-                        // ToDo вынести исключения
-
-                        /*// Исключение: для inactive ячейки справа с inactive соседом, если сверху есть profile
-                        if (
-                            cellType === RULE_CELL_TYPES.INACTIVE &&
-                            side === 'right' &&
-                            neighborType === RULE_CELL_TYPES.INACTIVE
-                        ) {
-                            const topNeighbors = this.getNeighborsOnSide(neighbors, 'top');
-
-                            if (topNeighbors.some((n) => this.getRuleCellType(n) === RULE_CELL_TYPES.HORIZONTAL_PROFILE)) {
-                                neighborType = RULE_CELL_TYPES.VERTICAL_PROFILE //соединение как с вертикальным профилем
-                            }
-                        }
-                        // Исключение: для inactive ячейки слева с inactive соседом, если есть horizontalProfile слева
-                        if (
-                            cellType === RULE_CELL_TYPES.INACTIVE &&
-                            side === 'left' &&
-                            neighborType === RULE_CELL_TYPES.INACTIVE
-                        ) {
-                            const leftNeighbors = this.getNeighborsOnSide(neighbors, 'left');
-
-                            if (leftNeighbors && leftNeighbors.length && this.getRuleCellType(leftNeighbors[0]) === RULE_CELL_TYPES.HORIZONTAL_PROFILE) {
-                                neighborType = 'active' //соединение как с активной ячейкой
-                            }
-                        }*/
-
-                        //ToDo добавить для зеркальной конфигурации
+                        neighborType = this.applyExceptionsToNeighborType(cell, cellType, side, neighborType, neighbors)
 
                         const materialsSet = this.getMaterialsSet(cellType, side, neighborType);
 

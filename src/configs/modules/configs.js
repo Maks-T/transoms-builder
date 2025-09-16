@@ -439,7 +439,11 @@ const MT_SETS = {
         {id: 'screwM20', q: 2}, //по два штуки на каждый ригель
         {id: 'screwM20', q: 2}, //по два штуки на каждый ригель
     ],
-    PROFILE_INACTIVE: [{id: 'corner-100-100-8', q: 1}]
+    HORIZONTAL_PROFILE_INACTIVE: [{id: 'corner-100-100-8', q: 1}],
+    FORCED_ACTIVE: [
+        {id: 'plate-27-200-4', q: 1},
+        {id: 'plate-27-200-4', q: 1}
+    ]
 }
 
 
@@ -469,7 +473,8 @@ const MATERIALS_ON_SIDE_RULES = {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
             inactive: [...MT_SETS.INACTIVE_LEFT_BOTTOM_INACTIVE],
             active: [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE, ...MT_SETS.INACTIVE_BOTTOM_ACTIVE],
-            horizontalProfile: null
+            horizontalProfile: null,
+            forcedActive: [...MT_SETS.INACTIVE_BOTTOM_ACTIVE, ...MT_SETS.FORCED_ACTIVE]
         }
     },
 
@@ -510,10 +515,10 @@ const MATERIALS_ON_SIDE_RULES = {
     },
     horizontalProfile: {
         left: {
-            inactive: [...MT_SETS.PROFILE_INACTIVE], //уголок
+            inactive: [...MT_SETS.HORIZONTAL_PROFILE_INACTIVE], //уголок
         },
         right: {
-            inactive: [...MT_SETS.PROFILE_INACTIVE], //уголок
+            inactive: [...MT_SETS.HORIZONTAL_PROFILE_INACTIVE], //уголок
         },
         top: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL]
