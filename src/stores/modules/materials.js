@@ -127,7 +127,7 @@ export const useMaterialsStore = defineStore('materials', {
          * @param {string} side - Сторона ячейки ('left', 'right', 'top', 'bottom').
          * @param {string | null} neighborType - Исходный тип соседней ячейки.
          * @param {Neighbors} neighbors - Объект с соседями ячейки.
-         * @returns {string | null} Скорректированный тип соседней ячейки.
+         * @returns {string | null} Скорректированный динамически тип соседней ячейки относительно одной ее стороны.
          */
         applyExceptionsToNeighborType(cell, cellType, side, neighborType, neighbors) {
             if (cellType !== RULE_CELL_TYPES.INACTIVE || !neighborType) return neighborType;

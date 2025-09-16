@@ -61,7 +61,7 @@
         :show-close-button="true"
     >
 
-      <p>Нет контента</p>
+      <DecorCreator/>
 
       <template #footer>
         <button class="btn-red" @click="handleLeafFinishConfirm">Потвердить</button>
@@ -79,6 +79,7 @@ import {useDebounce} from "@src/composables";
 import {InputText, Select, Modal} from "@components/ui";
 import {Icon} from "@iconify/vue";
 import {useTranslate as _} from '@src/composables/index.js';
+import DecorCreator from "@components/sections/Modeling/DecorCreator/DecorCreator.vue";
 
 const modelingStore = useModelingStore()
 const {activeTransom} = storeToRefs(modelingStore);
@@ -109,7 +110,7 @@ onMounted(() => {
     modelingStore.setProfileType(modelingStore.configsStore.defaultProfile)
   }
 
-  if (modelingStore.configsStore.defaultTemplate) { //ToDo remove
+  if (modelingStore.configsStore.defaultTemplate) {
     modelingStore.setTransomTemplate(modelingStore.configsStore.defaultTemplate)
   }
 })

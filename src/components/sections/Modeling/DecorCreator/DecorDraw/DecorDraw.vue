@@ -1,35 +1,19 @@
 <template>
-  <div class="frame-builder">
+  <div class="decor-creator">
     <div v-if="activeTransom">
       <v-stage
           :config="{ width: canvasWidth, height: canvasHeight }"
           ref="stage"
       >
         <v-layer>
-          <!-- Фоновый прямоугольник для всего канваса -->
-          <!--   <v-rect
-              :config="{
-                x: 0,
-                y: 0,
-                width: canvasWidth,
-                height: canvasHeight,
-                fill: '#f5f5f5',
-                listening: false
-              }"
-          />-->
-
 
           <!-- Группа для элементов -->
           <v-group>
             <template v-for="(cell, index) in activeTransom.cells" :key="'cell-'+index">
-              <LeafElement
+              <DecorLeafElement
                   v-if="cell.type !== 'profile'"
                   v-bind="leafElementProps(cell, index)"
                   @select="handleSelectCell(index)"
-              />
-              <ProfileElement
-                  v-if="cell.type === 'profile'"
-                  v-bind="profileElementProps(cell, index)"
               />
             </template>
           </v-group>
@@ -41,52 +25,24 @@
             />
           </v-group>
 
-          <!-- Группа для разделителей -->
-          <v-group>
-
-            <template v-if="modelingStore.showDividers">
-              <!-- Горизонтальные разделители -->
-              <v-line
-                  v-for="(divider, index) in modelingStore.horizontalDividers"
-                  :key="'horizontal-divider-' + index"
-                  :config="dividersHorizontalLineConfig(divider)"
-              />
-              <!-- Вертикальные разделители -->
-              <v-line
-                  v-for="(divider, index) in  modelingStore.verticalDividers"
-                  :key="'vertical-divider-' + index"
-                  :config="dividersVerticalLineConfig(divider)"
-              />
-            </template>
-          </v-group>
-
         </v-layer>
       </v-stage>
-      <!-- Блок валидации с сообщениями об ошибках -->
 
-      <div class="frame-builder__validation"
-           v-if="!activeTransom.validationData.isValid"
-           >
-        <p v-for="(errorMessage, errorKey) in activeTransom.validationData.errors" :key="errorKey">
-          {{ errorMessage }}
-        </p>
-      </div>
 
     </div>
 
     <div v-else class="no-transom">
-      Выберите или создайте фрамугу
+      Не создана ни одна фрамуга
     </div>
   </div>
 
 </template>
 
 <script setup>
-import {ref, computed, onMounted, onUnmounted, watch} from 'vue'
-import {useModelingStore} from "@src/stores";
 import {storeToRefs} from 'pinia'
-import LeafElement from "@components/sections/Modeling/FrameBuilder/LeafElement.vue";
-import ProfileElement from "@components/sections/Modeling/FrameBuilder/ProfileElement.vue";
+import {useModelingStore} from "@stores/index.js";
+import {ref, computed, onMounted, onUnmounted, watch} from 'vue'
+import DecorLeafElement from "@components/sections/Modeling/DecorCreator/DecorDraw/DecorLeafElement.vue";
 
 const modelingStore = useModelingStore()
 
@@ -125,7 +81,7 @@ const rectFrameConfig = computed(() => {
     width: activeTransom.value.width * scaleFactor.value,
     height: activeTransom.value.height * scaleFactor.value,
     stroke: activeTransom.value.validationData.isValid ? '#333' : 'red',
-    strokeWidth: 3,
+    strokeWidth: 1,
     fill: 'transparent',
     listening: false
   }
@@ -134,69 +90,23 @@ const rectFrameConfig = computed(() => {
 const leafElementProps = computed(() => (cell, index) => {
 
   return {
-    x: cell.x * scaleFactor.value + props.padding,
-    y: cell.y * scaleFactor.value + props.padding,
-    width: cell.width * scaleFactor.value,
-    height: cell.height * scaleFactor.value,
-    realWidth: cell.width,
-    realHeight: cell.height,
-    type: cell.type,
+    padding: props.padding,
+    cell,
     isSelected: selectedCellIndex.value === index,
-    showDimensions: modelingStore.showDimensions,
-    showLeafsNames: modelingStore.showLeafsNames,
     scaleFactor: scaleFactor.value,
-    offsets: cell.offsets,
-    hingeSide: cell.hingeSide,
     index
-  }
-
-})
-
-const profileElementProps = computed(() => (cell, index) => {
-
-  return {
-    x: cell.x * scaleFactor.value + props.padding,
+    /*x: cell.x * scaleFactor.value + props.padding,
     y: cell.y * scaleFactor.value + props.padding,
     width: cell.width * scaleFactor.value,
     height: cell.height * scaleFactor.value,
     realWidth: cell.width,
     realHeight: cell.height,
-    type: cell.type,
-    showDimensions: modelingStore.showDimensions,
-    scaleFactor: scaleFactor.value,
-    offsets: cell.offsets,
-    index
+    type: cell.type,*/
+    /*offsets: cell.offsets,
+    hingeSide: cell.hingeSide,*/
   }
 
 })
-
-
-const dividersVerticalLineConfig = computed(() => (divider) => {
-  return {
-    points: [
-      divider * scaleFactor.value + props.padding, props.padding,
-      divider * scaleFactor.value + props.padding, activeTransom.value.height * scaleFactor.value + props.padding
-    ],
-    stroke: '#999999',
-    strokeWidth: 1,
-    dash: [5, 5],
-    listening: false
-  }
-})
-
-const dividersHorizontalLineConfig = computed(() => (divider) => {
-  return {
-    points: [
-      props.padding, divider * scaleFactor.value + props.padding,
-      activeTransom.value.width * scaleFactor.value + props.padding, divider * scaleFactor.value + props.padding
-    ],
-    stroke: '#999999',
-    strokeWidth: 1,
-    dash: [5, 5],
-    listening: false
-  }
-})
-
 
 const handleSelectCell = (index) => {
   if (index === null) return;
@@ -214,7 +124,7 @@ watch(() => [props.canvasWidth, props.canvasHeight], () => {
 </script>
 
 <style lang="scss" scoped>
-.frame-builder {
+.decor-creator {
   @include base-border;
 
   position: relative;
