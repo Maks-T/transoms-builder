@@ -1,7 +1,9 @@
 import {defineStore} from 'pinia';
 import {cloneObjectDeep} from '@utils';
-import {PROFILES_TYPES, TRANSOM_TEMPLATES, PRICES, MATERIALS_ON_SIDE_RULES} from '@src/configs'
+import {PROFILES_TYPES, TRANSOM_TEMPLATES, PRICES, MATERIALS_ON_SIDE_RULES, DECOR_PRESETS,PROFILES_PADDINGS,
+    PROFILES_AVAILABLE_DECOR} from '@src/configs'
 import {LEAF_HINGE_SIDE, LEAF_HINGE_SIDE_NAMES, LEAF_SWING_DIRECTION, LEAF_SWING_DIRECTION_NAMES} from "@constants";
+
 
 
 /**
@@ -12,9 +14,14 @@ import {LEAF_HINGE_SIDE, LEAF_HINGE_SIDE_NAMES, LEAF_SWING_DIRECTION, LEAF_SWING
 export const useConfigsStore = defineStore('configs', {
     state: () => ({
         profileTypes: cloneObjectDeep(PROFILES_TYPES),
-        transomTemplates: cloneObjectDeep(TRANSOM_TEMPLATES),
+        transomTemplates: cloneObjectDeep(TRANSOM_TEMPLATES), //ToDo cloneObjectDeep нужно ли?
         materialsRules: MATERIALS_ON_SIDE_RULES,
-        prices: PRICES
+        prices: PRICES,
+
+        //для расчета декора
+        decorPresets: DECOR_PRESETS, //шаблоны (персеты) для накладного и секционного декора
+        profilesPaddings: PROFILES_PADDINGS , //отсутпы для вставок для опреденного типа профиля  //ToDo Type
+        profilesAvailableDecor: PROFILES_AVAILABLE_DECOR //Доступный накладной и секционный декор для вставок //ToDo Type
     }),
 
     getters: {

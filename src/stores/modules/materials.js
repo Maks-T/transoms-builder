@@ -5,7 +5,7 @@ import {uniqId} from "@utils/index.js";
 
 /**
  * Хранилище для расчета материалов фрамуги
- * @returns MaterialConfig
+ * @returns MaterialsStore
  */
 export const useMaterialsStore = defineStore('materials', {
 

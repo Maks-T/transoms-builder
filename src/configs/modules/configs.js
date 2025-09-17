@@ -1,3 +1,61 @@
+
+//ToDo create constants profileRail and glueRail
+const PROFILES_AVAILABLE_DECOR = { //ToDo Type
+    'modulasg': {
+        profileRail: ["v01", "v02", "v03"],
+        glueRail: ["r01", "r02", "r03", "r04", "r05", "r06", "r07", "r08", "r09", "r10", "r11", "r12", "r13", "r14", "r15", "r21", "r22", "r23", "r24", "r25", "r26"],
+    },
+    'spaziosg': {
+        profileRail: ["v01", "v02", "v03", "v04", "v05", "v06"],
+        glueRail: [],
+    },
+    'spazioltsl': {
+        profileRail: [],
+        glueRail: [],
+    },
+}
+
+const PROFILES_PADDINGS = { //ToDo Type
+    'modulasg': {
+        other: {
+            nonTempered: {w: 63, h: 63},
+            tempered: null
+        },
+        4: {
+            nonTempered: {w: 63, h: 63},
+            tempered: {w: 63, h: 64}
+        },
+        6: {
+            nonTempered: {w: 64, h: 64},
+            tempered: null
+        },
+        8: {
+            nonTempered: {w: 63, h: 63},
+            tempered: {w: 63, h: 64}
+        }
+    },
+    'spaziosg': {
+        other: {
+            nonTempered: {w: 12, h: 12},
+            tempered: null
+        },
+        4: {
+            nonTempered: {w: 12, h: 12},
+            tempered: {w: 12, h: 13}
+        }
+    },
+    'spazioltsl': {
+        other: {
+            nonTempered: {w: 12, h: 12},
+            tempered: null
+        },
+        4: {
+            nonTempered: {w: 12, h: 12},
+            tempered: {w: 12, h: 13}
+        }
+    }
+};
+
 /** @type {ProfilesTypes} */const PROFILES_TYPES = {
     'modulasg': {
         id: 'modulasg',
@@ -5,7 +63,7 @@
         width: 39,
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/modulasl.webp',
-        gradeName: 'Профиль S41X39', //ToDo deprecated
+
         priceId: 's4139_G'
     },
     'spaziosg': {
@@ -14,7 +72,7 @@
         width: 70,
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/spaziosl.webp',
-        gradeName: 'Профиль S41X39',
+
         priceId: 's4139_G'
     },
     'spazioltsl': {
@@ -23,7 +81,7 @@
         width: 20,
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/spazioltsl.webp',
-        gradeName: 'Профиль S41X39',
+
         priceId: 's4139_G'
     },
 };
@@ -351,6 +409,44 @@ const TRANSOM_TEMPLATES = {
             },
         ]
     },
+    'transoms-type-10': {
+        id: 'transoms-type-10',
+        name: 'Фрамуга 10',
+        width: 894,
+        height: 2057,
+        profileId: 'modulasg',
+        unit: 'mm',
+        schema: '3x3',
+        colWidths: [42, 810, 42],
+        rowHeights: [42, 2015],
+        imgSrc: './img/transomTemplates/transom-10.svg',
+        cells: [
+            {
+                row: 1,
+                col: 1,
+                rowSpan: 2,
+                type: 'profile',
+            },
+            {
+                row: 1,
+                col: 1,
+                colSpan: 3, //пересекает
+                type: 'profile',
+            },
+            {
+                row: 1,
+                col: 3,
+                rowSpan: 2,
+                type: 'profile',
+            },
+            {
+                row: 2,
+                col: 2,
+                type: 'active-leaf',
+            },
+
+        ]
+    },
 };
 
 //Внутренние ограничения размеров ячеек (полотен)
@@ -531,4 +627,4 @@ const MATERIALS_ON_SIDE_RULES = {
 }
 
 
-export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS, MATERIALS_ON_SIDE_RULES}
+export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS, MATERIALS_ON_SIDE_RULES, PROFILES_PADDINGS, PROFILES_AVAILABLE_DECOR}
