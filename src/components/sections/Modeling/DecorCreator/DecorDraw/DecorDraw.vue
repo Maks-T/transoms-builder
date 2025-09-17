@@ -1,5 +1,5 @@
 <template>
-  <div class="decor-creator">
+  <div class="decor-draw">
     <div v-if="activeTransom">
       <v-stage
           :config="{ width: canvasWidth, height: canvasHeight }"
@@ -40,15 +40,9 @@
 
 <script setup>
 import {storeToRefs} from 'pinia'
-import {useModelingStore} from "@stores/index.js";
+import {useDecorStore, useModelingStore} from "@stores/index.js";
 import {ref, computed, onMounted, onUnmounted, watch} from 'vue'
 import DecorLeafElement from "@components/sections/Modeling/DecorCreator/DecorDraw/DecorLeafElement.vue";
-
-const modelingStore = useModelingStore()
-
-const {activeTransom} = storeToRefs(modelingStore)
-
-const emit = defineEmits(['update:selected-cell-index'])
 
 const props = defineProps({
   canvasWidth: {type: Number, default: 1100},
@@ -56,7 +50,20 @@ const props = defineProps({
   padding: {type: Number, default: 40}
 })
 
+const modelingStore = useModelingStore()
+const decorStore = useDecorStore()
+
+const {activeTransom} = storeToRefs(modelingStore)
+
+const emit = defineEmits(['update:selected-cell-index'])
+
 const selectedCellIndex = ref(null)
+
+const cells = computed(() => {
+  return decorStore.calculatedTransomCellsDecor(activeTransom.value)
+})
+
+console.log('cells', cells.value)
 
 // Масштабный коэффициент
 const scaleFactor = computed(() => {
@@ -124,7 +131,7 @@ watch(() => [props.canvasWidth, props.canvasHeight], () => {
 </script>
 
 <style lang="scss" scoped>
-.decor-creator {
+.decor-draw {
   @include base-border;
 
   position: relative;

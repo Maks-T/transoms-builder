@@ -55,9 +55,10 @@
 
     </div>
 
+    <!-- ToDo вынести из этого компонента-->
     <Modal
         v-model="isLeafFinishModalOpen"
-        width="1000px"
+        width="80vw"
         :show-close-button="true"
     >
 
