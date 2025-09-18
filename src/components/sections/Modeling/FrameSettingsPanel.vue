@@ -26,10 +26,8 @@
         />
       </div>
 
-      <button class="btn-white" @click="openLeafFinishModal">
-        <Icon icon="mingcute:paint-2-line" class="icon"/>
-        <span>Внешний вид</span>
-      </button>
+      <!-- Кнопка внешний вид -->
+      <DecorCreator />
 
     </div>
 
@@ -52,23 +50,8 @@
     </div>
 
     <div class="frame-settings__group">
-
     </div>
 
-    <!-- ToDo вынести из этого компонента-->
-    <Modal
-        v-model="isLeafFinishModalOpen"
-        width="80vw"
-        :show-close-button="true"
-    >
-
-      <DecorCreator/>
-
-      <template #footer>
-        <button class="btn-red" @click="handleLeafFinishConfirm">Потвердить</button>
-      </template>
-
-    </Modal>
   </div>
 </template>
 
@@ -116,16 +99,7 @@ onMounted(() => {
   }
 })
 
-const isLeafFinishModalOpen = ref(false)
 
-const openLeafFinishModal = () => {
-  isLeafFinishModalOpen.value = true
-}
-
-const handleLeafFinishConfirm = () => {
-  console.log('Подверждение')
-  isLeafFinishModalOpen.value = false
-}
 
 </script>
 

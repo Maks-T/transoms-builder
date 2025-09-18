@@ -2,45 +2,22 @@
   <div class="decor-list">
     <h3 v-if="!isCellSelected" class="no-cell-selected">Выберите ячейку для выбора декора</h3>
     <div v-else class="decor-lists-container">
-      <!-- Секционный декор (profileRail) -->
-      <div class="decor-section">
-        <h4>Секционный декор</h4>
+      <div class="decor-section" v-for="(presets, type) in decorLists" :key="type">
+        <h4>{{ decorTypeNames[type] || type }}</h4>
         <div class="decor-items">
-          <label
-              v-for="preset in decorLists.profileRail"
-              :key="preset"
-              class="decor-item"
-          >
-            <input
-                type="radio"
-                :value="preset"
-                :checked="selectedPreset === preset"
-                :disabled="!isCellSelected"
-                @change="$emit('update:selectedPreset', preset)"
-            />
-            {{ preset }}
-          </label>
-        </div>
-      </div>
-
-      <!-- Накладной декор (glueRail) -->
-      <div class="decor-section">
-        <h4>Накладной декор</h4>
-        <div class="decor-items">
-          <label
-              v-for="preset in decorLists.glueRail"
-              :key="preset"
-              class="decor-item"
-          >
-            <input
-                type="radio"
-                :value="preset"
-                :checked="selectedPreset === preset"
-                :disabled="!isCellSelected"
-                @change="$emit('update:selectedPreset', preset)"
-            />
-            {{ preset }}
-          </label>
+          <div class="decor-item" v-for="preset in presets" :key="preset">
+            <label class="decor-item__icon">
+              <img alt="" :src="`https://configdoor.com/public/images/template/${preset}.svg`"/>
+              <input
+                  type="radio"
+                  :value="preset"
+                  :checked="selectedPreset === preset"
+                  :disabled="!isCellSelected"
+                  @change="$emit('update:selectedPreset', { preset, type })"
+              />
+            </label>
+            <span>{{ preset }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -48,6 +25,12 @@
 </template>
 
 <script setup>
+// Объект для маппинга ключей на читаемые имена
+const decorTypeNames = {
+  profileRail: 'Секционный декор',
+  glueRail: 'Накладной декор',
+};
+
 defineProps({
   isCellSelected: {
     type: Boolean,
@@ -71,22 +54,17 @@ defineEmits(['update:selectedPreset']);
 
 <style lang="scss" scoped>
 .decor-list {
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: rem(20);
 }
 
 .no-cell-selected {
-  color: #888;
-  font-size: 16px;
-  text-align: center;
+  // Стили для сообщения о невыбранной ячейке
 }
 
 .decor-lists-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: rem(20) rem(30);
 }
 
 .decor-section {
@@ -109,29 +87,38 @@ defineEmits(['update:selectedPreset']);
 
 .decor-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 10px 20px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
+  justify-content: center;
+  gap: rem(8);
+  font-size: rem(18);
+  text-transform: uppercase;
 
-.decor-item:hover {
-  background: #e0f7fa;
-}
+  &__icon {
+    @include base-border;
 
-.decor-item input[type="radio"] {
-  margin-right: 8px;
-}
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: rem(8);
+    height: rem(85);
+    width: rem(60);
+    cursor: pointer;
+    transition: all 0.2s ease;
 
-.decor-item input[type="radio"]:disabled {
-  cursor: not-allowed;
-}
+    input[type="radio"] {
+      display: none;
+    }
 
-.decor-item input[type="radio"]:checked + span {
-  font-weight: bold;
-  color: #007bff;
+    input[type="radio"]:checked + span {
+      border-color: $accent-text-color;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
 }
 </style>

@@ -9,7 +9,7 @@
 
           <!-- Группа для элементов -->
           <v-group>
-            <template v-for="(cell, index) in activeTransom.cells" :key="'cell-'+index">
+            <template v-for="(cell, index) in cells" :key="'cell-'+index">
               <DecorLeafElement
                   v-if="cell.type !== 'profile'"
                   v-bind="leafElementProps(cell, index)"
@@ -31,9 +31,6 @@
 
     </div>
 
-    <div v-else class="no-transom">
-      Не создана ни одна фрамуга
-    </div>
   </div>
 
 </template>
@@ -47,23 +44,24 @@ import DecorLeafElement from "@components/sections/Modeling/DecorCreator/DecorDr
 const props = defineProps({
   canvasWidth: {type: Number, default: 1100},
   canvasHeight: {type: Number, default: 600},
-  padding: {type: Number, default: 40}
+  padding: {type: Number, default: 40},
+  cells: {type: Object}
 })
+
+console.log(props.cells)
+
 
 const modelingStore = useModelingStore()
 const decorStore = useDecorStore()
 
 const {activeTransom} = storeToRefs(modelingStore)
 
+
+
 const emit = defineEmits(['update:selected-cell-index'])
 
 const selectedCellIndex = ref(null)
 
-const cells = computed(() => {
-  return decorStore.calculatedTransomCellsDecor(activeTransom.value)
-})
-
-console.log('cells', cells.value)
 
 // Масштабный коэффициент
 const scaleFactor = computed(() => {
@@ -101,7 +99,7 @@ const leafElementProps = computed(() => (cell, index) => {
     cell,
     isSelected: selectedCellIndex.value === index,
     scaleFactor: scaleFactor.value,
-    index
+    index: Number(index)
     /*x: cell.x * scaleFactor.value + props.padding,
     y: cell.y * scaleFactor.value + props.padding,
     width: cell.width * scaleFactor.value,
@@ -123,10 +121,6 @@ const handleSelectCell = (index) => {
   emit('update:selected-cell-index', index)
 }
 
-// Отслеживание изменений размеров
-watch(() => [props.canvasWidth, props.canvasHeight], () => {
-  // При изменении размеров канваса пересчитываем масштаб
-}, {immediate: true})
 
 </script>
 
@@ -143,21 +137,7 @@ watch(() => [props.canvasWidth, props.canvasHeight], () => {
   align-items: center;
   justify-content: center;
 
-  &__validation {
-    position: absolute;
-    z-index: 2;
-    right: rem(20);
-    top: rem(20);
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-    padding: rem(4) rem(16);
-    color: #fff;
-    font-size: rem(14);
-    border-radius: rem(12);
-    box-shadow: 0 8px 32px rgba(255, 107, 107, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .no-transom {
+ .no-transom {
     color: #999;
     font-style: italic;
   }

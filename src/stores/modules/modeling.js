@@ -1,6 +1,6 @@
 // stores/modeling.store.js
 import {defineStore} from 'pinia'
-import {cloneObjectDeep} from '@utils'
+import {cloneObjectDeep, uniqId} from '@utils'
 import {useConfigsStore} from '@stores'
 import {LEAF_HINGE_SIDE, LEAF_SWING_DIRECTION, LEAF_TYPES, PROFILE_TYPE} from '@constants';
 import {LEAF_LIMITS} from "@src/configs";
@@ -27,6 +27,20 @@ export const useModelingStore = defineStore('modeling', {
          */
         configsStore() {
             return useConfigsStore()
+        },
+
+        /**
+         * Возвращает фрамугу по ее Id
+         */
+        getTransomById(state) {
+            /**
+             *
+             * @param transomId
+             * @returns {Transom}
+             */
+          return (transomId) => {
+              return state.transoms.find(transom => transom.id === transomId) ?? null;
+          }
         },
         /**
          * Возвращает активную фрамугу
@@ -280,6 +294,8 @@ export const useModelingStore = defineStore('modeling', {
                     isValid: true,
                 },
 
+                updateKey: 1
+
             }
         },
 
@@ -392,6 +408,7 @@ export const useModelingStore = defineStore('modeling', {
 
             const originalId = this.transoms[transomIndex].id
             const originalName = this.transoms[transomIndex].name
+            const originalUpdateKey = this.transoms[transomIndex].updateKey
 
             const newTransom = this.createTransomObject()
 
@@ -399,6 +416,7 @@ export const useModelingStore = defineStore('modeling', {
                 // Сохраняем оригинальные ID и имя
                 newTransom.id = originalId
                 newTransom.name = originalName
+                newTransom.updateKey = originalUpdateKey
 
                 // Заменяем фрамугу в массиве
                 this.transoms[transomIndex] = newTransom
@@ -636,6 +654,7 @@ export const useModelingStore = defineStore('modeling', {
 
             transom.cells = this.calculatedCells
             transom.validationData = this.getActiveTransomValidationData;
+            transom.updateKey += 1;
         },
 
         /**

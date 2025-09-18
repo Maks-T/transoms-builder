@@ -34,6 +34,7 @@ interface Transom {
   rowHeights: number[];               // Массив высот строк фрамуги в миллиметрах
   cells: TransomCell[];               // Массив ячеек, составляющих фрамугу
   validationData: TransomValidationData; // Данные валидации фрамуги (ошибки и параметры)
+  updateKey: number;                  // Ключ для синхранизации обновлений между сторами
 }
 
 interface sizeCellMessages {
@@ -99,6 +100,7 @@ interface ModelingStore {
 
   // Геттеры
   configsStore: ConfigsStore;                                  // Экземпляр хранилища конфигураций
+  getTransomById: (transomId: string) => Transom | null;       // Возвращает фрамугу по её Id
   activeTransom: Transom | undefined;                          // Активная фрамуга или undefined, если не выбрана
   profileTypesArray: SelectOption[];                           // Массив типов профилей для использования в селектах
   transomTemplatesArray: SelectOption[];                       // Массив шаблонов фрамуг для использования в селектах

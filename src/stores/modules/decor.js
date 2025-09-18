@@ -11,7 +11,7 @@ import {uniqId} from "@utils/index.js";
 export const useDecorStore = defineStore('decor', {
 
     state: () => ({
-        transomsCellsDecor: {}
+        transoms: {}
     }),
 
     getters: {
@@ -23,9 +23,18 @@ export const useDecorStore = defineStore('decor', {
             return useConfigsStore();
         },
 
+        /**
+         * Возвращает экземпляр хранилища моделирования.
+         * @returns {ModelingStore} Хранилище моделирования.
+         */
+        modelingStore() {
+            return useModelingStore();
+        },
+
         decorPresets() {
             return this.configsStore.decorPresets
         },
+
         profilesPaddings() {
             return this.configsStore.profilesPaddings
         },
@@ -33,77 +42,100 @@ export const useDecorStore = defineStore('decor', {
             return this.configsStore.profilesAvailableDecor
         },
 
-        calculatedTransomCellsDecor: (state) => (transom) => {
-          /* const cells = state.transomsCellsDecor[transom.id]
+        //ToDo убрать стрелку?
+        calculatedCells(state) {
+           return function (modelingTransom) {
 
-            console.log('transom', transom)
+                 console.log('update calculatedCells modelingTransom.updateKey', modelingTransom.updateKey)
 
-            if (!cells) {
-                state.transomsCellsDecor[transom.id] = state.createCellsDecorObject(transom)
-            }
+                if (!modelingTransom) return;
 
-           return state.transomsCellsDecor[transom.id];*/
+                let transom = state.transoms[modelingTransom.id];
 
-            const cells = {}
-
-            transom.cells.forEach(cell => {
-                const x = cell.x + cell.offsets.left + 63/2; //toDo + paddingsW /2
-                const y = cell.y + cell.offsets.left + 63/2; //toDo+ paddingsH /2
-                const width = cell.innerWidth - 63; //toDo+paddingsW
-                const height = cell.innerHeight - 63; //toDo +paddingsW
-                const presetId = 'default'
-
-                cells[cell.idx] = {
-                    x,
-                    y,
-                    width,
-                    height,
-                    presetId
+                if (!transom) {
+                    transom = state.createTransomObject(modelingTransom)
                 }
-            });
 
-            return cells
+                if (transom.updateKey !== modelingTransom.updateKey) {
+                    state.updateTransomCells(transom, modelingTransom)
+                }
+
+                state.transoms[modelingTransom.id] = transom;
+
+                return transom.cells;
+            }
         },
-
     },
 
     actions: {
 
         /**
          *
-         * @param {Transom} transom
+         * @param {Transom} modelingTransom
          * @returns {{}}
          */
-        createCellsDecorObject(transom) {
-            console.log(transom, 'transom')
-            //Вставки для декора
-            const cells = {}
+        createTransomObject(modelingTransom) {
 
-            transom.cells.forEach(cell => {
-                const x = cell.x + cell.offsets.left + 63/2; //toDo + paddingsW /2
-                const y = cell.y + cell.offsets.left + 63/2; //toDo+ paddingsH /2
-                const width = cell.innerWidth - 63; //toDo+paddingsW
-                const height = cell.innerHeight - 63; //toDo +paddingsW
-                const presetId = 'default'
+            const transom = {};
+            transom.updateKey = modelingTransom.updateKey;
+            transom.profile = modelingTransom.profile;
 
-                cells[cell.idx] = {
-                    x,
-                    y,
-                    width,
-                    height,
-                    presetId
+            const cells = {};
+
+            //Вставки для ячеек
+            modelingTransom.cells.forEach((cell,index) => {
+                if (cell.type !== PROFILE_TYPE) {
+                    cells[index] = this.calculateCell(cell, 'default')
                 }
             });
 
-            return cells
+            transom.cells = cells
+
+            this.transoms[modelingTransom.id] = transom
+
+            return transom;
         },
+
+        updateTransomCells(transom, modelingTransom) {
+
+            const cells = {};
+
+            //Вставки для ячеек
+            modelingTransom.cells.forEach((cell, index) => {
+                if (cell.type !== PROFILE_TYPE) {
+                    console.log('transom.cells[index].presetId', index, transom.cells[index], transom)
+                    const presetId = transom.cells[index]?.presetId ?? 'default';
+                    cells[index] = this.calculateCell(cell, presetId)
+                }
+
+            });
+
+            transom.cells = cells
+            transom.updateKey = modelingTransom.updateKey;
+        },
+
+        calculateCell(cell, presetId = 'default') {
+            const x = cell.x + cell.offsets.left + 63/2; //toDo + paddingsW /2
+            const y = cell.y + cell.offsets.left + 63/2; //toDo+ paddingsH /2
+            const width = cell.innerWidth - 63; //toDo+paddingsW
+            const height = cell.innerHeight - 63; //toDo +paddingsW
+
+            return {
+                x,
+                y,
+                width,
+                height,
+                presetId
+            }
+        },
+
 
         /**
          *
-         * @param {Transom} transom
+         * @param {Transom} modelingTransom
          */
-        getAvailableDecor(transom) {
-            return this.profilesAvailableDecor[transom.profileId]
+        getAvailableDecor(modelingTransom) {
+            return this.profilesAvailableDecor[modelingTransom.profileId]
         }
 
         //getPaddings

@@ -1,8 +1,8 @@
 <template>
   <v-group
       :config="{
-      x: (cell.x + cell.offsets.left) * scaleFactor + props.padding,
-      y: (cell.y + cell.offsets.top) * scaleFactor + props.padding,
+      x: cell.x * props.scaleFactor + props.padding,
+      y: cell.y  * props.scaleFactor + props.padding,
       listening: true
     }"
       @mouseup="handleMouseUp"
@@ -20,11 +20,13 @@ import {computed} from "vue";
 
 const props = defineProps({
   padding: Number,
-  cell: /** @type {TransomCell} */ Object,
+  cell: Object,
   scaleFactor: Number,
   isSelected: Boolean,
   index: Number,
 })
+
+console.log('props.cell', props.cell)
 
 const emit = defineEmits(['select'])
 
@@ -34,8 +36,8 @@ const strokeWidth = 1;
 
 const mainRectConfig = computed(() => {
   return {
-    width: props.cell.innerWidth * props.scaleFactor,
-    height: props.cell.innerHeight * props.scaleFactor,
+    width: props.cell.width * props.scaleFactor,
+    height: props.cell.height * props.scaleFactor,
     stroke: strokeColor,
     strokeWidth: strokeWidth,
     fill: fillColor,
@@ -44,8 +46,8 @@ const mainRectConfig = computed(() => {
 
 const selectRectConfig = computed(() => {
   return {
-    width: props.cell.innerWidth * props.scaleFactor,
-    height: props.cell.innerHeight * props.scaleFactor,
+    width: props.cell.width * props.scaleFactor,
+    height: props.cell.height * props.scaleFactor,
     stroke: '#4bbfff',
     strokeWidth: 4,
     fill: 'transparent',
@@ -55,7 +57,7 @@ const selectRectConfig = computed(() => {
 })
 
 const handleMouseUp = (event) => {
-  console.log('click leaf ' + props.index);
+  console.log('click leaf ' + props.index, typeof props.index);
   emit('select', props.index);
 }
 
