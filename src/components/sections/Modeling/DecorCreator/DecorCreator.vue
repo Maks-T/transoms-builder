@@ -26,8 +26,8 @@
         <DecorList
             :is-cell-selected="!!selectedCell"
             :decor-lists="decorLists"
-            :selected-preset="selectedPreset"
-            @update:selectedPreset="handleSelectedPreset"
+            :selected-presetId="selectedPresetId"
+            @update:selectedPresetId="handleSelectedPresetId"
         />
       </div>
     </div>
@@ -69,7 +69,7 @@ const cells = computed(() => {
 
 // Состояние
 const selectedCell = ref(null);
-const selectedPreset = ref(null);
+const selectedPresetId = ref(null);
 
 // Получаем списки декоров для активной фрамуги
 const decorLists = computed(() => {
@@ -88,14 +88,14 @@ const decorLists = computed(() => {
 // Обработчик выбора ячейки (вставки полотна)
 const handleSelectedCellIndex = (index) => {
   selectedCell.value = activeTransom.value.cells[index] ?? null;
-  selectedPreset.value = null; // Сбрасываем пресет при выборе новой ячейки
+  selectedPresetId.value = null; // Сбрасываем пресет при выборе новой ячейки
   console.log('Выбранная ячейка в декоре:', selectedCell.value);
 };
 
 // Обработчик выбора пресета
-const handleSelectedPreset = ({preset, type}) => {
-  selectedPreset.value = preset;
-  console.log('Выбранный пресет декора:', preset, type);
+const handleSelectedPresetId = ({presetId, type}) => {
+  selectedPresetId.value = presetId;
+  console.log('Выбранный пресет декора:', presetId, type);
 };
 
 

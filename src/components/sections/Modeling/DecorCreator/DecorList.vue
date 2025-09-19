@@ -5,18 +5,18 @@
       <div class="decor-section" v-for="(presets, type) in decorLists" :key="type">
         <h4>{{ decorTypeNames[type] || type }}</h4>
         <div class="decor-items">
-          <div class="decor-item" v-for="preset in presets" :key="preset">
+          <div class="decor-item" v-for="presetId in presets" :key="presetId">
             <label class="decor-item__icon">
-              <img alt="" :src="`https://configdoor.com/public/images/template/${preset}.svg`"/>
+              <img alt="" :src="`https://configdoor.com/public/images/template/${presetId}.svg`"/>
               <input
                   type="radio"
-                  :value="preset"
-                  :checked="selectedPreset === preset"
+                  :value="presetId"
+                  :checked="selectedPresetId === presetId"
                   :disabled="!isCellSelected"
-                  @change="$emit('update:selectedPreset', { preset, type })"
+                  @change="handlePresetChange(presetId, type)"
               />
             </label>
-            <span>{{ preset }}</span>
+            <span>{{ presetId }}</span>
           </div>
         </div>
       </div>
@@ -25,13 +25,17 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+import { useDecorStore, useModelingStore } from "@src/stores/index.js"; // Убедитесь, что путь к store правильный
+import { storeToRefs } from 'pinia';
+
 // Объект для маппинга ключей на читаемые имена
 const decorTypeNames = {
   profileRail: 'Секционный декор',
   glueRail: 'Накладной декор',
 };
 
-defineProps({
+const props = defineProps({
   isCellSelected: {
     type: Boolean,
     default: false,
@@ -43,13 +47,23 @@ defineProps({
       return Array.isArray(obj.profileRail) && Array.isArray(obj.glueRail);
     },
   },
-  selectedPreset: {
+  selectedPresetId: {
     type: [String, null],
     default: null,
   },
 });
 
-defineEmits(['update:selectedPreset']);
+// Используем store
+const decorStore = useDecorStore();
+const modelingStore = useModelingStore();
+const { activeTransom } = storeToRefs(modelingStore);
+
+// Обработчик изменения пресета
+const handlePresetChange = (presetId, type) => {
+  if (activeTransom.value) {
+    decorStore.setPresetForSelectedCell(activeTransom.value.id, presetId, type);
+  }
+};
 </script>
 
 <style lang="scss" scoped>

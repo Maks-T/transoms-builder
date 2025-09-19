@@ -2,6 +2,7 @@ import {defineStore} from 'pinia'
 import {useConfigsStore, useModelingStore} from '@stores'
 import {PROFILE_TYPE, RULE_CELL_TYPES} from '@constants'
 import {uniqId} from "@utils/index.js";
+import CalcDecorTemplate from "@services/calculations/CalcDecorTemplate.js";
 
 
 /**
@@ -11,7 +12,8 @@ import {uniqId} from "@utils/index.js";
 export const useDecorStore = defineStore('decor', {
 
     state: () => ({
-        transoms: {}
+        transoms: {},
+        activeTransomId: null,
     }),
 
     getters: {
@@ -29,6 +31,57 @@ export const useDecorStore = defineStore('decor', {
          */
         modelingStore() {
             return useModelingStore();
+        },
+
+        /**
+         * Возвращает активный transom.
+         * @param {Object} state
+         * @returns {Object|null}
+         */
+        activeTransom(state) {
+            return state.activeTransomId ? state.transoms[state.activeTransomId] || null : null;
+        },
+
+        /**
+         * Возвращает индекс выбранной ячейки для активного transom.
+         * @param {Object} state
+         * @returns {Number|null}
+         */
+        selectedCellIndex(state) {
+            const transom = this.activeTransom;
+            return transom ? transom.selectedCellIndex : null;
+        },
+
+        /**
+         * Возвращает индекс выбранной области (rect) в выбранной ячейке.
+         * @param {Object} state
+         * @returns {Number|null}
+         */
+        selectedRectIndex(state) {
+            const transom = this.activeTransom;
+            return transom ? transom.selectedRectIndex : null;
+        },
+
+        /**
+         * Возвращает выбранную ячейку для активного transom.
+         * @param {Object} state
+         * @returns {Object|null}
+         */
+        selectedCell(state) {
+            const transom = this.activeTransom;
+            if (!transom || transom.selectedCellIndex === null) return null;
+            return transom.cells[transom.selectedCellIndex] || null;
+        },
+
+        /**
+         * Возвращает выбранную область (rect) в выбранной ячейке.
+         * @param {Object} state
+         * @returns {Object|null}
+         */
+        selectedRect(state) {
+            const cell = this.selectedCell;
+            if (!cell || !cell.presetRects?.items || this.selectedRectIndex === null) return null;
+            return cell.presetRects.items[this.selectedRectIndex] || null;
         },
 
         decorPresets() {
@@ -49,6 +102,8 @@ export const useDecorStore = defineStore('decor', {
                  console.log('update calculatedCells modelingTransom.updateKey', modelingTransom.updateKey)
 
                 if (!modelingTransom) return;
+                //Устанавливаем для упрощения использования методов стора в интерфейсе
+                state.activeTransomId = modelingTransom.id;
 
                 let transom = state.transoms[modelingTransom.id];
 
@@ -85,7 +140,7 @@ export const useDecorStore = defineStore('decor', {
             //Вставки для ячеек
             modelingTransom.cells.forEach((cell,index) => {
                 if (cell.type !== PROFILE_TYPE) {
-                    cells[index] = this.calculateCell(cell, 'default')
+                    cells[index] = this.calculateCell(cell, 'v01')
                 }
             });
 
@@ -103,32 +158,49 @@ export const useDecorStore = defineStore('decor', {
             //Вставки для ячеек
             modelingTransom.cells.forEach((cell, index) => {
                 if (cell.type !== PROFILE_TYPE) {
-                    console.log('transom.cells[index].presetId', index, transom.cells[index], transom)
-                    const presetId = transom.cells[index]?.presetId ?? 'default';
+                    const presetId = transom.cells[index]?.presetId ?? 'v01';
                     cells[index] = this.calculateCell(cell, presetId)
                 }
-
             });
 
             transom.cells = cells
             transom.updateKey = modelingTransom.updateKey;
         },
 
-        calculateCell(cell, presetId = 'default') {
+        calculateCell(cell, presetId = 'v01') {
             const x = cell.x + cell.offsets.left + 63/2; //toDo + paddingsW /2
             const y = cell.y + cell.offsets.left + 63/2; //toDo+ paddingsH /2
+
             const width = cell.innerWidth - 63; //toDo+paddingsW
             const height = cell.innerHeight - 63; //toDo +paddingsW
+            const config =  this.decorPresets[presetId];
+            const profile = 10; //ToDo ставить нужную ширину профиля
+            let presetType = 'profileRail';
+
+            const calcDecorTemplate = new CalcDecorTemplate();
+
+            let presetRects = calcDecorTemplate.getDoorRects({config, width, height, profile})
+
+            if (presetRects.items.some(item => item.height <= 0)) {
+                presetId = 'default'
+                const config =  this.decorPresets[presetId];
+                presetRects = calcDecorTemplate.getDoorRects({config, width, height, profile})
+                presetType = null
+
+                console.warn(`Не хватает высоты для применения этого типа декора ${cell.idx}`) //ToDo showToast
+            }
 
             return {
                 x,
                 y,
                 width,
                 height,
-                presetId
+                presetId,
+                presetRects,
+                presetType,
+                isFlip: false,
             }
         },
-
 
         /**
          *
@@ -136,9 +208,65 @@ export const useDecorStore = defineStore('decor', {
          */
         getAvailableDecor(modelingTransom) {
             return this.profilesAvailableDecor[modelingTransom.profileId]
-        }
+        },
 
         //getPaddings
+
+        /**
+         * Устанавливает индекс выбранной ячейки для активной фрамуги.
+         * @param {Number|null} index
+         */
+        setSelectedCellIndex(index) {
+            const transom = this.activeTransom;
+            if (transom) {
+                transom.selectedCellIndex = index;
+            }
+        },
+
+        /**
+         * Устанавливает индекс выбранной области для активной фрамуги.
+         * @param {Number|null} index
+         */
+        setSelectedRectIndex(index) {
+            const transom = this.activeTransom;
+            if (transom) {
+                transom.selectedRectIndex = index;
+            }
+        },
+
+        /**
+         * Устанавливает presetId для выбранной ячейки активной фрамуги и пересчитывает её.
+         * @param {String} presetId
+         * @param {String} type
+         */
+        setPresetForSelectedCell(presetId, type) {
+            const transom = this.activeTransom;
+            if (!transom || transom.selectedCellIndex === null) return;
+
+            const cellIndex = transom.selectedCellIndex;
+            const cell = transom.cells[cellIndex];
+
+            if (cell) {
+                cell.presetId = presetId;
+                transom.cells[cellIndex] = this.calculateCell(cell, presetId);
+            }
+        },
+
+        /**
+         * Устанавливает материал для прямоугольника в ячейке активной фрамуги.
+         * @param {Number} cellIndex
+         * @param {Number} rectIndex
+         * @param {String|null} material
+         */
+        setRectMaterial(cellIndex, rectIndex, material) {
+            const transom = this.activeTransom;
+            if (!transom) return;
+
+            const cell = transom.cells[cellIndex];
+            if (!cell || !cell.presetRects.items[rectIndex]) return;
+
+            cell.presetRects.items[rectIndex].material = material;
+        },
 
     }
 

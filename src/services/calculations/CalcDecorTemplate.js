@@ -1,22 +1,9 @@
 import Mexp from 'math-expression-evaluator'
-import * as _has from 'lodash/has'
-import * as _get from 'lodash/get'
-import * as _set from 'lodash/set'
-import * as _cloneDeep from 'lodash/cloneDeep'
+import _has from 'lodash/has'
+import _get from 'lodash/get'
+import _set from 'lodash/set'
+import _cloneDeep from 'lodash/cloneDeep';
 
-const createProfileObj = () => {
-    const res = {};
-
-    let total = 0;
-
-    Object.defineProperty(res, 'total', {
-        enumerable: true,
-        get() { return total; },
-        set(v) { total = v; return total; },
-    });
-
-    return res;
-}
 
 /**
  * Класс с методами для расчета
@@ -120,6 +107,22 @@ export default class CalcDecorTemplate {
             value: (a, b) => a % b
         }])
 
+       /* mExp.addToken([{
+            type: 8,
+            token: "or",
+            show: "or",
+            value: (a, b) => a || b
+        }])
+
+        mExp.addToken([{
+            type: 0,
+            token: "positive_or_zero",
+            show: "positive_or_zero",
+            value(a) {
+                return a < 0 ? 0 : a
+            }
+        }])*/
+
         // предварительная подготовка конифига и достаем все репиты с любой вложенностью
         const getRepeat = (params, index = 0) => {
             const newRepeat = () => index + 1 < params.length ? getRepeat(params, ++index) : []
@@ -207,7 +210,7 @@ export default class CalcDecorTemplate {
         configParams[this._configArrayKey] = configParams[this._configArrayKey].filter(Boolean)
 
         if (flip) configParams.items = this.flip(configParams.items, width)
-        console.log('configParams', configParams)
+
         return configParams
     }
 
