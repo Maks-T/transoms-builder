@@ -6,12 +6,11 @@
           ref="stage"
       >
         <v-layer>
-
           <!-- Группа для элементов -->
           <v-group>
-            <template v-for="(cell, index) in cells" :key="'cell-'+index">
+            <template v-for="(cell, index) in decorCells" :key="'cell-'+index">
               <DecorLeafElement
-                  v-if="cell.type !== 'profile'"
+                  v-if="cell && cell.type !== 'profile'"
                   v-bind="leafElementProps(cell, index)"
                   @select="handleSelectCell(index)"
               />
@@ -20,65 +19,53 @@
 
           <!-- Группа для рамки фрамуги -->
           <v-group>
-            <v-rect
-                :config="rectFrameConfig"
-            />
+            <v-rect :config="rectFrameConfig" />
           </v-group>
-
         </v-layer>
       </v-stage>
-
-
     </div>
-
   </div>
-
 </template>
 
 <script setup>
-import {storeToRefs} from 'pinia'
-import {useDecorStore, useModelingStore} from "@stores/index.js";
-import {ref, computed, onMounted, onUnmounted, watch} from 'vue'
+import { storeToRefs } from 'pinia';
+import { useDecorStore, useModelingStore } from "@stores/index.js";
+import { computed, watch } from 'vue';
 import DecorLeafElement from "@components/sections/Modeling/DecorCreator/DecorDraw/DecorLeafElement.vue";
 
 const props = defineProps({
-  canvasWidth: {type: Number, default: 1100},
-  canvasHeight: {type: Number, default: 600},
-  padding: {type: Number, default: 40},
-  cells: {type: Object}
-})
+  canvasWidth: { type: Number, default: 1100 },
+  canvasHeight: { type: Number, default: 600 },
+  padding: { type: Number, default: 40 },
+});
 
-console.log(props.cells)
+const modelingStore = useModelingStore();
+const decorStore = useDecorStore();
 
+const { activeTransom } = storeToRefs(modelingStore);
+const { selectedCellIndex } = storeToRefs(decorStore);
 
-const modelingStore = useModelingStore()
-const decorStore = useDecorStore()
-
-const {activeTransom} = storeToRefs(modelingStore)
-
-
-
-const emit = defineEmits(['update:selected-cell-index'])
-
-const selectedCellIndex = ref(null)
-
+// Реактивно получаем ячейки из decorStore
+const decorCells = computed(() => {
+  return activeTransom.value ? decorStore.calculatedCells(activeTransom.value) : {};
+});
 
 // Масштабный коэффициент
 const scaleFactor = computed(() => {
-  if (!activeTransom.value) return 1
+  if (!activeTransom.value) return 1;
 
-  const availableWidth = props.canvasWidth - 2 * props.padding
-  const availableHeight = props.canvasHeight - 2 * props.padding
+  const availableWidth = props.canvasWidth - 2 * props.padding;
+  const availableHeight = props.canvasHeight - 2 * props.padding;
 
   return Math.min(
       availableWidth / activeTransom.value.width,
       availableHeight / activeTransom.value.height
-  )
-})
+  );
+});
 
 // Конфигурация прямоугольника рамы
 const rectFrameConfig = computed(() => {
-  if (!activeTransom.value) return {}
+  if (!activeTransom.value) return {};
 
   return {
     x: props.padding,
@@ -88,56 +75,40 @@ const rectFrameConfig = computed(() => {
     stroke: activeTransom.value.validationData.isValid ? '#333' : 'red',
     strokeWidth: 1,
     fill: 'transparent',
-    listening: false
-  }
-})
+    listening: false,
+  };
+});
 
+// Свойства для DecorLeafElement
 const leafElementProps = computed(() => (cell, index) => {
-
   return {
     padding: props.padding,
     cell,
-    isSelected: selectedCellIndex.value === index,
     scaleFactor: scaleFactor.value,
-    index: Number(index)
-    /*x: cell.x * scaleFactor.value + props.padding,
-    y: cell.y * scaleFactor.value + props.padding,
-    width: cell.width * scaleFactor.value,
-    height: cell.height * scaleFactor.value,
-    realWidth: cell.width,
-    realHeight: cell.height,
-    type: cell.type,*/
-    /*offsets: cell.offsets,
-    hingeSide: cell.hingeSide,*/
-  }
+    index: Number(index),
+    isSelected: selectedCellIndex.value === index,
+  };
+});
 
-})
-
+// Обработчик выбора ячейки
 const handleSelectCell = (index) => {
   if (index === null) return;
-
-  selectedCellIndex.value = index
-
-  emit('update:selected-cell-index', index)
-}
-
-
+  decorStore.setSelectedCellIndex(index);
+};
 </script>
 
 <style lang="scss" scoped>
 .decor-draw {
   @include base-border;
-
   position: relative;
   z-index: 1;
-
   grid-row: 2;
   grid-column: 2;
   display: flex;
   align-items: center;
   justify-content: center;
 
- .no-transom {
+  .no-transom {
     color: #999;
     font-style: italic;
   }
@@ -145,8 +116,7 @@ const handleSelectCell = (index) => {
   &__container {
     display: grid;
     grid-template-columns: 1fr 150px;
-    gap: rem(20)
+    gap: rem(20);
   }
-
 }
 </style>

@@ -18,16 +18,13 @@
             :canvas-height="canvasHeight"
             :padding="padding"
             :cells
-            @update:selected-cell-index="handleSelectedCellIndex"
+
         />
       </div>
 
       <div class="decor-creator__list">
         <DecorList
-            :is-cell-selected="!!selectedCell"
             :decor-lists="decorLists"
-            :selected-presetId="selectedPresetId"
-            @update:selectedPresetId="handleSelectedPresetId"
         />
       </div>
     </div>
@@ -67,36 +64,6 @@ const cells = computed(() => {
   return decorStore.calculatedCells(activeTransom.value)
 })
 
-// Состояние
-const selectedCell = ref(null);
-const selectedPresetId = ref(null);
-
-// Получаем списки декоров для активной фрамуги
-const decorLists = computed(() => {
-
-  if (!activeTransom.value) {
-    return { profileRail: [], glueRail: [] };
-  }
-
-  const availableDecor = decorStore.getAvailableDecor(activeTransom.value);
-  return {
-    profileRail: availableDecor?.profileRail || [],
-    glueRail: availableDecor?.glueRail || [],
-  };
-});
-
-// Обработчик выбора ячейки (вставки полотна)
-const handleSelectedCellIndex = (index) => {
-  selectedCell.value = activeTransom.value.cells[index] ?? null;
-  selectedPresetId.value = null; // Сбрасываем пресет при выборе новой ячейки
-  console.log('Выбранная ячейка в декоре:', selectedCell.value);
-};
-
-// Обработчик выбора пресета
-const handleSelectedPresetId = ({presetId, type}) => {
-  selectedPresetId.value = presetId;
-  console.log('Выбранный пресет декора:', presetId, type);
-};
 
 
 // Отслеживание изменений активной фрамуги
@@ -106,7 +73,6 @@ watch(activeTransom, (newTransom) => {
     console.log('DECOR: Активная фрамуга изменилась:', newTransom);
 
    // cells.value = decorStore.calculatedCells(newTransom)
-
   }
 }, { deep: true });
 

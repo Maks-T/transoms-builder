@@ -2,7 +2,7 @@
   <div class="decor-list">
     <h3 v-if="!isCellSelected" class="no-cell-selected">Выберите ячейку для выбора декора</h3>
     <div v-else class="decor-lists-container">
-      <div class="decor-section" v-for="(presets, type) in decorLists" :key="type">
+      <div class="decor-section" v-for="(presets, type) in groupedDecorPresets" :key="type">
         <h4>{{ decorTypeNames[type] || type }}</h4>
         <div class="decor-items">
           <div class="decor-item" v-for="presetId in presets" :key="presetId">
@@ -25,9 +25,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { useDecorStore, useModelingStore } from "@src/stores/index.js"; // Убедитесь, что путь к store правильный
-import { storeToRefs } from 'pinia';
+import {computed} from 'vue';
+import {useDecorStore, useModelingStore} from "@src/stores/index.js";
+import {storeToRefs} from 'pinia';
 
 // Объект для маппинга ключей на читаемые имена
 const decorTypeNames = {
@@ -35,33 +35,30 @@ const decorTypeNames = {
   glueRail: 'Накладной декор',
 };
 
-const props = defineProps({
-  isCellSelected: {
-    type: Boolean,
-    default: false,
-  },
-  decorLists: {
-    type: Object,
-    required: true,
-    validator: (obj) => {
-      return Array.isArray(obj.profileRail) && Array.isArray(obj.glueRail);
-    },
-  },
-  selectedPresetId: {
-    type: [String, null],
-    default: null,
-  },
-});
-
-// Используем store
 const decorStore = useDecorStore();
 const modelingStore = useModelingStore();
-const { activeTransom } = storeToRefs(modelingStore);
+
+// Реактивные ссылки на store
+const {activeTransom} = storeToRefs(modelingStore);
+const {selectedCell, selectedCellIndex} = storeToRefs(decorStore);
+
+// Проверяем, выбрана ли ячейка
+const isCellSelected = computed(() => selectedCellIndex.value !== null);
+
+// Получаем доступные пресеты и группируем их по типу
+const groupedDecorPresets = computed(() => {
+  return decorStore.getAvailableDecor(activeTransom.value);
+});
+
+// Текущий выбранный presetId
+const selectedPresetId = computed(() => {
+  return selectedCell.value?.presetId || null;
+});
 
 // Обработчик изменения пресета
 const handlePresetChange = (presetId, type) => {
-  if (activeTransom.value) {
-    decorStore.setPresetForSelectedCell(activeTransom.value.id, presetId, type);
+  if (selectedCellIndex.value !== null) {
+    decorStore.setPresetForSelectedCell(presetId, type);
   }
 };
 </script>

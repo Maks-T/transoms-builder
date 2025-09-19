@@ -167,7 +167,9 @@ export const useDecorStore = defineStore('decor', {
             transom.updateKey = modelingTransom.updateKey;
         },
 
-        calculateCell(cell, presetId = 'v01') {
+        calculateCell(cell, presetId = 'v01', presetType = null) {
+            console.log({cell, presetId})
+
             const x = cell.x + cell.offsets.left + 63/2; //toDo + paddingsW /2
             const y = cell.y + cell.offsets.left + 63/2; //toDo+ paddingsH /2
 
@@ -175,7 +177,6 @@ export const useDecorStore = defineStore('decor', {
             const height = cell.innerHeight - 63; //toDo +paddingsW
             const config =  this.decorPresets[presetId];
             const profile = 10; //ToDo ставить нужную ширину профиля
-            let presetType = 'profileRail';
 
             const calcDecorTemplate = new CalcDecorTemplate();
 
@@ -237,18 +238,17 @@ export const useDecorStore = defineStore('decor', {
         /**
          * Устанавливает presetId для выбранной ячейки активной фрамуги и пересчитывает её.
          * @param {String} presetId
-         * @param {String} type
+         * @param {String} presetType
          */
-        setPresetForSelectedCell(presetId, type) {
+        setPresetForSelectedCell(presetId, presetType) {
             const transom = this.activeTransom;
             if (!transom || transom.selectedCellIndex === null) return;
 
             const cellIndex = transom.selectedCellIndex;
-            const cell = transom.cells[cellIndex];
+            const cell = this.modelingStore.activeTransom.cells[cellIndex];
 
             if (cell) {
-                cell.presetId = presetId;
-                transom.cells[cellIndex] = this.calculateCell(cell, presetId);
+                transom.cells[cellIndex] = this.calculateCell(cell, presetId, presetType);
             }
         },
 
