@@ -47,8 +47,9 @@ const { selectedCellIndex } = storeToRefs(decorStore);
 
 // Реактивно получаем ячейки из decorStore
 const decorCells = computed(() => {
-  return activeTransom.value ? decorStore.calculatedCells(activeTransom.value) : {};
+  return decorStore.calculatedCells(activeTransom.value);
 });
+
 
 // Масштабный коэффициент
 const scaleFactor = computed(() => {

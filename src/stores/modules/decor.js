@@ -187,7 +187,6 @@ export const useDecorStore = defineStore('decor', {
                 const config =  this.decorPresets[presetId];
                 presetRects = calcDecorTemplate.getDoorRects({config, width, height, profile})
                 presetType = null
-
                 console.warn(`Не хватает высоты для применения этого типа декора ${cell.idx}`) //ToDo showToast
             }
 
@@ -241,6 +240,7 @@ export const useDecorStore = defineStore('decor', {
          * @param {String} presetType
          */
         setPresetForSelectedCell(presetId, presetType) {
+
             const transom = this.activeTransom;
             if (!transom || transom.selectedCellIndex === null) return;
 
@@ -250,6 +250,7 @@ export const useDecorStore = defineStore('decor', {
             if (cell) {
                 transom.cells[cellIndex] = this.calculateCell(cell, presetId, presetType);
             }
+
         },
 
         /**

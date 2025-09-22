@@ -17,15 +17,11 @@
             :canvas-width="900"
             :canvas-height="canvasHeight"
             :padding="padding"
-            :cells
-
         />
       </div>
 
       <div class="decor-creator__list">
-        <DecorList
-            :decor-lists="decorLists"
-        />
+        <DecorList/>
       </div>
     </div>
 
@@ -41,9 +37,8 @@
 
 <script setup>
 
-import {storeToRefs} from "pinia";
-import {computed, ref, watch} from "vue";
-import {useDecorStore, useModelingStore} from "@src/stores/index.js";
+import {computed, ref} from "vue";
+import {useModelingStore} from "@src/stores/index.js";
 import DecorDraw from "@components/sections/Modeling/DecorCreator/DecorDraw/DecorDraw.vue";
 import DecorList from "@components/sections/Modeling/DecorCreator/DecorList.vue";
 import {Modal} from "@components/ui/index.js";
@@ -56,27 +51,6 @@ const padding = computed(() => Math.min(40, 40 * canvasHeight.value / 900));
 
 // Хранилища
 const modelingStore = useModelingStore();
-const decorStore = useDecorStore();
-
-const { activeTransom } = storeToRefs(modelingStore);
-
-const cells = computed(() => {
-  return decorStore.calculatedCells(activeTransom.value)
-})
-
-
-
-// Отслеживание изменений активной фрамуги
-watch(activeTransom, (newTransom) => {
-  //ToDo может принимать фрамугу из пропсов
-  if (newTransom) {
-    console.log('DECOR: Активная фрамуга изменилась:', newTransom);
-
-   // cells.value = decorStore.calculatedCells(newTransom)
-  }
-}, { deep: true });
-
-
 
 const isModalOpen = ref(false)
 

@@ -5,17 +5,20 @@
         y: cell.y * props.scaleFactor + props.padding,
         listening: true
       }"
-      @mouseup="handleMouseUp"
-  >
+      >
     <!-- Основной прямоугольник окна -->
-    <v-rect :config="mainRectConfig"/>
+    <v-rect
+        :config="mainRectConfig"
+        @click="() => handleCellClick()"
+        @dblclick="() => handleCellDblClick()"
+    />
 
     <!-- Внутренние прямоугольники -->
     <template v-for="(rect, rectIndex) in cell.presetRects.items" :key="'rect-' + rectIndex">
       <v-rect
-          :config="innerRectConfig(rect, rectIndex)"
+          :config="innerRectConfig(rect, rectIndex)"          
           @click="() => handleRectClick(rectIndex)"
-          @dblclick="() => handleDblRectClick(rectIndex)"
+          @dblclick="() => handleRectDblClick(rectIndex)"
       />
       <v-text
           v-if="isProfileRail"
@@ -29,9 +32,9 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useDecorStore, useModelingStore } from "@stores/index.js";
-import { storeToRefs } from "pinia";
+import {computed} from "vue";
+import {useDecorStore, useModelingStore} from "@stores/index.js";
+import {storeToRefs} from "pinia";
 
 const props = defineProps({
   padding: Number,
@@ -42,14 +45,14 @@ const props = defineProps({
 
 const decorStore = useDecorStore();
 const modelingStore = useModelingStore();
-const { activeTransom } = storeToRefs(modelingStore);
+const {activeTransom} = storeToRefs(modelingStore);
 
 const fillColor = "white";
 const strokeColor = "#303030";
 const strokeWidth = 2;
 
 const isProfileRail = computed(() => {
-  return true; // временно всегда true
+  return props.cell.presetType === 'profileRail';
 });
 
 const isSelected = computed(() => {
@@ -70,6 +73,7 @@ const mainRectConfig = computed(() => {
     stroke: strokeColor,
     strokeWidth: strokeWidth,
     fill: fillColor,
+    listening: !isProfileRail.value
   };
 });
 
@@ -94,7 +98,7 @@ const innerRectConfig = (rect, rectIndex) => {
     stroke: "#666",
     strokeWidth: 1,
     fill: rect.material || "transparent",
-    listening: true, // всегда слушаем события
+    listening: isProfileRail.value,
   };
 };
 
@@ -112,23 +116,24 @@ const textConfig = (rect, rectIndex) => {
   };
 };
 
-const handleMouseUp = () => {
-    console.log('click leaf ' + props.index);
+const handleCellClick = () => {
+  decorStore.setSelectedCellIndex(props.index);
+  decorStore.setSelectedRectIndex(null);
+  console.log('click leaf ' + props.index);
 };
+
+const handleCellDblClick = () => {
+  console.log('double click leaf ' + props.index);
+}
 
 const handleRectClick = (rectIndex) => {
-    console.log(`Клик на rectIndex ${rectIndex} в cellIndex ${props.index}`);
-    decorStore.setSelectedCellIndex(props.index);
-    decorStore.setSelectedRectIndex(rectIndex);
+  console.log(`Клик на rectIndex ${rectIndex} в cellIndex ${props.index}`);
+  decorStore.setSelectedCellIndex(props.index);
+  decorStore.setSelectedRectIndex(rectIndex);
 };
 
-const handleDblRectClick = (rectIndex) => {
+const handleRectDblClick = (rectIndex) => {
   console.log(`Двойной клик на rectIndex ${rectIndex} в cellIndex ${props.index}`);
-
-  if (isProfileRail.value) {
-   // decorStore.setSelectedRectIndex(rectIndex);
-
-    // ToDo: Реализовать модал для выбора материала
-  }
 };
+
 </script>

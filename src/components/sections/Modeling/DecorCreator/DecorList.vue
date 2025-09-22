@@ -2,10 +2,11 @@
   <div class="decor-list">
     <h3 v-if="!isCellSelected" class="no-cell-selected">Выберите ячейку для выбора декора</h3>
     <div v-else class="decor-lists-container">
-      <div class="decor-section" v-for="(presets, type) in groupedDecorPresets" :key="type">
-        <h4>{{ decorTypeNames[type] || type }}</h4>
+
+      <div class="decor-section" v-for="(presets, type) in groupedDecorPresets" :key="type"  >
+        <h4 v-if="presets?.length">{{ decorTypeNames[type] || type }}</h4>
         <div class="decor-items">
-          <div class="decor-item" v-for="presetId in presets" :key="presetId">
+          <div class="decor-item" :class="{active: selectedPresetId === presetId}" v-for="presetId in presets" :key="presetId" >
             <label class="decor-item__icon">
               <img alt="" :src="`https://configdoor.com/public/images/template/${presetId}.svg`"/>
               <input
@@ -21,6 +22,7 @@
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -30,7 +32,7 @@ import {useDecorStore, useModelingStore} from "@src/stores/index.js";
 import {storeToRefs} from 'pinia';
 
 // Объект для маппинга ключей на читаемые имена
-const decorTypeNames = {
+const decorTypeNames = { //ToDo const
   profileRail: 'Секционный декор',
   glueRail: 'Накладной декор',
 };
@@ -57,6 +59,8 @@ const selectedPresetId = computed(() => {
 
 // Обработчик изменения пресета
 const handlePresetChange = (presetId, type) => {
+  console.log('presetId, type, ', presetId, type)
+
   if (selectedCellIndex.value !== null) {
     decorStore.setPresetForSelectedCell(presetId, type);
   }
@@ -66,10 +70,6 @@ const handlePresetChange = (presetId, type) => {
 <style lang="scss" scoped>
 .decor-list {
   padding: rem(20);
-}
-
-.no-cell-selected {
-  // Стили для сообщения о невыбранной ячейке
 }
 
 .decor-lists-container {
@@ -131,5 +131,12 @@ const handlePresetChange = (presetId, type) => {
       object-fit: contain;
     }
   }
+
+  &.active {
+    .decor-item__icon {
+      border-color: $accent-text-color;
+    }
+  }
+
 }
 </style>
