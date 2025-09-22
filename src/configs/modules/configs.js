@@ -69,7 +69,7 @@ const PROFILES_PADDINGS = { //ToDo Type
     'spaziosg': {
         id: 'spaziosg',
         name: 'Spazio',
-        width: 70,
+        width: 39,
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/spaziosl.webp',
 
@@ -78,7 +78,7 @@ const PROFILES_PADDINGS = { //ToDo Type
     'spazioltsl': {
         id: 'spazioltsl',
         name: 'Spazio Light',
-        width: 20,
+        width: 39,
         height: 41,
         imgSrc: 'https://configdoor.com/public/images/door/spazioltsl.webp',
 
@@ -467,59 +467,64 @@ const LEAF_LIMITS = {
 
 /**
  * length - длина соседнего полотна, если сторона left или right, то cell.innerHeight, если top или bottom, то cell.innerWidth
+ * q - quantity - количество материала или число или функция с формулой
+ * c - condition - функция условия применения
  */
+
+//ToDo для каждого профиля modula,  spazio и spazio light сделать свои наборы или правила,
+// пока добавил применение уплотнителя условием
 
 const MT_SETS = {
     // Комплект для глухого полотна или профиля со стеной
     INACTIVE_OR_PROFILE_NULL: [
         {id: 'p0159_G', q: (p) => p.length + 100}, // Профиль АВД 0159 (пристенный) + 100мм запас
-        {id: 'seltht4_G', q: (p) => p.length + 100}, // Уплотнитель Ш1/Т1 4мм для S41х39 для профиля S41х39 + 100мм запас
-        {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно/фрамугу
+       // {id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 для профиля S41х39 + 100мм запас
+       // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно/фрамугу
         {id: 'dowel_chapai', q: (p) => Math.floor(p.length / 400) + 1}, // Дюбель чапай: профиль 0159/400мм + 1 шт на отверстие 6мм
         {id: 'fix440_G', q: (p) => Math.floor(p.length / 400) + 1}, // Саморез 4х40 = количеству дюбелей чапай
     ],
 
     // Комплект для левой/нижней стороны глухого полотна с неактивным полотном
-    INACTIVE_LEFT_BOTTOM_INACTIVE: [
+    INACTIVE_LEFT_TOP_INACTIVE: [
         {id: 'p0159_G', q: (p) => p.length + 100}, // Профиль АВД 0159 (соединительный) + 100мм запас
-        {id: 'seltht4_G', q: (p) => p.length + 100}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
-        {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
-        {id: 'fix7985_G', q: (p) => Math.floor(p.length / 300) + 1}, // Винт M4х14: профиль 0159/300мм для соединения полотен
+       // {id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+       // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
+        {id: 'fix7985_G', q: (p) => Math.max(Math.floor(p.length / 300) + 1, 3)}, // Винт M4х14: профиль 0159/300мм для соединения полотен
     ],
 
     // Комплект для правой/верхней стороны глухого полотна с неактивным полотном
-    INACTIVE_RIGHT_TOP_INACTIVE: [
+    INACTIVE_RIGHT_BOTTOM_INACTIVE: [
         {id: 's532_G', q: (p) => p.length + 100}, // Профиль S 5х32 + 100мм запас
     ],
 
     // Комплект для левой/нижней/верхней стороны с активным полотном
     INACTIVE_LEFT_BOTTOM_TOP_ACTIVE: [
         {id: 'p7967_G', q: (p) => p.length + 100}, // Профиль АВД 7967 + 100мм запас
-        {id: 'seltht4_G', q: (p) => p.length + 100}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
-        {id: 'sealAl43_G', q: (p) => p.length + 100}, // Уплотнитель АЛ-43 для профиля 7996 + 100мм запас
-        {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
+        //{id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+        {id: 'sealAl43_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель АЛ-43 для профиля 7996 + 100мм запас
+       // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
     ],
 
     // Комплект для профиля с профильным соседом
     INACTIVE_PROFILE: [
         {id: 'p0159_G', q: (p) => p.length + 100}, // Профиль АВД 0159 + 100мм запас
-        {id: 'seltht4_G', q: (p) => p.length + 100}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
-        {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
-        {id: 'fix7985_G', q: (p) => Math.floor(p.length / 300) + 1}, // Винт M4х14: профиль 0159/300мм
+      //  {id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+       // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
+        {id: 'fix7985_G', q: (p) => Math.max(Math.floor(p.length / 300) + 1, 3)}, // Винт M4х14: профиль 0159/300мм
     ],
 
     // Комплект для активного полотна с любым соседом
     ACTIVE_ANY: [
         {id: 's532_G', q: (p) => p.length + 100}, // Профиль S 5х32 + 100мм запас
-        {id: 'seltht4_G', q: (p) => p.length + 100}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+        //{id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
     ],
 
     // Комплект для профиля с полотном в качестве соседа
     PROFILE_LEAF: [
         {id: 'p7967_G', q: (p) => p.length + 100}, // Профиль АВД 7967 + 100мм запас
-        //{id: 'seltht4_G', q: (p) => p.length + 100},  Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
-        {id: 'sealAl43_G', q: (p) => p.length + 100}, // Уплотнитель АЛ-43 + 100мм запас
-        {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
+        //{id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'},  Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+        {id: 'sealAl43_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель АЛ-43 + 100мм запас
+       // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
     ],
 
     // Дополнительный комплект для профиля (левая/правая стороны) - крепление к стене
@@ -549,25 +554,25 @@ const MATERIALS_ON_SIDE_RULES = {
     inactive: {
         left: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
-            inactive: [...MT_SETS.INACTIVE_LEFT_BOTTOM_INACTIVE],
+            inactive: [...MT_SETS.INACTIVE_LEFT_TOP_INACTIVE],
             active: [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE],
             verticalProfile: [...MT_SETS.INACTIVE_PROFILE]
         },
         right: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
-            inactive: [...MT_SETS.INACTIVE_RIGHT_TOP_INACTIVE],
+            inactive: [...MT_SETS.INACTIVE_RIGHT_BOTTOM_INACTIVE],
             active: [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE],
             verticalProfile: [...MT_SETS.INACTIVE_PROFILE]
         },
         top: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
-            inactive: [...MT_SETS.INACTIVE_RIGHT_TOP_INACTIVE],
+            inactive: [...MT_SETS.INACTIVE_LEFT_TOP_INACTIVE],
             active: null,
             horizontalProfile: [...MT_SETS.INACTIVE_PROFILE]
         },
         bottom: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
-            inactive: [...MT_SETS.INACTIVE_LEFT_BOTTOM_INACTIVE],
+            inactive: [...MT_SETS.INACTIVE_RIGHT_BOTTOM_INACTIVE],
             active: [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE, ...MT_SETS.INACTIVE_BOTTOM_ACTIVE],
             horizontalProfile: null,
             forcedActive: [...MT_SETS.INACTIVE_BOTTOM_ACTIVE, ...MT_SETS.FORCED_ACTIVE]
@@ -592,7 +597,7 @@ const MATERIALS_ON_SIDE_RULES = {
             null: [...MT_SETS.ACTIVE_ANY],
         },
         bottom: {
-            null: [...MT_SETS.ACTIVE_ANY],
+            null: null,
         }
     },
 

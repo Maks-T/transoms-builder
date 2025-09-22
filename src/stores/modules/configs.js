@@ -68,7 +68,7 @@ export const useConfigsStore = defineStore('configs', {
         getProfileById: (state) => (id) => state.profileTypes[id],
         getTransomTemplateById: (state) => (id) => state.transomTemplates[id],
         defaultProfile: (state) => Object.keys(state.profileTypes)[0],
-        defaultTemplate: (state) => Object.keys(state.transomTemplates)[5],
+        defaultTemplate: (state) => Object.keys(state.transomTemplates)[0],
         getMaterialsRules: (state) => state.materialsRules
     },
 

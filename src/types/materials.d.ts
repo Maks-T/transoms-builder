@@ -1,6 +1,11 @@
+
+interface ParamMaterial {
+    length: number; //Длина стороны полотна|короба
+}
 interface MaterialConfig {
     id: string;                               // Уникальный идентификатор материала из прайс-листа
-    q: ((params: { length: number }) => number) | number;  // Формула или фиксированное количество материала
+    q: ((params?: ParamMaterial) => number) | number;  // Формула или фиксированное количество материала
+    c?: (params?: ParamMaterial) => boolean; //Формула условия применения
 }
 
 interface MaterialObject {

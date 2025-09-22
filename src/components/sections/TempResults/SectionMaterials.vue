@@ -20,27 +20,25 @@
 
     <!-- Подробный вид -->
     <div v-if="activeTab === 'detailed'">
-      <div v-for="(cellMaterials, cellIdx) in materials" :key="cellIdx" class="cell-materials">
+      <div v-for="(cellMaterials, cellIdx) in sortedMaterials" :key="cellIdx" class="cell-materials">
         <h3>Ячейка {{ Number(cellIdx) + 1 }} {{ cells[cellIdx]?.type }}</h3>
         <table class="materials-table">
           <thead>
           <tr>
-
-            <th>Сторона</th>
-            <th>Материал</th>
-            <th>Количество</th>
+            <th @click="sortBy('side')">Сторона {{ sortIndicator('side') }}</th>
+            <th @click="sortBy('material')">Материал {{ sortIndicator('material') }}</th>
+            <th @click="sortBy('quantity')">Количество {{ sortIndicator('quantity') }}</th>
             <th>Ед. изм</th>
             <th>Цена</th>
           </tr>
           </thead>
           <tbody>
           <tr v-for="material in cellMaterials" :key="material.id">
-
             <td>{{ material.side }}</td>
             <td>{{ material.price?.name || material.price?.id }}</td>
             <td>{{ material.quantity }}</td>
             <td>{{ material.price?.unit || '-' }}</td>
-            <td>{{ material.price?.priceIn || 0 }} </td>
+            <td>{{ material.price?.priceIn || 0 }}</td>
           </tr>
           </tbody>
         </table>
@@ -51,7 +49,7 @@
     <div v-if="activeTab === 'summary'">
       <!-- Сумма по ячейкам -->
       <div v-for="(cellSummary, cellIdx) in summarizedByCell" :key="cellIdx" class="cell-summary">
-        <h3> Ячейка {{ Number(cellIdx) + 1 }} {{ cells[cellIdx]?.type }}</h3>
+        <h3>Ячейка {{ Number(cellIdx) + 1 }} {{ cells[cellIdx]?.type }}</h3>
         <table class="summary-table">
           <thead>
           <tr>
@@ -110,6 +108,11 @@ const { activeTransom } = storeToRefs(modelingStore);
 
 const materials = /** @type MaterialsObject */ ref({});
 const cells = /** @type TransomCell[] */ ref([]);
+
+// Состояние для сортировки
+const sortColumn = ref(null); // Текущий столбец сортировки: 'side', 'material', 'quantity'
+const sortDirection = ref('asc'); // Направление: 'asc' или 'desc'
+
 // Отслеживание изменений ячеек активной фрамуги
 watch(
     activeTransom,
@@ -124,6 +127,47 @@ watch(
 );
 
 const activeTab = ref('detailed'); // По умолчанию подробный вид
+
+// Вычисляем отсортированные материалы
+const sortedMaterials = computed(() => {
+  if (!sortColumn.value) return materials.value;
+
+  const sorted = {};
+  Object.entries(materials.value).forEach(([cellIdx, cellMaterials]) => {
+    sorted[cellIdx] = [...cellMaterials].sort((a, b) => {
+      let valueA, valueB;
+
+      switch (sortColumn.value) {
+        case 'side':
+          valueA = a.side || '';
+          valueB = b.side || '';
+          break;
+        case 'material':
+          valueA = a.price?.name || a.price?.id || '';
+          valueB = b.price?.name || b.price?.id || '';
+          break;
+        case 'quantity':
+          valueA = a.quantity || 0;
+          valueB = b.quantity || 0;
+          break;
+        default:
+          return 0;
+      }
+
+      // Сравнение строк (для side и material)
+      if (typeof valueA === 'string') {
+        return sortDirection.value === 'asc'
+            ? valueA.localeCompare(valueB)
+            : valueB.localeCompare(valueA);
+      }
+      // Сравнение чисел (для quantity)
+      return sortDirection.value === 'asc'
+          ? valueA - valueB
+          : valueB - valueA;
+    });
+  });
+  return sorted;
+});
 
 // Вычисляем суммарные данные по ячейкам
 const summarizedByCell = computed(() => {
@@ -165,6 +209,30 @@ const totalSummary = computed(() => {
   });
   return summary;
 });
+
+// Обработчик клика по заголовку для сортировки
+const sortBy = (column) => {
+  if (sortColumn.value === column) {
+    if (sortDirection.value === 'asc') {
+      // Второй клик: переключаем на desc
+      sortDirection.value = 'desc';
+    } else {
+      // Третий клик: сбрасываем сортировку
+      sortColumn.value = null;
+      sortDirection.value = 'asc';
+    }
+  } else {
+    // Первый клик: устанавливаем новый столбец и сортировку по возрастанию
+    sortColumn.value = column;
+    sortDirection.value = 'asc';
+  }
+};
+
+// Индикатор направления сортировки
+const sortIndicator = (column) => {
+  if (sortColumn.value !== column) return '';
+  return sortDirection.value === 'asc' ? '↑' : '↓';
+};
 </script>
 
 <style scoped>
@@ -219,6 +287,12 @@ const totalSummary = computed(() => {
 .summary-table th {
   background-color: #f2f2f2;
   font-weight: bold;
+  cursor: pointer;
+}
+
+.materials-table th:hover,
+.summary-table th:hover {
+  background-color: #e0e0e0;
 }
 
 .total-summary {

@@ -77,9 +77,10 @@ export const useMaterialsStore = defineStore('materials', {
          * @param {TransomCell} cell - Ячейка фрамуги.
          * @param {string} side - Сторона ячейки ('left', 'right', 'top', 'bottom').
          * @param {TransomCell | null} [neighbor=null] - Соседняя ячейка, если есть.
+         * @param {Transom} transom - Расчетная фрамуга
          * @returns {MaterialObject | undefined} Объект материала или undefined, если прайс не найден.
          */
-        createMaterialObject(materialCfg, cell, side, neighbor = null) {
+        createMaterialObject(materialCfg, cell, side, neighbor = null, transom) {
             const isVertical = side === 'left' || side === 'right';
 
             const price = this.configsStore.prices[materialCfg.id];
@@ -101,6 +102,7 @@ export const useMaterialsStore = defineStore('materials', {
 
             const params = {
                 length,
+                profileId: transom.profileId
             };
 
             let quantity = 0;
@@ -109,6 +111,16 @@ export const useMaterialsStore = defineStore('materials', {
                 quantity = typeof materialCfg.q === 'function' ? materialCfg.q(params) : Number(materialCfg.q);
             } catch (e) {
                 console.warn('Ошибка парсинга формулы определения количества материала', materialCfg, e.message);
+            }
+
+            let conditionAllow = true;
+
+            if (materialCfg?.c && typeof materialCfg?.c === 'function') {
+                conditionAllow = materialCfg.c(params)
+            }
+
+            if (conditionAllow === false) {
+                return;
             }
 
             return {
@@ -192,17 +204,30 @@ export const useMaterialsStore = defineStore('materials', {
                 profileSides = ['left', 'right', 'top', 'bottom']; // Для полотен — прямоугольник из профилей
             }
 
+            //Материалы применяются только один раз на сторону
+
+            const singleSideMaterials = [ //ToDo вынести в конфиг
+                {id: transom.profile.priceId, q: (p) => p.length + 100}, //основной профиль S41x39
+                {id: 'prF1_G', q: 1}, //Сухарь
+                {id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+            ]
+
             // Добавляем основной профиль для указанных сторон
             profileSides.forEach((side) => {
-                const mainProfile = this.createMaterialObject(
-                    {id: transom.profile.priceId, q: (p) => p.length + 100},
-                    cell,
-                    side,
-                    null);
 
-                if (mainProfile) {
-                    materials.push(mainProfile);
-                }
+                singleSideMaterials.forEach((singleMaterial) => {
+                    const material = this.createMaterialObject(
+                        singleMaterial,
+                        cell,
+                        side,
+                        null,
+                        transom);
+
+                    if (material) {
+                        materials.push(material);
+                    }
+                })
+
             });
 
             // Добавляем остальные материалы
@@ -224,7 +249,7 @@ export const useMaterialsStore = defineStore('materials', {
 
                         if (Array.isArray(materialsSet)) {
                             materialsSet.forEach((materialSet) => {
-                                const material = this.createMaterialObject(materialSet, cell, side, neighbor);
+                                const material = this.createMaterialObject(materialSet, cell, side, neighbor, transom);
                                 if (material) {
                                     materials.push(material);
                                 }
@@ -237,7 +262,7 @@ export const useMaterialsStore = defineStore('materials', {
 
                     if (Array.isArray(materialsSet)) {
                         materialsSet.forEach((materialSet) => {
-                            const material = this.createMaterialObject(materialSet, cell, side, null);
+                            const material = this.createMaterialObject(materialSet, cell, side, null, transom);
                             if (material) {
                                 materials.push(material);
                             }
