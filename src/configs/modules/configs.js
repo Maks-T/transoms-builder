@@ -1,6 +1,6 @@
 
-//ToDo create constants profileRail and glueRail
-const PROFILES_AVAILABLE_DECOR = {
+
+/** @type {ProfilesAvailableDecorPresets} */const PROFILES_AVAILABLE_DECOR_PRESETS = {
     'modulasg': {
         glueRail: ["r01", "r02", "r03", "r04", "r05", "r06", "r07", "r08", "r09", "r10", "r11", "r12", "r13", "r14", "r15", "r21", "r22", "r23", "r24", "r25", "r26"],
         profileRail: ["v01", "v02", "v03"],
@@ -16,7 +16,7 @@ const PROFILES_AVAILABLE_DECOR = {
     },
 }
 
-const PROFILES_PADDINGS = { //ToDo Type
+/** @type {ProfilesPaddings} */const PROFILES_PADDINGS = { 
     'modulasg': {
         other: {
             nonTempered: {w: 63, h: 63},
@@ -633,4 +633,4 @@ const MATERIALS_ON_SIDE_RULES = {
 }
 
 
-export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS, MATERIALS_ON_SIDE_RULES, PROFILES_PADDINGS, PROFILES_AVAILABLE_DECOR}
+export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS, MATERIALS_ON_SIDE_RULES, PROFILES_PADDINGS, PROFILES_AVAILABLE_DECOR_PRESETS}

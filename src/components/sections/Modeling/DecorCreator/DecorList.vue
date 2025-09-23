@@ -1,6 +1,6 @@
 <template>
   <div class="decor-list">
-    <h3 v-if="!isCellSelected" class="no-cell-selected">Выберите ячейку для выбора декора</h3>
+    <h3 v-if="!isCellSelected" class="no-cell-selected">Выберите полотно для выбора декора</h3>
     <div v-else class="decor-lists-container">
 
       <div class="decor-section" v-for="(presets, type) in groupedDecorPresets" :key="type"  >
@@ -12,8 +12,10 @@
               <input
                   type="radio"
                   :value="presetId"
+                  name="decorPreset"
                   :checked="selectedPresetId === presetId"
                   :disabled="!isCellSelected"
+                  disabled
                   @change="handlePresetChange(presetId, type)"
               />
             </label>
@@ -39,12 +41,13 @@ const modelingStore = useModelingStore();
 const {activeTransom} = storeToRefs(modelingStore);
 const {selectedCell, selectedCellIndex} = storeToRefs(decorStore);
 
+console.log('selectedCellIndex.value', selectedCellIndex.value)
 // Проверяем, выбрана ли ячейка
 const isCellSelected = computed(() => selectedCellIndex.value !== null);
 
 // Получаем доступные пресеты и группируем их по типу
 const groupedDecorPresets = computed(() => {
-  return decorStore.getAvailableDecor(activeTransom.value);
+  return decorStore.getAvailableDecorPresets(activeTransom.value);
 });
 
 // Текущий выбранный presetId

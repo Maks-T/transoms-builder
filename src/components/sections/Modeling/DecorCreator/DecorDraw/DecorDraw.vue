@@ -12,7 +12,6 @@
               <DecorLeafElement
                   v-if="cell && cell.type !== 'profile'"
                   v-bind="leafElementProps(cell, index)"
-                  @select="handleSelectCell(index)"
               />
             </template>
           </v-group>
@@ -91,11 +90,6 @@ const leafElementProps = computed(() => (cell, index) => {
   };
 });
 
-// Обработчик выбора ячейки
-const handleSelectCell = (index) => {
-  if (index === null) return;
-  decorStore.setSelectedCellIndex(index);
-};
 </script>
 
 <style lang="scss" scoped>

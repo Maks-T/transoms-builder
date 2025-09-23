@@ -79,4 +79,31 @@
     transform: translate(1px, 1px);
   }
 
+  &:disabled {
+    border: 1px solid $disable-color;
+    background: white;
+    color: $disable-color;
+
+    cursor: not-allowed;
+
+    &:focus,
+    &:hover {
+      border: 1px solid $disable-color;
+      background: white;
+      color: $disable-color;
+
+      .icon {
+        color: $disable-color;
+      }
+    }
+
+    &:active {
+      transform: translate(0, 0);
+    }
+
+    .icon {
+      color: $disable-color;
+    }
+  }
+
 }

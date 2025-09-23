@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia';
 import {cloneObjectDeep} from '@utils';
 import {PROFILES_TYPES, TRANSOM_TEMPLATES, PRICES, MATERIALS_ON_SIDE_RULES, DECOR_PRESETS,PROFILES_PADDINGS,
-    PROFILES_AVAILABLE_DECOR} from '@src/configs'
+    PROFILES_AVAILABLE_DECOR_PRESETS} from '@src/configs'
 import {LEAF_HINGE_SIDE, LEAF_HINGE_SIDE_NAMES, LEAF_SWING_DIRECTION, LEAF_SWING_DIRECTION_NAMES} from "@constants";
 
 
@@ -21,7 +21,7 @@ export const useConfigsStore = defineStore('configs', {
         //для расчета декора
         decorPresets: DECOR_PRESETS, //шаблоны (персеты) для накладного и секционного декора
         profilesPaddings: PROFILES_PADDINGS , //отсутпы для вставок для опреденного типа профиля
-        profilesAvailableDecor: PROFILES_AVAILABLE_DECOR //Доступный накладной и секционный декор для вставок
+        profilesAvailableDecorPresets: PROFILES_AVAILABLE_DECOR_PRESETS //Доступный накладной и секционный декор для вставок
     }),
 
     getters: {

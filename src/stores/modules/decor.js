@@ -80,7 +80,7 @@ export const useDecorStore = defineStore('decor', {
 
         /**
          * Возвращает доступные пресеты декора из конфигурации.
-         * @returns {AvailableDecor} Объект с пресетами декора.
+         * @returns {AvailableDecorPresets} Объект с пресетами декора.
          */
         decorPresets() {
             return this.configsStore.decorPresets
@@ -96,10 +96,10 @@ export const useDecorStore = defineStore('decor', {
 
         /**
          * Возвращает отступы для профилей из конфигурации.
-         * @returns {ProfilesAvailableDecor} Объект с отступами для профилей.
+         * @returns {ProfilesAvailableDecorPresets} Объект с отступами для профилей.
          */
-        profilesAvailableDecor() {
-            return this.configsStore.profilesAvailableDecor
+        profilesAvailableDecorPresets() {
+            return this.configsStore.profilesAvailableDecorPresets
         },
 
         /**
@@ -140,9 +140,13 @@ export const useDecorStore = defineStore('decor', {
          */
         createTransomObject(modelingTransom) {
 
-            const transom = {};
-            transom.updateKey = modelingTransom.updateKey;
-            transom.profile = modelingTransom.profile;
+            const transom = {
+                updateKey: modelingTransom.updateKey,
+                profile: modelingTransom.profile,
+                selectedCellIndex: null,
+                selectedRectIndex: null,
+                cells: {}
+            };
 
             const cells = {};
 
@@ -166,6 +170,8 @@ export const useDecorStore = defineStore('decor', {
          * @param {Transom} modelingTransom - Фрамуга из хранилища моделирования.
          */
         updateTransomCells(transom, modelingTransom) {
+            this.setSelectedCellIndex(null);
+            this.setSelectedRectIndex(null);
 
             const cells = {};
 
@@ -189,7 +195,7 @@ export const useDecorStore = defineStore('decor', {
          * @returns {DecorCell} Объект ячейки с декором.
          */
         calculateCell(cell, presetId = 'default', presetType = null) {
-            console.log({cell, presetId})
+
 
             const x = cell.x + cell.offsets.left + 63/2; //toDo + paddingsW /2
             const y = cell.y + cell.offsets.left + 63/2; //toDo+ paddingsH /2
@@ -226,10 +232,10 @@ export const useDecorStore = defineStore('decor', {
         /**
          * Возвращает доступные пресеты декора для профиля активной фрамуги.
          * @param {Transom} modelingTransom - Фрамуга из хранилища моделирования.
-         * @returns {AvailableDecor} Объект с доступными типами декора (glueRail, profileRail).
+         * @returns {AvailableDecorPresets} Объект с доступными типами декора (glueRail, profileRail).
          */
-        getAvailableDecor(modelingTransom) {
-            return this.profilesAvailableDecor[modelingTransom.profileId]
+        getAvailableDecorPresets(modelingTransom) {
+            return this.profilesAvailableDecorPresets[modelingTransom.profileId]
         },
 
         //getPaddings

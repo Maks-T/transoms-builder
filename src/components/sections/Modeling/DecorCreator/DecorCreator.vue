@@ -1,6 +1,10 @@
 <template>
 
-  <button class="btn-white" @click="openModal">
+  <button class="btn-white"
+          @click="openModal"
+          :disabled="!isValidTransom"
+          :title="!isValidTransom ? 'Конструкция фрамуги не валидна' : ''"
+  >
     <Icon icon="mingcute:paint-2-line" class="icon"/>
     <span>Внешний вид</span>
   </button>
@@ -43,6 +47,7 @@ import DecorDraw from "@components/sections/Modeling/DecorCreator/DecorDraw/Deco
 import DecorList from "@components/sections/Modeling/DecorCreator/DecorList.vue";
 import {Modal} from "@components/ui/index.js";
 import {Icon} from "@iconify/vue";
+import {storeToRefs} from "pinia";
 
 //Адаптируем высоту экрана по высоте
 const canvasHeight = computed(() => Math.min(600, window.innerHeight * 0.49));
@@ -51,6 +56,12 @@ const padding = computed(() => Math.min(40, 40 * canvasHeight.value / 900));
 
 // Хранилища
 const modelingStore = useModelingStore();
+
+const { activeTransom } = storeToRefs(modelingStore);
+
+const isValidTransom = computed(() => {
+    return activeTransom.value?.validationData?.isValid ?? false;
+});
 
 const isModalOpen = ref(false)
 

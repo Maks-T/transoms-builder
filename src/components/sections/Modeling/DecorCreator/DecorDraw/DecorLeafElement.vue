@@ -38,7 +38,7 @@ import {storeToRefs} from "pinia";
 
 const props = defineProps({
   padding: Number,
-  cell: Object,
+  cell: /** @type {DecorCell} */ Object,
   scaleFactor: Number,
   index: Number,
 });
@@ -79,12 +79,13 @@ const mainRectConfig = computed(() => {
 
 const selectRectConfig = computed(() => {
   return {
-    width: props.cell.width * props.scaleFactor,
-    height: props.cell.height * props.scaleFactor,
-    stroke: "#4bbfff",
-    strokeWidth: 4,
+    x: -3,
+    y: -3,
+    width: props.cell.width * props.scaleFactor + 6,
+    height: props.cell.height * props.scaleFactor + 6,
+    stroke: "#9F3A3A",
+    strokeWidth: 2,
     fill: "transparent",
-    dash: [8, 4],
     listening: false, // чтобы не блокировало клики
   };
 });
