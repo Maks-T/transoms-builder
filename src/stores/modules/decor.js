@@ -6,11 +6,10 @@ import CalcDecorTemplate from "@services/calculations/CalcDecorTemplate.js";
 
 
 /**
- * Хранилище для расчета декора полотен
- * @returns DecorStore
+ * Хранилище для управления декором ячеек фрамуг.
+ * @returns {DecorStore} Объект хранилища декора.
  */
 export const useDecorStore = defineStore('decor', {
-
     state: () => ({
         transoms: {},
         activeTransomId: null,
@@ -34,18 +33,16 @@ export const useDecorStore = defineStore('decor', {
         },
 
         /**
-         * Возвращает активный transom.
-         * @param {Object} state
-         * @returns {Object|null}
+         * Возвращает активную фрамугу из хранилища декора.
+         * @returns {DecorTransom|null} Объект активной фрамуги или null, если фрамуга не выбрана.
          */
         activeTransom(state) {
             return state.activeTransomId ? state.transoms[state.activeTransomId] || null : null;
         },
 
         /**
-         * Возвращает индекс выбранной ячейки для активного transom.
-         * @param {Object} state
-         * @returns {Number|null}
+         * Возвращает индекс выбранной ячейки для активной фрамуги.
+         * @returns {number|null} Индекс выбранной ячейки или null, если ячейка не выбрана.
          */
         selectedCellIndex(state) {
             const transom = this.activeTransom;
@@ -54,8 +51,7 @@ export const useDecorStore = defineStore('decor', {
 
         /**
          * Возвращает индекс выбранной области (rect) в выбранной ячейке.
-         * @param {Object} state
-         * @returns {Number|null}
+         * @returns {number|null} Индекс выбранной области или null, если область не выбрана.
          */
         selectedRectIndex(state) {
             const transom = this.activeTransom;
@@ -63,9 +59,8 @@ export const useDecorStore = defineStore('decor', {
         },
 
         /**
-         * Возвращает выбранную ячейку для активного transom.
-         * @param {Object} state
-         * @returns {Object|null}
+         * Возвращает выбранную ячейку для активной фрамуги.
+         * @returns {DecorCell|null} Объект выбранной ячейки или null, если ячейка не выбрана.
          */
         selectedCell(state) {
             const transom = this.activeTransom;
@@ -75,8 +70,7 @@ export const useDecorStore = defineStore('decor', {
 
         /**
          * Возвращает выбранную область (rect) в выбранной ячейке.
-         * @param {Object} state
-         * @returns {Object|null}
+         * @returns {DecorRect|null} Объект выбранной области или null, если область не выбрана.
          */
         selectedRect(state) {
             const cell = this.selectedCell;
@@ -84,22 +78,36 @@ export const useDecorStore = defineStore('decor', {
             return cell.presetRects.items[this.selectedRectIndex] || null;
         },
 
+        /**
+         * Возвращает доступные пресеты декора из конфигурации.
+         * @returns {AvailableDecor} Объект с пресетами декора.
+         */
         decorPresets() {
             return this.configsStore.decorPresets
         },
 
+        /**
+         * Возвращает отступы для профилей из конфигурации.
+         * @returns {ProfilesPaddings} Объект с отступами для профилей.
+         */
         profilesPaddings() {
             return this.configsStore.profilesPaddings
         },
+
+        /**
+         * Возвращает отступы для профилей из конфигурации.
+         * @returns {ProfilesAvailableDecor} Объект с отступами для профилей.
+         */
         profilesAvailableDecor() {
             return this.configsStore.profilesAvailableDecor
         },
 
-        //ToDo убрать стрелку?
+        /**
+         * Вычисляет ячейки с декором для указанной фрамуги из modelingStore.
+         * @returns {(modelingTransom: Transom) => Record<number, DecorCell>|undefined} Функция, возвращающая объект с ячейками декора или undefined.
+         */
         calculatedCells(state) {
            return function (modelingTransom) {
-
-                 console.log('update calculatedCells modelingTransom.updateKey', modelingTransom.updateKey)
 
                 if (!modelingTransom) return;
                 //Устанавливаем для упрощения использования методов стора в интерфейсе
@@ -111,6 +119,7 @@ export const useDecorStore = defineStore('decor', {
                     transom = state.createTransomObject(modelingTransom)
                 }
 
+                //Если параметры фрамуги были изменены в моделировании, то пересчитываем ячейки
                 if (transom.updateKey !== modelingTransom.updateKey) {
                     state.updateTransomCells(transom, modelingTransom)
                 }
@@ -125,9 +134,9 @@ export const useDecorStore = defineStore('decor', {
     actions: {
 
         /**
-         *
-         * @param {Transom} modelingTransom
-         * @returns {{}}
+         * Создает объект фрамуги для декора на основе данных из modelingStore.
+         * @param {Transom} modelingTransom - Фрамуга из хранилища моделирования.
+         * @returns {DecorTransom} Объект фрамуги с декором.
          */
         createTransomObject(modelingTransom) {
 
@@ -140,7 +149,7 @@ export const useDecorStore = defineStore('decor', {
             //Вставки для ячеек
             modelingTransom.cells.forEach((cell,index) => {
                 if (cell.type !== PROFILE_TYPE) {
-                    cells[index] = this.calculateCell(cell, 'v01')
+                    cells[index] = this.calculateCell(cell, 'default')
                 }
             });
 
@@ -151,6 +160,11 @@ export const useDecorStore = defineStore('decor', {
             return transom;
         },
 
+        /**
+         * Обновляет ячейки фрамуги с декором на основе данных из modelingStore.
+         * @param {DecorTransom} transom - Фрамуга с декором.
+         * @param {Transom} modelingTransom - Фрамуга из хранилища моделирования.
+         */
         updateTransomCells(transom, modelingTransom) {
 
             const cells = {};
@@ -158,7 +172,7 @@ export const useDecorStore = defineStore('decor', {
             //Вставки для ячеек
             modelingTransom.cells.forEach((cell, index) => {
                 if (cell.type !== PROFILE_TYPE) {
-                    const presetId = transom.cells[index]?.presetId ?? 'v01';
+                    const presetId = transom.cells[index]?.presetId ?? 'default';
                     cells[index] = this.calculateCell(cell, presetId)
                 }
             });
@@ -167,7 +181,14 @@ export const useDecorStore = defineStore('decor', {
             transom.updateKey = modelingTransom.updateKey;
         },
 
-        calculateCell(cell, presetId = 'v01', presetType = null) {
+        /**
+         * Вычисляет параметры ячейки с декором (координаты, размеры, пресет).
+         * @param {TransomCell} cell - Ячейка из хранилища моделирования.
+         * @param {string} [presetId='default'] - ID пресета декора.
+         * @param {DecorPresetType|null} [presetType=null] - Тип пресета декора ('glueRail' или 'profileRail').
+         * @returns {DecorCell} Объект ячейки с декором.
+         */
+        calculateCell(cell, presetId = 'default', presetType = null) {
             console.log({cell, presetId})
 
             const x = cell.x + cell.offsets.left + 63/2; //toDo + paddingsW /2
@@ -203,8 +224,9 @@ export const useDecorStore = defineStore('decor', {
         },
 
         /**
-         *
-         * @param {Transom} modelingTransom
+         * Возвращает доступные пресеты декора для профиля активной фрамуги.
+         * @param {Transom} modelingTransom - Фрамуга из хранилища моделирования.
+         * @returns {AvailableDecor} Объект с доступными типами декора (glueRail, profileRail).
          */
         getAvailableDecor(modelingTransom) {
             return this.profilesAvailableDecor[modelingTransom.profileId]
@@ -214,7 +236,7 @@ export const useDecorStore = defineStore('decor', {
 
         /**
          * Устанавливает индекс выбранной ячейки для активной фрамуги.
-         * @param {Number|null} index
+         * @param {number|null} index - Индекс ячейки или null для сброса выбора.
          */
         setSelectedCellIndex(index) {
             const transom = this.activeTransom;
@@ -224,8 +246,8 @@ export const useDecorStore = defineStore('decor', {
         },
 
         /**
-         * Устанавливает индекс выбранной области для активной фрамуги.
-         * @param {Number|null} index
+         * Устанавливает индекс выбранной области (rect) для активной фрамуги.
+         * @param {number|null} index - Индекс области или null для сброса выбора.
          */
         setSelectedRectIndex(index) {
             const transom = this.activeTransom;
@@ -235,9 +257,9 @@ export const useDecorStore = defineStore('decor', {
         },
 
         /**
-         * Устанавливает presetId для выбранной ячейки активной фрамуги и пересчитывает её.
-         * @param {String} presetId
-         * @param {String} presetType
+         * Устанавливает пресет декора для выбранной ячейки активной фрамуги.
+         * @param {string} presetId - ID пресета декора ('v01', 'r02', ).
+         * @param {DecorPresetType} presetType - Тип пресета декора (например, 'glueRail' или 'profileRail').
          */
         setPresetForSelectedCell(presetId, presetType) {
 
@@ -254,10 +276,10 @@ export const useDecorStore = defineStore('decor', {
         },
 
         /**
-         * Устанавливает материал для прямоугольника в ячейке активной фрамуги.
-         * @param {Number} cellIndex
-         * @param {Number} rectIndex
-         * @param {String|null} material
+         * Устанавливает материал для области (rect) в выбранной ячейке активной фрамуги.
+         * @param {number} cellIndex - Индекс ячейки.
+         * @param {number} rectIndex - Индекс области в ячейке.
+         * @param {string|null} material - ID материала или null для сброса.
          */
         setRectMaterial(cellIndex, rectIndex, material) {
             const transom = this.activeTransom;

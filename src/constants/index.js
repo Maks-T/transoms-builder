@@ -41,3 +41,9 @@ export const RULE_CELL_TYPES = {
 }
 
 export const PROFILE_TYPE = 'profile'
+
+export const DECOR_TYPES_NAMES = {
+    profileRail: 'Секционный декор',
+    glueRail: 'Накладной декор',
+};
+

@@ -1,6 +1,6 @@
 
 //ToDo create constants profileRail and glueRail
-const PROFILES_AVAILABLE_DECOR = { //ToDo Type
+const PROFILES_AVAILABLE_DECOR = {
     'modulasg': {
         glueRail: ["r01", "r02", "r03", "r04", "r05", "r06", "r07", "r08", "r09", "r10", "r11", "r12", "r13", "r14", "r15", "r21", "r22", "r23", "r24", "r25", "r26"],
         profileRail: ["v01", "v02", "v03"],

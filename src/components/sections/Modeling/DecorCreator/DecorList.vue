@@ -4,7 +4,7 @@
     <div v-else class="decor-lists-container">
 
       <div class="decor-section" v-for="(presets, type) in groupedDecorPresets" :key="type"  >
-        <h4 v-if="presets?.length">{{ decorTypeNames[type] || type }}</h4>
+        <h4 v-if="presets?.length">{{ DECOR_TYPES_NAMES[type] || type }}</h4>
         <div class="decor-items">
           <div class="decor-item" :class="{active: selectedPresetId === presetId}" v-for="presetId in presets" :key="presetId" >
             <label class="decor-item__icon">
@@ -30,12 +30,7 @@
 import {computed} from 'vue';
 import {useDecorStore, useModelingStore} from "@src/stores/index.js";
 import {storeToRefs} from 'pinia';
-
-// Объект для маппинга ключей на читаемые имена
-const decorTypeNames = { //ToDo const
-  profileRail: 'Секционный декор',
-  glueRail: 'Накладной декор',
-};
+import {DECOR_TYPES_NAMES} from '@constants'
 
 const decorStore = useDecorStore();
 const modelingStore = useModelingStore();
@@ -65,6 +60,7 @@ const handlePresetChange = (presetId, type) => {
     decorStore.setPresetForSelectedCell(presetId, type);
   }
 };
+
 </script>
 
 <style lang="scss" scoped>

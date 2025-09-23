@@ -20,8 +20,8 @@ export const useConfigsStore = defineStore('configs', {
 
         //для расчета декора
         decorPresets: DECOR_PRESETS, //шаблоны (персеты) для накладного и секционного декора
-        profilesPaddings: PROFILES_PADDINGS , //отсутпы для вставок для опреденного типа профиля  //ToDo Type
-        profilesAvailableDecor: PROFILES_AVAILABLE_DECOR //Доступный накладной и секционный декор для вставок //ToDo Type
+        profilesPaddings: PROFILES_PADDINGS , //отсутпы для вставок для опреденного типа профиля
+        profilesAvailableDecor: PROFILES_AVAILABLE_DECOR //Доступный накладной и секционный декор для вставок
     }),
 
     getters: {
