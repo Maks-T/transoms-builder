@@ -72,7 +72,7 @@ const rectFrameConfig = computed(() => {
     y: props.padding,
     width: activeTransom.value.width * scaleFactor.value,
     height: activeTransom.value.height * scaleFactor.value,
-    stroke: activeTransom.value.validationData.isValid ? '#333' : 'red',
+    stroke: '#8e8e8e',
     strokeWidth: 1,
     fill: 'transparent',
     listening: false,

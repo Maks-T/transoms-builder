@@ -1,9 +1,9 @@
 <template>
-  <div class="decor-controls" v-if="isCellSelected">
+  <div class="decor-controls">
 
     <button
         class="btn-white"
-        :disabled="selectedCell?.presetId === 'default'"
+        :disabled="!isCellSelected || selectedCell?.presetId === 'default'"
         @click="resetDecor"
     >
       <Icon icon="mingcute:delete-2-line" class="icon" />
@@ -12,6 +12,7 @@
 
     <button
         class="btn-white"
+        :disabled="!isCellSelected"
         @click="setSelectedPresetToAllCells"
     >
       <Icon icon="mingcute:copy-2-line" class="icon" />
@@ -20,6 +21,7 @@
 
     <button
         class="btn-white"
+        :disabled="!isCellSelected"
         @click="toggleSelectedCellFlip"
     >
       <Icon icon="mingcute:flip-horizontal-line" class="icon" />

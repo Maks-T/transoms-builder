@@ -179,9 +179,19 @@ export const useDecorStore = defineStore('decor', {
             //Вставки для ячеек
             modelingTransom.cells.forEach((cell, index) => {
                 if (cell.type !== PROFILE_TYPE) {
-                    const presetId = transom.cells[index]?.presetId ?? 'default';
-                    const presetType = transom.cells[index]?.presetType ?? null;
+                    let presetId = transom.cells[index]?.presetId ?? 'default';
+                    let  presetType = transom.cells[index]?.presetType ?? null;
                     const isFlip = transom.cells[index]?.isFlip ?? false;
+
+                    // Проверка доступности preset
+                    if (presetType) {
+                        const availablePresets = this.getAvailableDecorPresets(modelingTransom);
+                        if (!availablePresets[presetType]?.includes(presetId)) {
+                            console.warn(`Preset ${presetId} недоступен для типа ${presetType} и профиля ${modelingTransom.profileId}. Устанавливается presetId='default'.`);
+                            presetId = 'default';
+                            presetType = null;
+                        }
+                    }
 
                     cells[index] = this.calculateCell(cell, presetId, presetType, isFlip)
                 }
