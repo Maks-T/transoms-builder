@@ -121,6 +121,9 @@ export const useDecorStore = defineStore('decor', {
 
                 //Если параметры фрамуги были изменены в моделировании, то пересчитываем ячейки
                 if (transom.updateKey !== modelingTransom.updateKey) {
+                    this.setSelectedCellIndex(null);
+                    this.setSelectedRectIndex(null);
+
                     state.updateTransomCells(transom, modelingTransom)
                 }
 
@@ -153,7 +156,7 @@ export const useDecorStore = defineStore('decor', {
             //Вставки для ячеек
             modelingTransom.cells.forEach((cell,index) => {
                 if (cell.type !== PROFILE_TYPE) {
-                    cells[index] = this.calculateCell(cell, 'default')
+                    cells[index] = this.calculateCell(cell, 'default', null)
                 }
             });
 
@@ -170,8 +173,6 @@ export const useDecorStore = defineStore('decor', {
          * @param {Transom} modelingTransom - Фрамуга из хранилища моделирования.
          */
         updateTransomCells(transom, modelingTransom) {
-            this.setSelectedCellIndex(null);
-            this.setSelectedRectIndex(null);
 
             const cells = {};
 
@@ -179,7 +180,10 @@ export const useDecorStore = defineStore('decor', {
             modelingTransom.cells.forEach((cell, index) => {
                 if (cell.type !== PROFILE_TYPE) {
                     const presetId = transom.cells[index]?.presetId ?? 'default';
-                    cells[index] = this.calculateCell(cell, presetId)
+                    const presetType = transom.cells[index]?.presetType ?? null;
+                    const isFlip = transom.cells[index]?.isFlip ?? false;
+
+                    cells[index] = this.calculateCell(cell, presetId, presetType, isFlip)
                 }
             });
 
@@ -192,10 +196,10 @@ export const useDecorStore = defineStore('decor', {
          * @param {TransomCell} cell - Ячейка из хранилища моделирования.
          * @param {string} [presetId='default'] - ID пресета декора.
          * @param {DecorPresetType|null} [presetType=null] - Тип пресета декора ('glueRail' или 'profileRail').
+         * @param {Boolean} isFlip - отразить ли ячейку
          * @returns {DecorCell} Объект ячейки с декором.
          */
-        calculateCell(cell, presetId = 'default', presetType = null) {
-
+        calculateCell(cell, presetId = 'default', presetType = null, isFlip = false) {
 
             const x = cell.x + cell.offsets.left + 63/2; //toDo + paddingsW /2
             const y = cell.y + cell.offsets.left + 63/2; //toDo+ paddingsH /2
@@ -207,13 +211,15 @@ export const useDecorStore = defineStore('decor', {
 
             const calcDecorTemplate = new CalcDecorTemplate();
 
-            let presetRects = calcDecorTemplate.getDoorRects({config, width, height, profile})
+            /** @type {PresetRects} */
+            let presetRects = calcDecorTemplate.getDoorRects({config, width, height, profile, flip: isFlip})
 
             if (presetRects.items.some(item => item.height <= 0)) {
                 presetId = 'default'
+                presetType = null
                 const config =  this.decorPresets[presetId];
                 presetRects = calcDecorTemplate.getDoorRects({config, width, height, profile})
-                presetType = null
+
                 console.warn(`Не хватает высоты для применения этого типа декора ${cell.idx}`) //ToDo showToast
             }
 
@@ -225,9 +231,51 @@ export const useDecorStore = defineStore('decor', {
                 presetId,
                 presetRects,
                 presetType,
-                isFlip: false,
+                profile,
+                isFlip: isFlip,
             }
         },
+        /**
+         * Обновляет свойства выбранной ячейки на основе переданных параметров и пересчитывает её декор.
+         * @param {Partial<DecorCell>} cellParams - Объект с параметрами для обновления ячейки
+         * (например, { isFlip: boolean, presetId: string, presetType: DecorPresetType | null }).
+         */
+        updateSelectedCell(cellParams) {
+            const cell = this.selectedCell;
+            if (!cell) return
+
+            Object.entries(cellParams).forEach(([param, value]) => {
+                cell[param] = value
+            })
+
+            const config =  this.decorPresets[cell.presetId];
+
+            const calcDecorTemplate = new CalcDecorTemplate();
+
+            console.log({
+                config, width: cell.width, height: cell.height, profile: cell.profile, flip: cell.isFlip
+            })
+
+            /** @type {PresetRects} */
+            let presetRects = calcDecorTemplate.getDoorRects({
+                config, width: cell.width, height: cell.height, profile: cell.profile, flip: cell.isFlip
+            })
+
+            if (presetRects.items.some(item => item.height <= 0)) {
+                cell.presetId = 'default'
+                cell.presetType = null
+                const config =  this.decorPresets[cell.presetId];
+
+                presetRects = calcDecorTemplate.getDoorRects({
+                    config, width: cell.width, height: cell.height, profile: cell.profile, flip: cell.isFlip
+                })
+
+                console.warn(`Не хватает высоты для применения этого типа декора`) //ToDo showToast
+            }
+
+            cell.presetRects =  presetRects
+        },
+
 
         /**
          * Возвращает доступные пресеты декора для профиля активной фрамуги.
@@ -279,6 +327,35 @@ export const useDecorStore = defineStore('decor', {
                 transom.cells[cellIndex] = this.calculateCell(cell, presetId, presetType);
             }
 
+        },
+
+        /**
+         * Переключает флаг isFlip для выбранной ячейки, обновляя её состояние.
+         */
+        toggleSelectedCellFlip() {
+            if (!this.selectedCell) return;
+
+            this.updateSelectedCell({isFlip: !this.selectedCell.isFlip})
+        },
+
+        /**
+         * Применяет пресет, тип пресета, ширину профиля и флаг isFlip выбранной ячейки ко всем ячейкам активной фрамуги.
+         * Обновляет ячейки фрамуги с учетом изменений из modelingStore.
+         */
+        setSelectedPresetToAllCells() {
+            const transom = this.activeTransom;
+            const modelingTransom = this.modelingStore.activeTransom;
+
+            if (!transom || !modelingTransom || !this.selectedCell) return;
+
+            Object.values(transom.cells).forEach((cell) => {
+                cell.presetId = this.selectedCell.presetId
+                cell.presetType = this.selectedCell.presetType
+                cell.isFlip = this.selectedCell.isFlip
+                cell.profile = this.selectedCell.profile
+            });
+
+            this.updateTransomCells(transom, modelingTransom)
         },
 
         /**

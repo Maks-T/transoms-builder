@@ -41,7 +41,6 @@ const modelingStore = useModelingStore();
 const {activeTransom} = storeToRefs(modelingStore);
 const {selectedCell, selectedCellIndex} = storeToRefs(decorStore);
 
-console.log('selectedCellIndex.value', selectedCellIndex.value)
 // Проверяем, выбрана ли ячейка
 const isCellSelected = computed(() => selectedCellIndex.value !== null);
 

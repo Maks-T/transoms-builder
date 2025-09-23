@@ -88,9 +88,15 @@ interface DecorStore {
   createTransomObject: (modelingTransom: Transom) => DecorTransom; // Создает объект фрамуги с декором
   updateTransomCells: (transom: DecorTransom, modelingTransom: Transom) => void; // Обновляет ячейки фрамуги с декором
   calculateCell: (cell: TransomCell, presetId?: string, presetType?: DecorPresetType | null) => DecorCell; // Вычисляет параметры ячейки с декором
+  updateSelectedCell: (cellParams: Partial<DecorCell>) => void; // Обновляет свойства выбранной ячейки на основе переданных параметров
   getAvailableDecorPresets: (modelingTransom: Transom) => AvailableDecorPresets; // Возвращает доступные пресеты декора
   setSelectedCellIndex: (index: number | null) => void; // Устанавливает индекс выбранной ячейки
   setSelectedRectIndex: (index: number | null) => void; // Устанавливает индекс выбранной области
   setPresetForSelectedCell: (presetId: string, presetType: DecorPresetType) => void; // Устанавливает пресет для выбранной ячейки
   setRectMaterial: (cellIndex: number, rectIndex: number, material: string | null) => void; // Устанавливает материал для области в ячейке
+  toggleSelectedCellFlip: () => void; // Переключает флаг isFlip для выбранной ячейки
+  setSelectedPresetToAllCells: () => void; // Применяет пресет выбранной ячейки ко всем ячейкам
+  // Экшены
+
+
 }

@@ -27,6 +27,10 @@
       <div class="decor-creator__list">
         <DecorList/>
       </div>
+      <div class="decor-creator__controls">
+        <DecorControls />
+      </div>
+
     </div>
 
     <template #footer>
@@ -48,6 +52,7 @@ import DecorList from "@components/sections/Modeling/DecorCreator/DecorList.vue"
 import {Modal} from "@components/ui/index.js";
 import {Icon} from "@iconify/vue";
 import {storeToRefs} from "pinia";
+import DecorControls from "@components/sections/Modeling/DecorCreator/DecorControls.vue";
 
 //Адаптируем высоту экрана по высоте
 const canvasHeight = computed(() => Math.min(600, window.innerHeight * 0.49));
@@ -79,7 +84,7 @@ const closeModal = () => {
 .decor-creator {
   display: grid;
   grid-template-columns: 60% 36%;
-  gap: rem(30);
+  gap: rem(16) rem(30);
 
   .decor-creator__draw {
 

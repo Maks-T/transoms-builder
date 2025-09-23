@@ -4,6 +4,20 @@ import _get from 'lodash/get'
 import _set from 'lodash/set'
 import _cloneDeep from 'lodash/cloneDeep';
 
+const createProfileObj = () => {
+    const res = {};
+
+    let total = 0;
+
+    Object.defineProperty(res, 'total', {
+        enumerable: true,
+        get() { return total; },
+        set(v) { total = v; return total; },
+    });
+
+    return res;
+}
+
 
 /**
  * Класс с методами для расчета

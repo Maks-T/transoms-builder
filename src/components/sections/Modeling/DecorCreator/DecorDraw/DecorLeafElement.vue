@@ -28,7 +28,10 @@
 
     <!-- Выделение окна -->
     <v-rect v-if="isSelected" :config="selectRectConfig"/>
+
+<!--    <v-path :config="iconConfig"/>-->
   </v-group>
+
 </template>
 
 <script setup>
@@ -116,6 +119,18 @@ const textConfig = (rect, rectIndex) => {
     fill: isRectSelected.value(rectIndex) ? "#000" : "#9f3a3a",
   };
 };
+
+/*const mirrorIconPath = 'M21.553 6.064A.75.75 0 0 1 22 6.75v10.5a.75.75 0 0 1-1.256.554l-5.75-5.25a.75.75 0 0 1 0-1.108l5.75-5.25a.75.75 0 0 1 .809-.132M2.447 17.936A.75.75 0 0 1 2 17.25V6.75a.75.75 0 0 1 1.256-.554l5.75 5.25a.75.75 0 0 1 0 1.108l-5.75 5.25a.75.75 0 0 1-.809.132M7.387 12L3.5 8.45v7.1L7.388 12Zm9.226 0l3.887 3.55v-7.1L16.612 12ZM12 2.75a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-1.5 0v-1a.75.75 0 0 1 .75-.75m0 4a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-1.5 0v-1a.75.75 0 0 1 .75-.75m0 8a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-1.5 0v-1a.75.75 0 0 1 .75-.75m0 4a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-1.5 0v-1a.75.75 0 0 1 .75-.75m0-8a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-1.5 0v-1a.75.75 0 0 1 .75-.75';
+
+const iconConfig = computed(() => {
+  return {
+    x: 10,
+    y: 10,
+    data: mirrorIconPath,
+    fill: '#666',
+    listening: false
+  };
+});*/
 
 const handleCellClick = () => {
   decorStore.setSelectedCellIndex(props.index);
