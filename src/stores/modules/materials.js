@@ -47,6 +47,7 @@ export const useMaterialsStore = defineStore('materials', {
             if (cell.type === PROFILE_TYPE && cell.isVertical) return RULE_CELL_TYPES.VERTICAL_PROFILE;
             if (cell.type === PROFILE_TYPE && cell.isHorizontal) return RULE_CELL_TYPES.HORIZONTAL_PROFILE;
             if (cell.isActive) return RULE_CELL_TYPES.ACTIVE;
+
             return RULE_CELL_TYPES.INACTIVE;
         },
 
@@ -62,13 +63,22 @@ export const useMaterialsStore = defineStore('materials', {
 
         /**
          * Возвращает набор конфигов для материалов.
-         * @param {string} cellType - Упрощенный тип текущей ячейки ('profile', 'active', 'inactive').
+         * @param {TransomCell} cell - Ячейка фрамуги
          * @param {string} side - Сторона ячейки ('left', 'right', 'top', 'bottom').
-         * @param {string | null} neighborType - Тип соседней ячейки или null, если соседа нет.
+         * @param {TransomCell | null} neighbor - Сосед по стороне
          * @returns {MaterialConfig[] | null} Набор конфигураций материалов или null.
          */
-        getMaterialsSet(cellType, side, neighborType) {
-            return this.rules[cellType]?.[side]?.[neighborType] || null;
+        getMaterialsSet(cell, side, neighbor) {
+
+            const neighborRuleType = neighbor?.ruleType || null;
+
+            const rule = this.rules[cell.ruleType]?.[side]?.[neighborRuleType] || null;
+
+            if (typeof rule === 'function') {
+                return rule(cell, neighbor)
+            }
+
+            return rule
         },
 
         /**
@@ -183,22 +193,22 @@ export const useMaterialsStore = defineStore('materials', {
          */
         calculateMaterialsByCell(cell, transom) {
             const materials = [];
-            const cellType = this.getRuleCellType(cell);
+            //const cellType = this.getRuleCellType(cell);
 
             // Получаем соседей ячейки
-            const neighbors = this.modelingStore.getNeighbors(cell, transom);
+            //const neighbors = this.modelingStore.getNeighbors(cell, transom);
 
-            if (!neighbors) {
+           /* if (!neighbors) {
                 console.warn('Не удалось получить соседей для ячейки', cell.idx);
                 return materials;
-            }
+            }*/
 
             // Определяем стороны для основного профиля
             let profileSides;
 
-            if (cellType === RULE_CELL_TYPES.VERTICAL_PROFILE) {
+            if (cell.ruleType === RULE_CELL_TYPES.VERTICAL_PROFILE) {
                 profileSides = ['left']; // Вертикальный профиль только на длинной стороне
-            } else if (cellType === RULE_CELL_TYPES.HORIZONTAL_PROFILE) {
+            } else if (cell.ruleType === RULE_CELL_TYPES.HORIZONTAL_PROFILE) {
                 profileSides = ['top']; // Горизонтальный профиль только на длинной стороне
             } else {
                 profileSides = ['left', 'right', 'top', 'bottom']; // Для полотен — прямоугольник из профилей
@@ -236,16 +246,16 @@ export const useMaterialsStore = defineStore('materials', {
 
             sides.forEach((side) => {
 
-                const neighborsOnSide = this.getNeighborsOnSide(neighbors, side);
+                const neighborsOnSide = cell.neighbors[side]//this.getNeighborsOnSide(neighbors, side);
 
                 // Если есть соседи на этой стороне
                 if (neighborsOnSide.length > 0) {
                     neighborsOnSide.forEach((neighbor) => {
-                        let neighborType = neighbor ? this.getRuleCellType(neighbor) : null;
+                        //let neighborType = neighbor ? this.getRuleCellType(neighbor) : null;
                         //применяем исключения
-                        neighborType = this.applyExceptionsToNeighborType(cell, cellType, side, neighborType, neighbors)
+                        //neighborType = this.applyExceptionsToNeighborType(cell, cellType, side, neighborType, neighbors)
 
-                        const materialsSet = this.getMaterialsSet(cellType, side, neighborType);
+                        const materialsSet = this.getMaterialsSet(cell, side, neighbor);
 
                         if (Array.isArray(materialsSet)) {
                             materialsSet.forEach((materialSet) => {
@@ -258,7 +268,7 @@ export const useMaterialsStore = defineStore('materials', {
                     });
                 } else {
                     // Обработка случая, когда нет соседей (граница фрамуги)
-                    let materialsSet = this.getMaterialsSet(cellType, side, null);
+                    let materialsSet = this.getMaterialsSet(cell, side, null);
 
                     if (Array.isArray(materialsSet)) {
                         materialsSet.forEach((materialSet) => {
@@ -289,11 +299,13 @@ export const useMaterialsStore = defineStore('materials', {
 
             const materials = {};
 
+            //Устанавливаем тип правил для всех ячеек
+            cells.forEach((cell) => {
+                cell.ruleType = this.getRuleCellType(cell)
+            });
 
             cells.forEach((cell) => {
-                if (cell && cell.idx !== undefined) {
-                    materials[cell.idx] = this.calculateMaterialsByCell(cell, transom);
-                }
+                materials[cell.idx] = this.calculateMaterialsByCell(cell, transom);
             });
 
             return materials;

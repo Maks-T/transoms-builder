@@ -181,6 +181,9 @@ export const useModelingStore = defineStore('modeling', {
 
                 // Дополнительные свойства для расчетов
                 cell.isActive = cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
+                cell.isInactive = cell.type === LEAF_TYPES.INACTIVE_LEAF || cell.type === LEAF_TYPES.INACTIVE_LEAF_SMALL
+                cell.isProfile = cell.type === PROFILE_TYPE
+
                 cell.hingeSide = cell.hingeSide || LEAF_HINGE_SIDE.RIGHT //петли слева/справа
                 cell.swingDirection = cell.swingDirection || LEAF_SWING_DIRECTION.OUTWARD //открывание наружу/внутрь
 
@@ -193,6 +196,13 @@ export const useModelingStore = defineStore('modeling', {
                     cell.isVertical = true;
                 }
                 }
+
+                cell.neighbors = this.getNeighbors(cell, transom) //ToDo убрать из экшена аргумент transom
+
+                /**    SET RULE TYPE            */
+
+
+                /**      /SET RULE TYPE             */
 
                 const offsets = this.calculateOffsets(cell, rowCount, colCount)
 
@@ -496,7 +506,7 @@ export const useModelingStore = defineStore('modeling', {
             const rowEnd = cell.row + (cell.rowSpan || 1) - 1
 
             // Получаем соседние соседние ячейки
-            const neighbors = this.getNeighbors(cell, this.activeTransom);
+            const neighbors = this.getNeighbors(cell, this.activeTransom); //ToDo в ячейке уже есть ссылки на соседей cell.neighbors
 
             // Базовые offsets
             // Если ячейка находится в последней строке фрамуги (нижняя граница фрамуги)

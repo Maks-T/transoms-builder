@@ -1,6 +1,8 @@
+/** @type {ProfilesAvailableDecorPresets} */
+import {RULE_CELL_TYPES} from "@constants/index.js";
 
 
-/** @type {ProfilesAvailableDecorPresets} */const PROFILES_AVAILABLE_DECOR_PRESETS = {
+const PROFILES_AVAILABLE_DECOR_PRESETS = {
     'modulasg': {
         glueRail: ["r01", "r02", "r03", "r04", "r05", "r06", "r07", "r08", "r09", "r10", "r11", "r12", "r13", "r14", "r15", "r21", "r22", "r23", "r24", "r25", "r26"],
         profileRail: ["v01", "v02", "v03"],
@@ -542,15 +544,15 @@ const MT_SETS = {
         {id: 'screwM20', q: 2}, //по два штуки на каждый ригель
     ],
     HORIZONTAL_PROFILE_INACTIVE: [{id: 'corner-100-100-8', q: 1}],
-    FORCED_ACTIVE: [
+    FORCE_LEAF: [
         {id: 'plate-27-200-4', q: 1},
-        {id: 'plate-27-200-4', q: 1}
-    ]
+    ],
+
 }
 
 
 //правила для материалов null - примыкание к стене
-const MATERIALS_ON_SIDE_RULES = {
+/*const MATERIALS_ON_SIDE_RULES = {
     // Глухое полотно
     inactive: {
         left: {
@@ -630,7 +632,159 @@ const MATERIALS_ON_SIDE_RULES = {
             active: [...MT_SETS.PROFILE_LEAF]
         }
     }
+}*/
+
+// Правила для материалов null - примыкание к стене
+// каждое правило либо возвращает массив набор конфигов в для материалов
+// или функцию которая принимает ячейку и текущего рассматриваемого соседа
+// и она возвращает уже возвращает массив набор конфигов в для материалов
+const MATERIALS_ON_SIDE_RULES = {
+    // Глухое полотно
+    inactive: {
+        left: {
+            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
+            inactive: (cell, neighbor) =>  {
+                console.log('cell, neighbor', cell, neighbor)
+                //1. Если у ячейки первый сосед horizontalProfile (шаблон с коробом)
+                const leftNeighbors = cell.neighbors.left;
+                if (leftNeighbors
+                    && leftNeighbors.length
+                    && leftNeighbors[0].ruleType === RULE_CELL_TYPES.HORIZONTAL_PROFILE)
+                {
+                    console.log('//1. Если у ячейки первый сосед horizontalProfile (шаблон с коробом)')
+                    return [...MT_SETS.PROFILE_LEAF] //Соединение как у профиля с полотном
+                }
+
+                //2. Если у соседа внизу последний active
+                const bottomSubNeighbors = neighbor.neighbors.bottom;
+                if (bottomSubNeighbors
+                    && bottomSubNeighbors.length
+                    && bottomSubNeighbors[bottomSubNeighbors.length-1].ruleType === RULE_CELL_TYPES.ACTIVE)
+                {
+                    console.log(' //2. Если у соседа внизу последний active')
+                    return [...MT_SETS.INACTIVE_RIGHT_BOTTOM_INACTIVE] //Меняем стороны местами
+                }
+
+             return [...MT_SETS.INACTIVE_LEFT_TOP_INACTIVE]
+            },
+            active: (cell, neighbor) =>  {
+                //1. Если у ячейки сверху первый inactive то
+                const topNeighbors = cell.neighbors.top;
+                if (topNeighbors
+                    && topNeighbors.length
+                    && topNeighbors[0].ruleType === RULE_CELL_TYPES.INACTIVE)
+                {
+                    console.log('//1. Если у ячейки сверху первый inactive то')
+                    return [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE, ...MT_SETS.FORCE_LEAF] //добавляем усиление пластиной
+                }
+
+
+                return [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE]
+            },
+            verticalProfile: [...MT_SETS.INACTIVE_PROFILE]
+        },
+        right: {
+            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
+            inactive: (cell, neighbor) =>  {
+                //1. Если у ячейки сверху последний horizontalProfile
+                // или снизу последний active
+                const topNeighbors = cell.neighbors.top;
+                const bottomNeighbors = cell.neighbors.bottom;
+
+                if (((topNeighbors
+                        && topNeighbors.length
+                        && topNeighbors[topNeighbors.length-1].ruleType === RULE_CELL_TYPES.HORIZONTAL_PROFILE))
+                    ||
+                    ((bottomNeighbors
+                        && bottomNeighbors.length
+                        && bottomNeighbors[bottomNeighbors.length-1].ruleType === RULE_CELL_TYPES.ACTIVE)))
+                {
+                    console.log('//1. Если у ячейки сверху последний horizontalProfile')
+                    return [...MT_SETS.INACTIVE_LEFT_TOP_INACTIVE] //меняем стороны
+                }
+
+                return [...MT_SETS.INACTIVE_RIGHT_BOTTOM_INACTIVE]
+            },
+            active: (cell, neighbor) =>  {
+                //1. Если у ячейки сверху последний сосед inactive
+                const topNeighbors = cell.neighbors.top;
+                if (topNeighbors
+                    && topNeighbors.length
+                    && topNeighbors[topNeighbors.length-1].ruleType === RULE_CELL_TYPES.INACTIVE)
+                {
+                    console.log('Если у ячейки сверху последний сосед inactive')
+                    return [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE, ...MT_SETS.FORCE_LEAF] //добавляем усиление пластиной
+                }
+
+                return [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE]
+            },
+            verticalProfile: [...MT_SETS.INACTIVE_PROFILE]
+        },
+        top: {
+            null:  [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
+            inactive: [...MT_SETS.INACTIVE_LEFT_TOP_INACTIVE],
+            active: null,
+            horizontalProfile: [...MT_SETS.INACTIVE_PROFILE]
+        },
+        bottom: {
+            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
+            inactive: [...MT_SETS.INACTIVE_RIGHT_BOTTOM_INACTIVE],
+            active: [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE, ...MT_SETS.INACTIVE_BOTTOM_ACTIVE],
+        }
+    },
+
+    // Активное полотно
+    active: {
+        left: {
+            inactive: [...MT_SETS.ACTIVE_ANY],
+            verticalProfile: [...MT_SETS.ACTIVE_ANY],
+            null: [...MT_SETS.ACTIVE_ANY],
+        },
+        right: {
+            inactive: [...MT_SETS.ACTIVE_ANY],
+            verticalProfile: [...MT_SETS.ACTIVE_ANY],
+            null: [...MT_SETS.ACTIVE_ANY],
+        },
+        top: {
+            inactive: [...MT_SETS.ACTIVE_ANY],
+            horizontalProfile: [...MT_SETS.ACTIVE_ANY],
+            null: [...MT_SETS.ACTIVE_ANY],
+        },
+        bottom: {
+            null: null,
+        }
+    },
+
+    // Короб (профиль)
+    verticalProfile: {
+        left: {
+            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL, ...MT_SETS.PROFILE_RIGHT_LEFT_NULL],
+            inactive: [...MT_SETS.PROFILE_LEAF],
+            active: [...MT_SETS.PROFILE_LEAF]
+        },
+        right: {
+            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL, ...MT_SETS.PROFILE_RIGHT_LEFT_NULL],
+            inactive: [...MT_SETS.PROFILE_LEAF],
+            active: [...MT_SETS.PROFILE_LEAF]
+        },
+    },
+    horizontalProfile: {
+        left: {
+            inactive: [...MT_SETS.HORIZONTAL_PROFILE_INACTIVE], //уголок
+        },
+        right: {
+            inactive: [...MT_SETS.HORIZONTAL_PROFILE_INACTIVE], //уголок
+        },
+        top: {
+            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL]
+        },
+        bottom: {
+            inactive: [...MT_SETS.PROFILE_LEAF],
+            active: [...MT_SETS.PROFILE_LEAF]
+        }
+    }
 }
+
 
 
 export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS, MATERIALS_ON_SIDE_RULES, PROFILES_PADDINGS, PROFILES_AVAILABLE_DECOR_PRESETS}
