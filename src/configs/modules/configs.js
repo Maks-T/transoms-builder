@@ -18,7 +18,7 @@ const PROFILES_AVAILABLE_DECOR_PRESETS = {
     },
 }
 
-/** @type {ProfilesPaddings} */const PROFILES_PADDINGS = { 
+/** @type {ProfilesPaddings} */const PROFILES_PADDINGS = {
     'modulasg': {
         other: {
             nonTempered: {w: 63, h: 63},
@@ -469,7 +469,9 @@ const LEAF_LIMITS = {
 }
 
 /**
- * length - длина соседнего полотна, если сторона left или right, то cell.innerHeight, если top или bottom, то cell.innerWidth
+ * length - длина активной стороны ячейки, если сторона left или right, то cell.height, если top или bottom, то cell.width
+ * innerLength - длина активной стороны  полотна, если сторона left или right, то cell.innerHeight, если top или bottom, то cell.innerWidth
+ *
  * q - quantity - количество материала или число или функция с формулой
  * c - condition - функция условия применения
  */
@@ -481,8 +483,8 @@ const MT_SETS = {
     // Комплект для глухого полотна или профиля со стеной
     INACTIVE_OR_PROFILE_NULL: [
         {id: 'p0159_G', q: (p) => p.length + 100}, // Профиль АВД 0159 (пристенный) + 100мм запас
-       // {id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 для профиля S41х39 + 100мм запас
-       // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно/фрамугу
+        // {id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 для профиля S41х39 + 100мм запас
+        // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно/фрамугу
         {id: 'dowel_chapai', q: (p) => Math.floor(p.length / 400) + 1}, // Дюбель чапай: профиль 0159/400мм + 1 шт на отверстие 6мм
         {id: 'fix440_G', q: (p) => Math.floor(p.length / 400) + 1}, // Саморез 4х40 = количеству дюбелей чапай
     ],
@@ -490,8 +492,8 @@ const MT_SETS = {
     // Комплект для левой/нижней стороны глухого полотна с неактивным полотном
     INACTIVE_LEFT_TOP_INACTIVE: [
         {id: 'p0159_G', q: (p) => p.length + 100}, // Профиль АВД 0159 (соединительный) + 100мм запас
-       // {id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
-       // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
+        // {id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+        // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
         {id: 'fix7985_G', q: (p) => Math.max(Math.floor(p.length / 300) + 1, 3)}, // Винт M4х14: профиль 0159/300мм для соединения полотен
     ],
 
@@ -505,14 +507,14 @@ const MT_SETS = {
         {id: 'p7967_G', q: (p) => p.length + 100}, // Профиль АВД 7967 + 100мм запас
         //{id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
         {id: 'sealAl43_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель АЛ-43 для профиля 7996 + 100мм запас
-       // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
+        // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
     ],
 
     // Комплект для профиля с профильным соседом
     INACTIVE_PROFILE: [
         {id: 'p0159_G', q: (p) => p.length + 100}, // Профиль АВД 0159 + 100мм запас
-      //  {id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
-       // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
+        //  {id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+        // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
         {id: 'fix7985_G', q: (p) => Math.max(Math.floor(p.length / 300) + 1, 3)}, // Винт M4х14: профиль 0159/300мм
     ],
 
@@ -527,7 +529,7 @@ const MT_SETS = {
         {id: 'p7967_G', q: (p) => p.length + 100}, // Профиль АВД 7967 + 100мм запас
         //{id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'},  Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
         {id: 'sealAl43_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель АЛ-43 + 100мм запас
-       // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
+        // {id: 'prF1_G', q: 1}, // Сухарь - 1 шт на полотно
     ],
 
     // Дополнительный комплект для профиля (левая/правая стороны) - крепление к стене
@@ -643,15 +645,13 @@ const MATERIALS_ON_SIDE_RULES = {
     inactive: {
         left: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
-            inactive: (cell, neighbor) =>  {
-                console.log('cell, neighbor', cell, neighbor)
+            inactive: (cell, neighbor) => {
+
                 //1. Если у ячейки первый сосед horizontalProfile (шаблон с коробом)
                 const leftNeighbors = cell.neighbors.left;
                 if (leftNeighbors
                     && leftNeighbors.length
-                    && leftNeighbors[0].ruleType === RULE_CELL_TYPES.HORIZONTAL_PROFILE)
-                {
-                    console.log('//1. Если у ячейки первый сосед horizontalProfile (шаблон с коробом)')
+                    && leftNeighbors[0].ruleType === RULE_CELL_TYPES.HORIZONTAL_PROFILE) {
                     return [...MT_SETS.PROFILE_LEAF] //Соединение как у профиля с полотном
                 }
 
@@ -659,22 +659,18 @@ const MATERIALS_ON_SIDE_RULES = {
                 const bottomSubNeighbors = neighbor.neighbors.bottom;
                 if (bottomSubNeighbors
                     && bottomSubNeighbors.length
-                    && bottomSubNeighbors[bottomSubNeighbors.length-1].ruleType === RULE_CELL_TYPES.ACTIVE)
-                {
-                    console.log(' //2. Если у соседа внизу последний active')
+                    && bottomSubNeighbors[bottomSubNeighbors.length - 1].ruleType === RULE_CELL_TYPES.ACTIVE) {
                     return [...MT_SETS.INACTIVE_RIGHT_BOTTOM_INACTIVE] //Меняем стороны местами
                 }
 
-             return [...MT_SETS.INACTIVE_LEFT_TOP_INACTIVE]
+                return [...MT_SETS.INACTIVE_LEFT_TOP_INACTIVE]
             },
-            active: (cell, neighbor) =>  {
+            active: (cell, neighbor) => {
                 //1. Если у ячейки сверху первый inactive то
                 const topNeighbors = cell.neighbors.top;
                 if (topNeighbors
                     && topNeighbors.length
-                    && topNeighbors[0].ruleType === RULE_CELL_TYPES.INACTIVE)
-                {
-                    console.log('//1. Если у ячейки сверху первый inactive то')
+                    && topNeighbors[0].ruleType === RULE_CELL_TYPES.INACTIVE) {
                     return [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE, ...MT_SETS.FORCE_LEAF] //добавляем усиление пластиной
                 }
 
@@ -685,7 +681,7 @@ const MATERIALS_ON_SIDE_RULES = {
         },
         right: {
             null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
-            inactive: (cell, neighbor) =>  {
+            inactive: (cell, neighbor) => {
                 //1. Если у ячейки сверху последний horizontalProfile
                 // или снизу последний active
                 const topNeighbors = cell.neighbors.top;
@@ -693,26 +689,22 @@ const MATERIALS_ON_SIDE_RULES = {
 
                 if (((topNeighbors
                         && topNeighbors.length
-                        && topNeighbors[topNeighbors.length-1].ruleType === RULE_CELL_TYPES.HORIZONTAL_PROFILE))
+                        && topNeighbors[topNeighbors.length - 1].ruleType === RULE_CELL_TYPES.HORIZONTAL_PROFILE))
                     ||
                     ((bottomNeighbors
                         && bottomNeighbors.length
-                        && bottomNeighbors[bottomNeighbors.length-1].ruleType === RULE_CELL_TYPES.ACTIVE)))
-                {
-                    console.log('//1. Если у ячейки сверху последний horizontalProfile')
+                        && bottomNeighbors[bottomNeighbors.length - 1].ruleType === RULE_CELL_TYPES.ACTIVE))) {
                     return [...MT_SETS.INACTIVE_LEFT_TOP_INACTIVE] //меняем стороны
                 }
 
                 return [...MT_SETS.INACTIVE_RIGHT_BOTTOM_INACTIVE]
             },
-            active: (cell, neighbor) =>  {
+            active: (cell, neighbor) => {
                 //1. Если у ячейки сверху последний сосед inactive
                 const topNeighbors = cell.neighbors.top;
                 if (topNeighbors
                     && topNeighbors.length
-                    && topNeighbors[topNeighbors.length-1].ruleType === RULE_CELL_TYPES.INACTIVE)
-                {
-                    console.log('Если у ячейки сверху последний сосед inactive')
+                    && topNeighbors[topNeighbors.length - 1].ruleType === RULE_CELL_TYPES.INACTIVE) {
                     return [...MT_SETS.INACTIVE_LEFT_BOTTOM_TOP_ACTIVE, ...MT_SETS.FORCE_LEAF] //добавляем усиление пластиной
                 }
 
@@ -721,7 +713,7 @@ const MATERIALS_ON_SIDE_RULES = {
             verticalProfile: [...MT_SETS.INACTIVE_PROFILE]
         },
         top: {
-            null:  [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
+            null: [...MT_SETS.INACTIVE_OR_PROFILE_NULL],
             inactive: [...MT_SETS.INACTIVE_LEFT_TOP_INACTIVE],
             active: null,
             horizontalProfile: [...MT_SETS.INACTIVE_PROFILE]
@@ -786,5 +778,11 @@ const MATERIALS_ON_SIDE_RULES = {
 }
 
 
-
-export {PROFILES_TYPES, TRANSOM_TEMPLATES, LEAF_LIMITS, MATERIALS_ON_SIDE_RULES, PROFILES_PADDINGS, PROFILES_AVAILABLE_DECOR_PRESETS}
+export {
+    PROFILES_TYPES,
+    TRANSOM_TEMPLATES,
+    LEAF_LIMITS,
+    MATERIALS_ON_SIDE_RULES,
+    PROFILES_PADDINGS,
+    PROFILES_AVAILABLE_DECOR_PRESETS
+}

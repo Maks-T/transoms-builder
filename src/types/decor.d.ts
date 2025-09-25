@@ -21,9 +21,9 @@ interface DecorCell {
   presetId: string;             // ID пресета декора для ячейки
   presetRects: PresetRects;     // Объект с массивом прямоугольников декора
   presetType: DecorPresetType | null; // Тип пресета декора ('glueRail' или 'profileRail') или null
+  profile: number;              // Ширина декоративного профиля для разделения вставки полотна
   isFlip: boolean;              // Флаг, указывающий, перевернута ли ячейка
 }
-
 
 
 interface DecorTransom {

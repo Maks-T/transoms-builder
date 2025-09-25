@@ -2,7 +2,7 @@
 import {defineStore} from 'pinia'
 import {cloneObjectDeep, uniqId} from '@utils'
 import {useConfigsStore} from '@stores'
-import {LEAF_HINGE_SIDE, LEAF_SWING_DIRECTION, LEAF_TYPES, PROFILE_TYPE} from '@constants';
+import {LEAF_HINGE_SIDE, LEAF_SWING_DIRECTION, LEAF_TYPES, PROFILE_TYPE, RULE_CELL_TYPES} from '@constants';
 import {LEAF_LIMITS} from "@src/configs";
 
 /**
@@ -180,6 +180,7 @@ export const useModelingStore = defineStore('modeling', {
                 cell.height = height
 
                 // Дополнительные свойства для расчетов
+                //ToDo подумать над isActive, isInactive, isProfile, isHorizontal, isVertical, есть cell.ruleType
                 cell.isActive = cell.type === LEAF_TYPES.ACTIVE_LEAF || cell.type === LEAF_TYPES.ACTIVE_LEAF_SMALL
                 cell.isInactive = cell.type === LEAF_TYPES.INACTIVE_LEAF || cell.type === LEAF_TYPES.INACTIVE_LEAF_SMALL
                 cell.isProfile = cell.type === PROFILE_TYPE
@@ -198,11 +199,7 @@ export const useModelingStore = defineStore('modeling', {
                 }
 
                 cell.neighbors = this.getNeighbors(cell, transom) //ToDo убрать из экшена аргумент transom
-
-                /**    SET RULE TYPE            */
-
-
-                /**      /SET RULE TYPE             */
+                cell.ruleType = this.getRuleCellType(cell)
 
                 const offsets = this.calculateOffsets(cell, rowCount, colCount)
 
@@ -911,6 +908,19 @@ export const useModelingStore = defineStore('modeling', {
             }
 
             this.updateCellSizes();
+        },
+
+        /**
+         * Определяет упрощенный тип ячейки на основе ее свойств для определения правил выбора материалов.
+         * @param {TransomCell} cell - Ячейка фрамуги.
+         * @returns {string} Тип ячейки: 'active', 'inactive', 'verticalProfile', 'horizontalProfile.
+         */
+        getRuleCellType(cell) {
+            if (cell.type === PROFILE_TYPE && cell.isVertical) return RULE_CELL_TYPES.VERTICAL_PROFILE;
+            if (cell.type === PROFILE_TYPE && cell.isHorizontal) return RULE_CELL_TYPES.HORIZONTAL_PROFILE;
+            if (cell.isActive) return RULE_CELL_TYPES.ACTIVE;
+
+            return RULE_CELL_TYPES.INACTIVE;
         },
 
     }

@@ -38,18 +38,6 @@ export const useMaterialsStore = defineStore('materials', {
     },
 
     actions: {
-        /**
-         * Определяет упрощенный тип ячейки на основе ее свойств.
-         * @param {TransomCell} cell - Ячейка фрамуги.
-         * @returns {string} Тип ячейки: 'profile', 'active', 'inactive'.
-         */
-        getRuleCellType(cell) {
-            if (cell.type === PROFILE_TYPE && cell.isVertical) return RULE_CELL_TYPES.VERTICAL_PROFILE;
-            if (cell.type === PROFILE_TYPE && cell.isHorizontal) return RULE_CELL_TYPES.HORIZONTAL_PROFILE;
-            if (cell.isActive) return RULE_CELL_TYPES.ACTIVE;
-
-            return RULE_CELL_TYPES.INACTIVE;
-        },
 
         /**
          * Возвращает соседние ячейки для указанной стороны.
@@ -102,16 +90,24 @@ export const useMaterialsStore = defineStore('materials', {
 
             // Если нет соседа, используем размеры текущей ячейки
             let length;
+            let innerLength;
+
             if (neighbor) {
                 length = isVertical
+                    ? Math.min(cell.height, neighbor.height || cell.height)
+                    : Math.min(cell.width, neighbor.width || cell.width);
+
+                innerLength = isVertical
                     ? Math.min(cell.innerHeight, neighbor.innerHeight || cell.innerHeight)
                     : Math.min(cell.innerWidth, neighbor.innerWidth || cell.innerWidth);
             } else {
-                length = isVertical ? cell.innerHeight : cell.innerWidth;
+                length = isVertical ? cell.height : cell.width;
+                innerLength = isVertical ? cell.innerHeight : cell.innerWidth;
             }
 
             const params = {
                 length,
+                innerLength,
                 profileId: transom.profileId
             };
 
@@ -142,48 +138,6 @@ export const useMaterialsStore = defineStore('materials', {
             };
         },
 
-        /**
-         * Применяет исключения для определения типа соседней ячейки.
-         * @param {TransomCell} cell - Текущая ячейка фрамуги
-         * @param {string} cellType - Тип текущей ячейки.
-         * @param {string} side - Сторона ячейки ('left', 'right', 'top', 'bottom').
-         * @param {string | null} neighborType - Исходный тип соседней ячейки.
-         * @param {Neighbors} neighbors - Объект с соседями ячейки.
-         * @returns {string | null} Скорректированный динамически тип соседней ячейки относительно одной ее стороны.
-         */
-        applyExceptionsToNeighborType(cell, cellType, side, neighborType, neighbors) {
-            if (cellType !== RULE_CELL_TYPES.INACTIVE || !neighborType) return neighborType;
-
-            // 1. Исключение: для inactive ячейки справа с inactive соседом, если сверху есть horizontalProfile
-            if (side === 'right' && neighborType === RULE_CELL_TYPES.INACTIVE) {
-                const topNeighbors = this.getNeighborsOnSide(neighbors, 'top');
-                if (topNeighbors.some((n) => this.getRuleCellType(n) === RULE_CELL_TYPES.HORIZONTAL_PROFILE)) {
-                    return RULE_CELL_TYPES.VERTICAL_PROFILE; // Соединение как с вертикальным профилем
-                }
-            }
-
-            // 2. Исключение: для inactive ячейки слева с inactive соседом, если первый сосед слева это horizontalProfile
-            if (side === 'left' && neighborType === RULE_CELL_TYPES.INACTIVE) {
-                const leftNeighbors = this.getNeighborsOnSide(neighbors, 'left');
-                if (leftNeighbors && leftNeighbors.length && this.getRuleCellType(leftNeighbors[0]) === RULE_CELL_TYPES.HORIZONTAL_PROFILE) {
-                    return 'active'; // Соединение как с активной ячейкой
-                }
-            }
-
-            // 3. Если есть слева и справа inactive сосед и их высота равна высоте ячейки
-            // и если снизу active сосед и его ширина равна ширине ячейки
-            if (side === 'bottom'
-                && neighborType === RULE_CELL_TYPES.ACTIVE
-                && cell.width === neighbors.bottom[0]?.width
-                && cell.height === neighbors.left[0]?.height
-                && cell.height === neighbors.right[0]?.height
-                //ToDo возмоно добавить, что слева и справа inactive
-            ) {
-               return RULE_CELL_TYPES.FORCED_ACTIVE
-             }
-
-            return neighborType;
-        },
 
         /**
          * Вычисляет материалы для одной ячейки. Проверяет соседей ячейки и применяет правила.
@@ -193,15 +147,6 @@ export const useMaterialsStore = defineStore('materials', {
          */
         calculateMaterialsByCell(cell, transom) {
             const materials = [];
-            //const cellType = this.getRuleCellType(cell);
-
-            // Получаем соседей ячейки
-            //const neighbors = this.modelingStore.getNeighbors(cell, transom);
-
-           /* if (!neighbors) {
-                console.warn('Не удалось получить соседей для ячейки', cell.idx);
-                return materials;
-            }*/
 
             // Определяем стороны для основного профиля
             let profileSides;
@@ -215,11 +160,11 @@ export const useMaterialsStore = defineStore('materials', {
             }
 
             //Материалы применяются только один раз на сторону
-
+            /** @type MaterialConfig[] */
             const singleSideMaterials = [ //ToDo вынести в конфиг
-                {id: transom.profile.priceId, q: (p) => p.length + 100}, //основной профиль S41x39
+                {id: transom.profile.priceId, q: (p) => p.innerLength + 100}, //основной профиль S41x39
                 {id: 'prF1_G', q: 1}, //Сухарь
-                {id: 'seltht4_G', q: (p) => p.length + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
+                {id: 'seltht4_G', q: (p) => p.innerLength + 100, c: (p) => p.profileId === 'modulasg'}, // Уплотнитель Ш1/Т1 4мм для S41х39 + 100мм запас
             ]
 
             // Добавляем основной профиль для указанных сторон
@@ -246,14 +191,11 @@ export const useMaterialsStore = defineStore('materials', {
 
             sides.forEach((side) => {
 
-                const neighborsOnSide = cell.neighbors[side]//this.getNeighborsOnSide(neighbors, side);
+                const neighborsOnSide = cell.neighbors[side]
 
                 // Если есть соседи на этой стороне
                 if (neighborsOnSide.length > 0) {
                     neighborsOnSide.forEach((neighbor) => {
-                        //let neighborType = neighbor ? this.getRuleCellType(neighbor) : null;
-                        //применяем исключения
-                        //neighborType = this.applyExceptionsToNeighborType(cell, cellType, side, neighborType, neighbors)
 
                         const materialsSet = this.getMaterialsSet(cell, side, neighbor);
 
@@ -298,11 +240,6 @@ export const useMaterialsStore = defineStore('materials', {
             }
 
             const materials = {};
-
-            //Устанавливаем тип правил для всех ячеек
-            cells.forEach((cell) => {
-                cell.ruleType = this.getRuleCellType(cell)
-            });
 
             cells.forEach((cell) => {
                 materials[cell.idx] = this.calculateMaterialsByCell(cell, transom);

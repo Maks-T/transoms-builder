@@ -21,7 +21,7 @@
     <!-- Подробный вид -->
     <div v-if="activeTab === 'detailed'">
       <div v-for="(cellMaterials, cellIdx) in sortedMaterials" :key="cellIdx" class="cell-materials">
-        <h3>Ячейка {{ Number(cellIdx) + 1 }} {{ cells[cellIdx]?.type }}</h3>
+        <h3>Ячейка {{ Number(cellIdx) + 1 }} {{ LEAF_NAMES[cells[cellIdx]?.type] || 'Короб' }}</h3>
         <table class="materials-table">
           <thead>
           <tr>
@@ -49,7 +49,7 @@
     <div v-if="activeTab === 'summary'">
       <!-- Сумма по ячейкам -->
       <div v-for="(cellSummary, cellIdx) in summarizedByCell" :key="cellIdx" class="cell-summary">
-        <h3>Ячейка {{ Number(cellIdx) + 1 }} {{ cells[cellIdx]?.type }}</h3>
+        <h3>Ячейка {{ Number(cellIdx) + 1 }} {{  LEAF_NAMES[cells[cellIdx]?.type] || 'Короб' }}</h3>
         <table class="summary-table">
           <thead>
           <tr>
@@ -100,6 +100,7 @@
 import { watch, ref, computed } from 'vue';
 import { useMaterialsStore, useModelingStore } from '@stores';
 import { storeToRefs } from 'pinia';
+import {LEAF_NAMES} from "@constants/index.js";
 
 const modelingStore = useModelingStore();
 const materialsStore = useMaterialsStore();

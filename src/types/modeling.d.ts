@@ -50,6 +50,9 @@ interface ValidationCellData {
   titles: sizeCellMessages; // Объект с подсказками о допустимых размерах ячейки
 }
 
+//Тип ячейки для определения правила выбора материалов
+type RuleCellType = 'active' | 'inactive' | 'verticalProfile' | 'horizontalProfile';
+
 interface TransomCell {
   row: number;                // Номер строки, в которой находится ячейка (начиная с 1)
   col: number;                // Номер столбца, в котором находится ячейка (начиная с 1)
@@ -70,7 +73,9 @@ interface TransomCell {
   width?: number;             // Полная ширина ячейки (включая отступы)
   height?: number;            // Полная высота ячейки (включая отступы)
   validationData?: ValidationCellData | {}; // Данные валидации ячейки (ошибки и подсказки)
-  isInitialized: boolean;     // Указывает, завершены ли все вычисления для ячейки
+  isInitialized?: boolean;     // Указывает, завершены ли все вычисления для ячейки
+  neighbors: Neighbors;        // Соседние ячейки ввиде массивов по каждой стороне
+  ruleType: RuleCellType;      //Тип ячейки для определения правила выбора материалов
 }
 
 

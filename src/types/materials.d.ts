@@ -1,6 +1,8 @@
 
 interface ParamMaterial {
-    length: number; //Длина стороны полотна|короба
+    length: number; //Длина стороны ячейки
+    innerLength: number; //Длина стороны полотна|короба
+    profileId: string; //id основного профиля полотна
 }
 interface MaterialConfig {
     id: string;                               // Уникальный идентификатор материала из прайс-листа
