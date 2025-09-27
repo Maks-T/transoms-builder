@@ -294,6 +294,84 @@ export const useDecorGridStore = defineStore('decorGrid', {
                 transom.selectedLine = null;
             }
 
+        },
+        /**
+         * Разделяет все линии активной фрамуги на сегменты, чтобы каждый сегмент находился внутри одной ячейки.
+         * Заменяет оригинальные линии на новые сегменты.
+         */
+        splitLinesToCells() {
+            const transom = this.activeTransom;
+            if (!transom) return;
+
+            const newLines = [];
+            const cells = Object.values(transom.cells); // Массив ячеек
+
+            transom.lines.forEach(line => {
+                const segments = this.getLineSegments(line, cells);
+                newLines.push(...segments);
+            });
+
+            transom.lines = newLines;
+        },
+
+        /**
+         * Вспомогательная функция для разделения одной линии на сегменты по ячейкам.
+         * @param {Object} line - Линия для разделения ({start, end, type}).
+         * @param {Array} cells - Массив ячеек.
+         * @returns {Array} Массив сегментов линии.
+         */
+        getLineSegments(line, cells) {
+            const segments = [];
+
+            if (line.type === 'horizontal') {
+                const y = line.start.y; // y фиксирован (start.y === end.y)
+                const left = Math.min(line.start.x, line.end.x);
+                const right = Math.max(line.start.x, line.end.x);
+
+                // Находим пересекающиеся ячейки
+                const intersectingCells = cells.filter(cell =>
+                    cell.y <= y && y <= cell.y + cell.height &&
+                    cell.x < right && cell.x + cell.width > left
+                ).sort((a, b) => a.x - b.x);
+
+                intersectingCells.forEach(cell => {
+                    const segLeft = Math.max(left, cell.x);
+                    const segRight = Math.min(right, cell.x + cell.width);
+                    if (segLeft < segRight) {
+                        segments.push({
+                            id: uniqId(),
+                            start: { x: segLeft, y },
+                            end: { x: segRight, y },
+                            type: 'horizontal'
+                        });
+                    }
+                });
+            } else if (line.type === 'vertical') {
+                const x = line.start.x; // x фиксирован (start.x === end.x)
+                const top = Math.min(line.start.y, line.end.y);
+                const bottom = Math.max(line.start.y, line.end.y);
+
+                // Находим пересекающиеся ячейки
+                const intersectingCells = cells.filter(cell =>
+                    cell.x <= x && x <= cell.x + cell.width &&
+                    cell.y < bottom && cell.y + cell.height > top
+                ).sort((a, b) => a.y - b.y);
+
+                intersectingCells.forEach(cell => {
+                    const segTop = Math.max(top, cell.y);
+                    const segBottom = Math.min(bottom, cell.y + cell.height);
+                    if (segTop < segBottom) {
+                        segments.push({
+                            id: uniqId(),
+                            start: { x, y: segTop },
+                            end: { x, y: segBottom },
+                            type: 'vertical'
+                        });
+                    }
+                });
+            }
+
+            return segments;
         }
 
     }

@@ -76,6 +76,7 @@
       </v-stage>
     </div>
   </div>
+  <button class="btn-red" @click="decorStore.splitLinesToCells" style="margin-top: 20px;">Разделить линии</button>
 </template>
 
 <script setup>
@@ -105,6 +106,8 @@ const selectedLine = computed(() => decorStore.activeTransom?.selectedLine || nu
 
 // Реактивно получаем ячейки из decorStore
 const decorCells = computed(() => {
+  console.log(decorStore.calculatedCells(activeTransom.value))
+
   return decorStore.calculatedCells(activeTransom.value);
 });
 
