@@ -12,6 +12,10 @@ export const useDecorGridStore = defineStore('decorGrid', {
         transoms: {},
         activeTransomId: null,
         drawingStart: null, // {x: number, y: number} | null — стартовая точка для рисования
+        stepWidth: 200,
+        gridOffset: { x: 0, y: 0 }, // смещение сетки в мм
+        showGrid: true,
+        showPolyline: false,
     }),
 
     getters: {
@@ -111,6 +115,7 @@ export const useDecorGridStore = defineStore('decorGrid', {
                 updateKey: modelingTransom.updateKey,
                 profile: modelingTransom.profile,
                 selectedCellIndex: null,
+                selectedLine: null,
                 cells: {},
                 lines: [], // Массив декоративных линий
             };
@@ -160,7 +165,7 @@ export const useDecorGridStore = defineStore('decorGrid', {
         calculateCell(cell) {
 
             const x = cell.x + cell.offsets.left + 63 / 2; //toDo + paddingsW /2
-            const y = cell.y + cell.offsets.left + 63 / 2; //toDo+ paddingsH /2
+            const y = cell.y + cell.offsets.top + 63 / 2; //toDo+ paddingsH /2
 
             const width = cell.innerWidth - 63; //toDo+paddingsW
             const height = cell.innerHeight - 63; //toDo +paddingsW
@@ -226,14 +231,70 @@ export const useDecorGridStore = defineStore('decorGrid', {
                     type: 'horizontal'
                 });
             } // Иначе игнор
-            this.setDrawingStart(null); // Сброс
+
+            if (this.showPolyline) {
+                //Если активирован режим полилиний,
+                //то записываем последнюю точку
+                this.setDrawingStart({...end});
+            } else {
+                this.setDrawingStart(null); // Сброс
+            }
+
         },
 
-        removeLine(lineId) {
+
+
+        setStepWidth(width) {
+            this.stepWidth = width
+        },
+
+        setGridOffsetX(x) {
+            this.gridOffset.x = x
+        },
+        setGridOffsetY(y) {
+            this.gridOffset.y = y
+        },
+
+        setSelectedLine(lineId) {
+            const transom = this.activeTransom;
+            if (!transom) return;
+
+            transom.selectedLine = transom.lines.find(l => l.id === lineId);
+        },
+
+        setLineMargin(margin) {
+           const selectedLine = this.activeTransom?.selectedLine;
+           if (!selectedLine) return;
+
+           if (selectedLine.type === 'vertical') {
+               selectedLine.start.x = selectedLine.end.x = margin
+           } else {
+               selectedLine.start.y = selectedLine.end.y = margin
+           }
+        },
+
+        removeLineByIndex(lineId) {
             const transom = this.activeTransom;
             if (!transom) return;
             transom.lines = transom.lines.filter(line => line.id !== lineId);
         },
+
+        removeSelectedLine() {
+            const transom = this.activeTransom;
+            const selectedLine = transom?.selectedLine;
+            if (!selectedLine) return;
+
+            transom.lines = transom.lines.filter(line => line.id !== selectedLine.id);
+
+            if (transom.lines.length > 0) {
+                transom.selectedLine =  transom.lines[transom.lines.length - 1]
+
+                console.log('last',  transom.selectedLine)
+            } else {
+                transom.selectedLine = null;
+            }
+
+        }
 
     }
 

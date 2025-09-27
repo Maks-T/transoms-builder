@@ -16,12 +16,20 @@
   >
 
     <div class="decor-creator">
+
+      <div class="decor-creator__toolbar">
+        <DecorGridToolbar />
+      </div>
       <div class="decor-creator__draw">
         <DecorGridDraw
             :canvas-width="900"
             :canvas-height="canvasHeight"
             :padding="padding"
         />
+      </div>
+
+      <div class="decor-creator__settings-panel">
+        <DecorGridSettingsPanel />
       </div>
 
     </div>
@@ -45,6 +53,8 @@ import {Modal} from "@components/ui/index.js";
 import {Icon} from "@iconify/vue";
 import {storeToRefs} from "pinia";
 import DecorGridDraw from "@components/sections/Modeling/DecorGridCreator/DecorGridDraw/DecorGridDraw.vue";
+import DecorGridSettingsPanel from "@components/sections/Modeling/DecorGridCreator/DecorGridSettingsPanel.vue";
+import DecorGridToolbar from "@components/sections/Modeling/DecorGridCreator/DecorGridToolbar.vue";
 
 //Адаптируем высоту экрана по высоте
 const canvasHeight = computed(() => Math.min(600, window.innerHeight * 0.49));
@@ -75,12 +85,14 @@ const closeModal = () => {
 <style lang="scss" scoped>
 .decor-creator {
   display: grid;
-  grid-template-columns: 60% 36%;
+  grid-template-columns: 44px 60% 32%;
   gap: rem(16) rem(30);
 
   .decor-creator__draw {
 
   }
+  .decor-creator__draw {
 
+  }
 }
 </style>
