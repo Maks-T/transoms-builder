@@ -6,7 +6,7 @@
           ref="stage"
       >
         <v-layer>
-          <!-- Группа для элементов -->
+          <!-- Группа для элементов (leafs) -->
           <v-group>
             <template v-for="(cell, index) in decorCells" :key="'cell-'+index">
               <DecorGridLeafElement
@@ -20,6 +20,69 @@
           <v-group>
             <v-rect :config="rectFrameConfig" />
           </v-group>
+
+          <!-- Новый слой для сетки и линий -->
+
+            <v-group>
+              <!-- Серые линии сетки (вертикальные) -->
+              <v-line
+                  v-for="(x, index) in gridVerticalLines"
+                  :key="'v-line-' + index"
+                  :config="{
+                  points: [x * scaleFactor + padding, padding, x * scaleFactor + padding, activeTransom.height * scaleFactor + padding],
+                  stroke: '#cccccc',
+                  strokeWidth: 1,
+                  listening: false
+                }"
+              />
+
+              <!-- Серые линии сетки (горизонтальные) -->
+              <v-line
+                  v-for="(y, index) in gridHorizontalLines"
+                  :key="'h-line-' + index"
+                  :config="{
+                  points: [padding, y * scaleFactor + padding, activeTransom.width * scaleFactor + padding, y * scaleFactor + padding],
+                  stroke: '#cccccc',
+                  strokeWidth: 1,
+                  listening: false
+                }"
+              />
+
+              <!-- Точки на пересечениях -->
+              <v-circle
+                  v-for="point in gridPoints"
+                  :key="'point-' + point.x + '-' + point.y"
+                  :config="{
+                  x: point.x * scaleFactor + padding,
+                  y: point.y * scaleFactor + padding,
+                  radius: 4,
+                  fill: drawingStart && drawingStart.x === point.x && drawingStart.y === point.y ? 'blue' : 'gray',
+                  listening: true
+                }"
+                  @click="handlePointClick(point)"
+              />
+
+              <!-- Красные декоративные линии -->
+              <v-line
+                  v-for="line in activeDecorTransom.lines"
+                  :key="line.id"
+                  :config="{
+                  points: [
+                    line.start.x * scaleFactor + padding,
+                    line.start.y * scaleFactor + padding,
+                    line.end.x * scaleFactor + padding,
+                    line.end.y * scaleFactor + padding
+                  ],
+                  stroke: '#ff0000',
+                  strokeWidth: 2,
+                  listening: true // Для опционального удаления
+                }"
+                  @click="handleLineClick(line.id)"
+              />
+            </v-group>
+
+
+
         </v-layer>
       </v-stage>
     </div>
@@ -28,7 +91,7 @@
 
 <script setup>
 import {storeToRefs} from 'pinia';
-import {useDecorStore, useModelingStore} from "@stores/index.js";
+import {useDecorGridStore, useModelingStore} from "@stores/index.js";
 import {computed} from 'vue';
 import DecorGridLeafElement from "@components/sections/Modeling/DecorGridCreator/DecorGridDraw/DecorGridLeafElement.vue";
 
@@ -39,16 +102,18 @@ const props = defineProps({
 });
 
 const modelingStore = useModelingStore();
-const decorStore = useDecorStore();
+const decorStore = useDecorGridStore();
 
 const { activeTransom } = storeToRefs(modelingStore);
-const { selectedCellIndex } = storeToRefs(decorStore);
+const { selectedCellIndex, drawingStart } = storeToRefs(decorStore);
+
+// Активная фрамуга декора
+const activeDecorTransom = computed(() => decorStore.activeTransom);
 
 // Реактивно получаем ячейки из decorStore
 const decorCells = computed(() => {
   return decorStore.calculatedCells(activeTransom.value);
 });
-
 
 // Масштабный коэффициент
 const scaleFactor = computed(() => {
@@ -80,7 +145,7 @@ const rectFrameConfig = computed(() => {
 });
 
 // Свойства для DecorLeafElement
-const leafElementProps = computed(() => (cell, index) => {
+const leafElementProps = (cell, index) => {
   return {
     padding: props.padding,
     cell,
@@ -88,7 +153,58 @@ const leafElementProps = computed(() => (cell, index) => {
     index: Number(index),
     isSelected: selectedCellIndex.value === index,
   };
+};
+
+// Вычисление позиций вертикальных линий сетки (в мм)
+const gridVerticalLines = computed(() => {
+  if (!activeTransom.value) return [];
+  const step = 200;
+  const lines = [];
+  for (let x = 0; x <= activeTransom.value.width; x += step) {
+    lines.push(x);
+  }
+  return lines;
 });
+
+// Вычисление позиций горизонтальных линий сетки (в мм)
+const gridHorizontalLines = computed(() => {
+  if (!activeTransom.value) return [];
+  const step = 200;
+  const lines = [];
+  for (let y = 0; y <= activeTransom.value.height; y += step) {
+    lines.push(y);
+  }
+  return lines;
+});
+
+// Вычисление точек пересечения (в мм)
+const gridPoints = computed(() => {
+  const points = [];
+  gridVerticalLines.value.forEach(x => {
+    gridHorizontalLines.value.forEach(y => {
+      points.push({ x, y });
+    });
+  });
+  return points;
+});
+
+// Обработчик клика на точку
+const handlePointClick = (point) => {
+  if (!drawingStart.value) {
+    // Первая точка
+    decorStore.setDrawingStart(point);
+  } else {
+    // Вторая точка: проверка и добавление линии
+    decorStore.addLine(drawingStart.value, point);
+  }
+};
+
+// Опционально: обработчик клика на линию (для удаления)
+const handleLineClick = (lineId) => {
+  if (confirm('Удалить линию?')) {
+    decorStore.removeLine(lineId);
+  }
+};
 
 </script>
 

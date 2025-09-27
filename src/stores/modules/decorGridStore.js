@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia'
 import {useConfigsStore, useModelingStore} from '@stores'
 import {PROFILE_TYPE} from '@constants'
-
+import {uniqId} from '@utils' // Предполагаем, что uniqId доступен для генерации ID
 
 /**
  * Хранилище для управления декором ячеек фрамуг.
@@ -11,6 +11,7 @@ export const useDecorGridStore = defineStore('decorGrid', {
     state: () => ({
         transoms: {},
         activeTransomId: null,
+        drawingStart: null, // {x: number, y: number} | null — стартовая точка для рисования
     }),
 
     getters: {
@@ -57,7 +58,6 @@ export const useDecorGridStore = defineStore('decorGrid', {
             return transom.cells[transom.selectedCellIndex] || null;
         },
 
-
         /**
          * Возвращает отступы для профилей из конфигурации.
          * @returns {ProfilesPaddings} Объект с отступами для профилей.
@@ -65,7 +65,6 @@ export const useDecorGridStore = defineStore('decorGrid', {
         profilesPaddings() {
             return this.configsStore.profilesPaddings
         },
-
 
         /**
          * Вычисляет ячейки с декором для указанной фрамуги из modelingStore.
@@ -112,7 +111,8 @@ export const useDecorGridStore = defineStore('decorGrid', {
                 updateKey: modelingTransom.updateKey,
                 profile: modelingTransom.profile,
                 selectedCellIndex: null,
-                cells: {}
+                cells: {},
+                lines: [], // Массив декоративных линий
             };
 
             const cells = {};
@@ -198,6 +198,41 @@ export const useDecorGridStore = defineStore('decorGrid', {
             if (transom) {
                 transom.selectedCellIndex = index;
             }
+        },
+
+        // Новые actions для рисования
+        setDrawingStart(point) {
+            this.drawingStart = point ? { ...point } : null;
+        },
+
+        addLine(start, end) {
+            const transom = this.activeTransom;
+            if (!transom) return;
+
+            if (start.x === end.x && start.y !== end.y) {
+                // Вертикальная
+                transom.lines.push({
+                    id: uniqId(),
+                    start,
+                    end,
+                    type: 'vertical'
+                });
+            } else if (start.y === end.y && start.x !== end.x) {
+                // Горизонтальная
+                transom.lines.push({
+                    id: uniqId(),
+                    start,
+                    end,
+                    type: 'horizontal'
+                });
+            } // Иначе игнор
+            this.setDrawingStart(null); // Сброс
+        },
+
+        removeLine(lineId) {
+            const transom = this.activeTransom;
+            if (!transom) return;
+            transom.lines = transom.lines.filter(line => line.id !== lineId);
         },
 
     }

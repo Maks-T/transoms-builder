@@ -50,7 +50,6 @@ const decorStore = useDecorStore() //ToDo remove
 watch(activeTransom, (newTransom) => {
   if (newTransom) {
     console.log('Активная фрамуга изменилась:', newTransom)
-    console.log(decorStore.getAvailableDecorGroups) //ToDo remove
 
     selectedCell.value = activeTransom.value.cells[selectedCell?.value?.idx] ?? null;
   }
