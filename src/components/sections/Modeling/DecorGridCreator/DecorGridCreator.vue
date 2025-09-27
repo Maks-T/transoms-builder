@@ -6,7 +6,7 @@
           :title="!isValidTransom ? 'Конструкция фрамуги не валидна' : ''"
   >
     <Icon icon="mingcute:paint-2-line" class="icon"/>
-    <span>Внешний вид</span>
+    <span>Конфигурация декора</span>
   </button>
 
   <Modal
@@ -17,18 +17,11 @@
 
     <div class="decor-creator">
       <div class="decor-creator__draw">
-        <DecorDraw
+        <DecorGridDraw
             :canvas-width="900"
             :canvas-height="canvasHeight"
             :padding="padding"
         />
-      </div>
-
-      <div class="decor-creator__list">
-        <DecorList/>
-      </div>
-      <div class="decor-creator__controls">
-        <DecorControls />
       </div>
 
     </div>
@@ -46,13 +39,12 @@
 <script setup>
 
 import {computed, ref, watch} from "vue";
-import {useDecorStore, useModelingStore} from "@src/stores/index.js";
-import DecorDraw from "@components/sections/Modeling/DecorCreator/DecorDraw/DecorDraw.vue";
-import DecorList from "@components/sections/Modeling/DecorCreator/DecorList.vue";
+import {useDecorGridStore, useModelingStore} from "@src/stores/index.js";
+
 import {Modal} from "@components/ui/index.js";
 import {Icon} from "@iconify/vue";
 import {storeToRefs} from "pinia";
-import DecorControls from "@components/sections/Modeling/DecorCreator/DecorControls.vue";
+import DecorGridDraw from "@components/sections/Modeling/DecorGridCreator/DecorGridDraw/DecorGridDraw.vue";
 
 //Адаптируем высоту экрана по высоте
 const canvasHeight = computed(() => Math.min(600, window.innerHeight * 0.49));
@@ -90,8 +82,5 @@ const closeModal = () => {
 
   }
 
-  .decor-creator__list {
-
-  }
 }
 </style>

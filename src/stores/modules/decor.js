@@ -107,7 +107,7 @@ export const useDecorStore = defineStore('decor', {
          * @returns {(modelingTransom: Transom) => Record<number, DecorCell>|undefined} Функция, возвращающая объект с ячейками декора или undefined.
          */
         calculatedCells(state) {
-           return function (modelingTransom) {
+            return function (modelingTransom) {
 
                 if (!modelingTransom) return;
                 //Устанавливаем для упрощения использования методов стора в интерфейсе
@@ -132,6 +132,35 @@ export const useDecorStore = defineStore('decor', {
                 return transom.cells;
             }
         },
+
+        getAvailableDecorGroups(state) {
+
+            const profileId = state.modelingStore?.activeTransom?.profileId
+
+            if (!profileId) return {}
+            console.log({profileId})
+
+            const objTypesGroups = state.configsStore.getByParam({key: 'door', id: profileId}, {one: true});
+
+            let arrGroups = [];
+
+            Object.values(objTypesGroups).forEach((objTypesGroup) => {
+                arrGroups = [...arrGroups,
+                    ...objTypesGroup.value
+                        .trim()
+                        .split(',')
+                        .filter(g => g)
+                        .map(g => g.trim())
+                ]
+            });
+
+            const res = state.configsStore.getByParam({key: "panelSelect"});
+
+
+            console.log({res})
+
+            return res
+        }
     },
 
     actions: {
@@ -154,7 +183,7 @@ export const useDecorStore = defineStore('decor', {
             const cells = {};
 
             //Вставки для ячеек
-            modelingTransom.cells.forEach((cell,index) => {
+            modelingTransom.cells.forEach((cell, index) => {
                 if (cell.type !== PROFILE_TYPE) {
                     cells[index] = this.calculateCell(cell, 'default', null)
                 }
@@ -180,7 +209,7 @@ export const useDecorStore = defineStore('decor', {
             modelingTransom.cells.forEach((cell, index) => {
                 if (cell.type !== PROFILE_TYPE) {
                     let presetId = transom.cells[index]?.presetId ?? 'default';
-                    let  presetType = transom.cells[index]?.presetType ?? null;
+                    let presetType = transom.cells[index]?.presetType ?? null;
                     const isFlip = transom.cells[index]?.isFlip ?? false;
 
                     // Проверка доступности preset
@@ -211,12 +240,12 @@ export const useDecorStore = defineStore('decor', {
          */
         calculateCell(cell, presetId = 'default', presetType = null, isFlip = false) {
 
-            const x = cell.x + cell.offsets.left + 63/2; //toDo + paddingsW /2
-            const y = cell.y + cell.offsets.left + 63/2; //toDo+ paddingsH /2
+            const x = cell.x + cell.offsets.left + 63 / 2; //toDo + paddingsW /2
+            const y = cell.y + cell.offsets.left + 63 / 2; //toDo+ paddingsH /2
 
             const width = cell.innerWidth - 63; //toDo+paddingsW
             const height = cell.innerHeight - 63; //toDo +paddingsW
-            const config =  this.decorPresets[presetId];
+            const config = this.decorPresets[presetId];
             const profile = 10; //ToDo ставить нужную ширину профиля
 
             const calcDecorTemplate = new CalcDecorTemplate();
@@ -227,7 +256,7 @@ export const useDecorStore = defineStore('decor', {
             if (presetRects.items.some(item => item.height <= 0)) {
                 presetId = 'default'
                 presetType = null
-                const config =  this.decorPresets[presetId];
+                const config = this.decorPresets[presetId];
                 presetRects = calcDecorTemplate.getDoorRects({config, width, height, profile})
 
                 console.warn(`Не хватает высоты для применения этого типа декора ${cell.idx}`) //ToDo showToast
@@ -258,7 +287,7 @@ export const useDecorStore = defineStore('decor', {
                 cell[param] = value
             })
 
-            const config =  this.decorPresets[cell.presetId];
+            const config = this.decorPresets[cell.presetId];
 
             const calcDecorTemplate = new CalcDecorTemplate();
 
@@ -274,7 +303,7 @@ export const useDecorStore = defineStore('decor', {
             if (presetRects.items.some(item => item.height <= 0)) {
                 cell.presetId = 'default'
                 cell.presetType = null
-                const config =  this.decorPresets[cell.presetId];
+                const config = this.decorPresets[cell.presetId];
 
                 presetRects = calcDecorTemplate.getDoorRects({
                     config, width: cell.width, height: cell.height, profile: cell.profile, flip: cell.isFlip
@@ -283,7 +312,7 @@ export const useDecorStore = defineStore('decor', {
                 console.warn(`Не хватает высоты для применения этого типа декора`) //ToDo showToast
             }
 
-            cell.presetRects =  presetRects
+            cell.presetRects = presetRects
         },
 
 

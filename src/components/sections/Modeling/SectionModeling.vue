@@ -28,7 +28,7 @@ import CellProperties from "@components/sections/Modeling/CellProperties.vue";
 
 import {storeToRefs} from "pinia";
 import {computed, ref, watch} from "vue";
-import {useModelingStore} from "@src/stores/index.js";
+import {useDecorStore, useModelingStore} from "@src/stores/index.js";
 
 //Адаптируем высоту экрана по высоте
 const canvasHeight = computed(() => Math.min(600, window.innerHeight * 0.49));
@@ -45,15 +45,23 @@ const handleSelectedCellIndex = (index) => {
   console.log('Выбранная ячейка:', selectedCell.value)
 }
 
-
+const decorStore = useDecorStore() //ToDo remove
 // Отслеживание изменений активной фрамуги
 watch(activeTransom, (newTransom) => {
   if (newTransom) {
     console.log('Активная фрамуга изменилась:', newTransom)
+    console.log(decorStore.getAvailableDecorGroups) //ToDo remove
 
     selectedCell.value = activeTransom.value.cells[selectedCell?.value?.idx] ?? null;
   }
 }, {deep: true})
+
+
+
+watch(activeTransom, (newTransom) => {
+
+});
+
 
 </script>
 

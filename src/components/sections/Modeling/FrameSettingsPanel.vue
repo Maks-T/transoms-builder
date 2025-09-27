@@ -52,6 +52,10 @@
     <div class="frame-settings__group">
     </div>
 
+    <div class="">
+      <DecorGridCreator />
+    </div>
+
   </div>
 </template>
 
@@ -64,6 +68,7 @@ import {InputText, Select, Modal} from "@components/ui";
 import {Icon} from "@iconify/vue";
 import {useTranslate as _} from '@src/composables/index.js';
 import DecorCreator from "@components/sections/Modeling/DecorCreator/DecorCreator.vue";
+import DecorGridCreator from "@components/sections/Modeling/DecorGridCreator/DecorGridCreator.vue";
 
 const modelingStore = useModelingStore()
 const {activeTransom} = storeToRefs(modelingStore);

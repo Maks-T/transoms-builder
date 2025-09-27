@@ -1,7 +1,9 @@
 import {defineStore} from 'pinia';
 import {cloneObjectDeep} from '@utils';
 import {PROFILES_TYPES, TRANSOM_TEMPLATES, PRICES, MATERIALS_ON_SIDE_RULES, DECOR_PRESETS,PROFILES_PADDINGS,
-    PROFILES_AVAILABLE_DECOR_PRESETS} from '@src/configs'
+    PROFILES_AVAILABLE_DECOR_PRESETS, DATA_CONFIGS} from '@src/configs'
+
+
 import {LEAF_HINGE_SIDE, LEAF_HINGE_SIDE_NAMES, LEAF_SWING_DIRECTION, LEAF_SWING_DIRECTION_NAMES} from "@constants";
 
 
@@ -17,6 +19,7 @@ export const useConfigsStore = defineStore('configs', {
         transomTemplates: cloneObjectDeep(TRANSOM_TEMPLATES), //ToDo cloneObjectDeep нужно ли?
         materialsRules: MATERIALS_ON_SIDE_RULES,
         prices: PRICES,
+        data: DATA_CONFIGS,
 
         //для расчета декора
         decorPresets: DECOR_PRESETS, //шаблоны (персеты) для накладного и секционного декора
@@ -73,12 +76,31 @@ export const useConfigsStore = defineStore('configs', {
     },
 
     actions: {
-        addProfileType(profile) {
-            this.profileTypes[profile.id] = profile
+        /**
+         *
+         * @param {{}} param
+         * @param {{}} [config]
+         * @param {boolean} [config.one] - false: все найденные объекты, true: только первый
+         * @param {boolean} [config.ref] - false: возвращает копии, true: ссылки на оригиналы
+         * @returns {Object}
+         */
+        getByParam(param, config = {}) {
+            const result = {};
+            const { one = false, ref = false } = config;
+
+            outside: for (const [id, item] of Object.entries(this.data)) {
+                for (const [k, v] of Object.entries(param)) {
+                    if (item[k] !== v) continue outside;
+                }
+                if (one) {
+                    result[id] = ref ? item : {...item};
+                    return result;
+                }
+                result[id] = ref ? item : {...item};
+            }
+
+            return result;
         },
 
-        addTemplate(template) {
-            this.transomTemplates[template.id] = template
-        },
     }
 })

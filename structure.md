@@ -1,99 +1,112 @@
-src/
-├── assets/                       # Статические ресурсы (изображения, шрифты и т.д.)
-│   ├── images/                   # Изображения для UI или иконок
-│   ├── styles/                   # Глобальные CSS/SCSS файлы
-│   │   ├── main.scss             # Глобальные стили и переменные
-│   │   ├── konva-custom.scss     # Пользовательские стили для компонентов Konva.js
-│   │   └── toast.scss            # Стили для уведомлений (toasts)
-│   └── fonts/                    # Пользовательские шрифты (если есть)
+Проект
+├── index.html
+├── jsconfig.json
+├── package-lock.json
+├── package.json
+├── tsconfig.json
+├── vite.config.js
+├── structure.md                  # Этот файл со структурой проекта
 │
-├── components/                   # Все Vue-компоненты
-│   ├── ui/                       # Глобальные переиспользуемые UI-компоненты
-│   │   ├── Modal.vue             # Глобальный компонент модального окна
-│   │   ├── BaseButton.vue        # Переиспользуемый компонент кнопки
-│   │   ├── BaseInput.vue         # Переиспользуемый компонент ввода
-│   │   ├── Preloader.vue         # Глобальный компонент прелоадера
-│   │   ├── Toast.vue             # Компонент для уведомлений (toasts)
-│   │   ├── BaseTooltip.vue       # Переиспользуемый компонент всплывающих подсказок
-│   │   └── ConfigPanel.vue       # Компонент для отображения/редактирования конфигураций
-│   │
-│   └── sections/                 # Компоненты для секций
-│       └── Modeling/             # Компоненты секции "Моделирование"
-│           ├── ModelingSection.vue  # Главный компонент секции "Моделирование"
-│           ├── FrameSettingsPanel.vue    # Панель настроек
-│           ├── FrameBuilder/             # Компоненты визуального построителя
-            ├── FrameBuilder.vue   # Компонент для отрисовки/редактирования конструкции фрамуги
-│           │   ├── LeafElement.vue   # Компонент для отрисовки/редактирования полотен
-│           │   ├── ProfileElement.vue # Компонент для отрисовки/редактирования профилей
-│           │   ├── LeafContextMenu.vue # Контекстное меню для элементов канваса
-│           │   └── LeafContextSubmenu.vue # Подменю для контекстного меню
-│           └── FrameToolbar.vue  # Панель инструментов для моделирования
+├── public/
+│   └── img/
+│       └── transomTemplates/     # SVG-шаблоны фрамуг
+│           ├── transom-1.svg
+│           ├── transom-2.svg
+│           ├── transom-3.svg
+│           ├── transom-4.svg
+│           ├── transom-5.svg
+│           ├── transom-6.svg
+│           ├── transom-7.svg
+│           ├── transom-8.svg
+│           ├── transom-9.svg
+│           └── transom-10.svg
 │
-├── composables/                  # Vue 3 composables (пользовательские хуки)
-│   ├── useKonvaStage.js          # Хук для управления сценой Konva.js
-│   ├── useModal.js               # Хук для управления модальными окнами
-│   ├── usePreloader.js           # Хук для управления состоянием прелоадера
-│   ├── useToast.js               # Хук для управления уведомлениями
-│   ├── useDragAndDrop.js         # Хук для функционала drag-and-drop
-│   ├── useWindowActions.js       # Хук для действий с окнами
-│   ├── useErrorHandler.js        # Хук для глобальной обработки ошибок
-│   ├── useConfig.js              # Хук для загрузки и управления конфигурациями
-│   └── useContextMenu.js         # Хук для управления контекстным меню и подменю
-│
-├── stores/                       # Хранилища Pinia для управления состоянием
-│   ├── modules/                  # Модули хранилищ
-│   │   └── modeling.js           # Хранилище для секции "Моделирование"
-│   │   └── configs.js            # Хранилище для конфигураций
-│   ├── index.js                  # Основная настройка Pinia (объединяет модули)
-│   └── shared.js                 # Общее хранилище для обмена данными
-│
-├── services/                     # Сервисы приложения
-│   ├── api/                      # Сервисы для работы с API (получение/отправка данных)
-│   │   ├── api-client.js         # Базовая конфигурация API-клиента (например, axios)
-│   │   ├── interceptors.js       # Перехватчики запросов/ответов API
-│   │   ├── frame-service.js      # Сервис для API-операций с фреймами
-│   │   ├── profile-service.js    # Сервис для API-операций с профилями
-│   │   └── config-service.js     # Сервис для загрузки конфигураций с сервера
-│   │
-│   └── app/                      # Прочие сервисы приложения (бизнес-логика, форматирование)
-│       ├── calculations/          # Сервисы для расчетов
-│       │   ├── frame-calculator.js    # Расчеты параметров фреймов (размеры, нагрузки)
-│       │   ├── profile-calculator.js  # Расчеты параметров профилей (совместимость, вес)
-│       │   ├── material-calculator.js # Расчеты материалов (количество, стоимость)
-│       │   ├── geometry-calculator.js # Геометрические расчеты (углы, площади)
-│       │   └── structural-calculator.js # Структурные расчеты (прочность, устойчивость)
-│       │
-│       ├── config-formatter.js   # Сервис для форматирования конфигураций
-│       ├── profile-processor.js  # Сервис для обработки профилей
-│       └── drawing-exporter.js   # Сервис для экспорта чертежей
-│
-├── utils/                        # Утилиты и вспомогательные функции
-│   ├── konva-helpers.js          # Вспомогательные функции для Konva.js
-│   ├── math-utils.js             # Математические утилиты для расчетов фреймов/профилей
-│   ├── formatters.js             # Утилиты для форматирования данных
-│   ├── validators.js             # Функции валидации входных данных
-│   ├── logger.js                 # Утилита для логирования ошибок и отладки
-│   └── event-bus.js              # Глобальная шина событий
-│
-├── types/                        # Типы данных (JavaScript с JSDoc)
-│   ├── frame.js                  # Типы для структур данных фреймов
-│   ├── profile.js                # Типы для структур данных профилей
-│   ├── api.js                    # Типы для структур запросов/ответов API
-│   ├── error.js                  # Типы для структур ошибок
-│   ├── config.js                 # Типы для структур конфигураций
-│   ├── calculations.js           # Типы для входных/выходных данных расчетов
-│   └── context-menu.js           # Типы для структур данных контекстного меню
-│
-├── constants/                    # Централизованные константы
-│   ├── api-endpoints.js          # URL-адреса API
-│   ├── error-messages.js         # Стандартизированные сообщения об ошибках
-│   └── default-configs.js        # Статические конфигурации приложения
-│
-├── configs/                      # Конфигурации приложения
-│   ├── app-config.js             # Основные конфигурации приложения (JS)
-│   ├── modeling-config.js        # Конфигурации для секции "Моделирование"
-│   └── config-loader.js          # Логика загрузки и инициализации конфигураций
-│
-├── App.vue                       # Корневой Vue-компонент
-├── main.js                       # Точка входа приложения
-└── vite.config.js                # Конфигурация Vite (если используется)
+└── src/
+    ├── App.vue                   # Корневой компонент приложения
+    ├── main.js                   # Точка входа приложения
+    ├── style.css                 # Глобальные стили
+    │
+    ├── assets/
+    │   └── styles/
+    │       ├── _variables.scss
+    │       ├── index.scss
+    │       └── mixins/
+    │           ├── _functions.scss
+    │           ├── _shared.scss
+    │           └── index.scss
+    │
+    ├── components/
+    │   ├── common/
+    │   │   └── Step.vue
+    │   │
+    │   ├── sections/
+    │   │   ├── Modeling/
+    │   │   │   ├── SectionModeling.vue
+    │   │   │   ├── FrameSettingsPanel.vue
+    │   │   │   ├── FrameToolbar.vue
+    │   │   │   ├── FrameBuilder/
+    │   │   │   │   ├── FrameBuilder.vue
+    │   │   │   │   ├── LeafElement.vue
+    │   │   │   │   └── ProfileElement.vue
+    │   │   │   └── DecorCreator/
+    │   │   │       ├── DecorCreator.vue
+    │   │   │       ├── DecorControls.vue
+    │   │   │       ├── DecorList.vue
+    │   │   │       └── DecorDraw/
+    │   │   │           ├── DecorDraw.vue
+    │   │   │           └── DecorLeafElement.vue
+    │   │   │
+    │   │   └── TempResults/
+    │   │       ├── SectionMaterials.vue
+    │   │       └── SectionTempResults.vue
+    │   │
+    │   └── ui/                   # Переиспользуемые UI-компоненты
+    │       ├── index.js
+    │       ├── InputText.vue
+    │       ├── Modal.vue
+    │       └── Select.vue
+    │
+    ├── composables/
+    │   ├── index.js
+    │   ├── useDebounce.js
+    │   └── useTranslate.js
+    │
+    ├── configs/
+    │   ├── index.js
+    │   └── modules/
+    │       ├── configs.js
+    │       ├── decorPresets.js
+    │       └── prices.js
+    │
+    ├── constants/
+    │   └── index.js
+    │
+    ├── directives/
+    │   └── clickOutside.js
+    │
+    ├── services/
+    │   ├── index.js
+    │   └── calculations/
+    │       └── CalcDecorTemplate.js
+    │
+    ├── stores/
+    │   ├── index.js
+    │   └── modules/
+    │       ├── configs.js
+    │       ├── decor.js
+    │       ├── materials.js
+    │       └── modeling.js
+    │
+    ├── types/
+    │   ├── calcProfiles.d._ts
+    │   ├── configs.d.ts
+    │   ├── decor.d.ts
+    │   ├── materials.d.ts
+    │   ├── modeling.d.ts
+    │   └── vue-konva.d.ts
+    │
+    └── utils/
+        └── index.js
+
+
+

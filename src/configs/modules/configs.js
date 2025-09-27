@@ -1,4 +1,4 @@
-/** @type {ProfilesAvailableDecorPresets} */
+
 import {RULE_CELL_TYPES} from "@constants/index.js";
 
 
